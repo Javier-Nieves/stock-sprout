@@ -5,3 +5,4 @@ python-dotenv==0.21.0
 requests==2.27.1
 psycopg2==2.9.3
 gunicorn==20.1.0
+django-mathfilters==1.0.0
