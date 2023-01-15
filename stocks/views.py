@@ -96,9 +96,9 @@ def indexPost(request):
                 # get API data for the ticker
                 check = checkStock(name)
                 # ? create Stock db entry
-                Stocks.objects.create(ticker=name, company=check['company'], desc=check['desc'], day=check['day'] ,price=check['price'], 
-                pe=check['pe'], fpe=check['fpe'], pb=check['pb'], profitMargins=check['profitMargins'], 
-                roe=check['roe'], divs=check['dividends'], targetPrice=check['targetPrice'], recom=check['recom'], debt=check['debt'])
+                Stocks.objects.create(ticker=name, company=check['company'], day=check['day'], desc=check['desc'], price=check['price'], 
+                pe=check['pe'], fpe=check['fpe'], pb=check['pb'], debt=check['debt'],roe=check['roe'], profitMargins=check['profitMargins'], 
+                divs=check['dividends'], targetPrice=check['targetPrice'], recom=check['recom'])
 
             # does User already have this stock?
             stock = Stocks.objects.get(ticker=name)
