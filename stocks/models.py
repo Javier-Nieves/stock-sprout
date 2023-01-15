@@ -8,7 +8,7 @@ class Stocks(models.Model):
     ticker = models.CharField(max_length = 10)
     company = models.CharField(max_length = 50)
     day = models.FloatField(null=True)
-    desc = models.CharField(max_length = 1700, default="None", null=True)
+    desc = models.TextField(max_length = 1000, default="None", null=True)
     price = models.FloatField(null=True)
     pe = models.FloatField(null=True)
     fpe = models.FloatField(null=True)
