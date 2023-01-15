@@ -1,0 +1,385 @@
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+nav, .title-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 98vw;
+}
+strong {
+    color: whitesmoke;
+}
+html {
+    display: flex;
+    flex-direction: column;
+    background-image: url("coffee.jpg");
+    background-size: cover;
+    background-attachment: fixed;
+    background-color: #20232ffa;
+    background-blend-mode:color;
+    padding: 10px;
+    height: 100vh;
+    width: 100vw;
+}
+a {
+    text-decoration: none;
+    color: black;
+    padding: 0 7px 0 7px;
+    font-size: 20px;
+    color: whitesmoke;
+}
+form {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+.left-group {
+    margin-right: 20px;
+    margin-bottom: 8px;
+}
+
+.red-text {
+    color: rgb(250, 147, 36);
+    font-size: 17px;
+}
+.green-text {
+    color:rgba(78, 235, 0, 0.908);
+    font-size: 17px;
+}
+
+h1 {
+    font-family: 'Snell Roundhand', cursive, Serif;
+    font-size: 50px;
+    font-weight: 600;
+    margin: 0px;
+    color: bisque;
+}
+.brand {
+    font-size: 35px;
+    font-family: 'Snell Roundhand', sans-serif;
+    color: whitesmoke;
+}
+#title {
+    font-size: 45px;
+    font-family: 'Snell Roundhand', sans-serif;
+    padding-bottom: 15px;
+    text-align: center;
+    color: whitesmoke;
+}
+#company-title {
+    color: blanchedalmond;
+}
+
+
+/* Summary row */
+.summary-row, .company-price-row {
+    display: flex;
+    width: 98vw;
+    gap: 8px;
+    margin-bottom: 15px;
+    margin-top: 7px;
+}
+.summary-row > *, .comp-text, .company-price-row > * {
+    flex-basis: 100%;
+    color: whitesmoke;
+    background-color: rgba(114, 115, 115, 0.3);
+    border: 1px solid gray;
+    border-radius: 10px;
+    padding: 10px;
+}
+.sum-text {
+    font-size: 20px;
+}
+.med-text {
+    font-size: 30px;
+}
+.sum-value, .comp-param-value {
+    font-size: 25px;
+    padding: 15px 0 10px 0;
+}
+.comp-text {
+    font-size: 18px;
+    margin: 10px 0 10px 0;
+    width: 96.5vw;
+}
+.comp-param-text {
+    font-size: 20px;
+}
+.comp-param-value {
+    color: bisque;
+}
+.comp-param-value-big {
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+    font-size: 50px;
+    color: bisque;
+    align-items: center;
+    justify-content: center;
+}
+
+.top-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    color: whitesmoke;
+    margin: 20px 0 10px 0;
+    /* display: none; */
+}
+
+
+/* ? search for company*/
+.ticker-search-container, .ticker-link {
+    background-color: rgba(114, 115, 115, 0.3);
+    border: 1px solid gray;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: row;
+}
+.ticker-link:hover {
+    background-color: rgba(255, 246, 196, 0.31);
+    box-shadow: 0 0 5px #a1b1c3;
+    cursor: pointer;
+}
+.ticker-search-box {
+    display: flex;
+    flex-direction: column;
+    padding: 5px 10px 5px 10px;
+}
+.ticker-search-box > * {
+    min-width: 15vw;
+    max-width: 30vw;
+    padding: 5px 0 5px 0;
+    font-size: 22px;
+    color: bisque;
+}
+
+.ticker-inp, .ticker-buy {
+    width: 120px;
+    font-size: 20px;
+    font-weight: 400;
+    font-family: Didot, serif;
+    border: 1px solid gray;
+    border-radius: 5px;
+    padding: 5px;
+    background-color: rgba(114, 115, 115, 0.3);
+    color: whitesmoke;
+    text-align: center;   
+}
+.ticker-inp:focus, .ticker-buy:focus {
+    outline: none !important;
+    border: 1px solid bisque;
+    box-shadow: 0 0 4px #719ECE;
+}
+.long {
+    width: 200px;
+}
+.login {
+    margin: 5px 0 5px 0;
+    font-size: 25px;
+    width: 20vw;
+}
+.type-field {
+    margin-bottom: 5px;
+}
+.search-btn, .buy-btn, .sell-btn, .div-btn, .login-btn {
+    background-color: bisque;
+    border: 1px solid gray;
+    border-radius: 5px;
+    font-size: 20px;
+    font-weight: 600;
+    font-family: Didot, serif;
+    padding: 5px;
+}
+.buy-btn, .sell-btn {
+    width: 80px;
+}
+.login-btn {
+    width: 120px;
+    padding: 5px 10px;
+}
+.div-btn {
+    background-color: rgba(105, 18, 120, 0.0);
+    color: bisque;
+    padding: 5px 20px;
+}
+.div-btn:hover {
+    background-color: rgba(70, 3, 81, 0.718);
+    cursor: pointer;
+}
+.search-btn:hover, .login-btn:hover {
+    background-color: rgba(240, 194, 27, 0.718);
+    box-shadow: 0 0 5px #a1b1c3;
+    cursor: pointer;
+}
+.buy-btn:hover {
+    background-color: rgba(32, 75, 162, 0.718);
+    box-shadow: 0 0 5px #a1b1c3;
+    color: whitesmoke;
+    cursor: pointer;
+}
+.sell-btn:hover {
+    background-color: rgba(203, 23, 3, 0.718);
+    box-shadow: 0 0 5px #a1b1c3;
+    color:whitesmoke;
+    cursor: pointer;
+}
+.flex-container {
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+}
+.flex-container-rows {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+}
+
+/* ? company view */
+.comp-desc {
+    color: whitesmoke;
+    font-size: 13px;
+}
+
+
+
+ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 5px;
+}
+li {
+    text-align:justify;
+    margin-bottom: 5px;
+    width: 50%;
+    float: left;
+}
+
+table th, table td {
+    padding: 0.75rem;
+    vertical-align: middle;
+    color: whitesmoke;
+    font-family: Didot, serif;
+    text-align: center;
+    font-size: 19px;
+}
+div {
+    font-family: Didot, serif;
+}
+tbody tr:nth-of-type(odd) {
+    background-color: rgba(248, 212, 168, 0.209);
+
+}
+tbody tr:nth-of-type(even) {
+    background-color: rgba(114, 115, 115, 0.3);
+}
+
+tbody tr:hover {
+    background-color: rgba(240, 194, 27, 0.3);
+    cursor: pointer;
+}
+
+/* * sorting */
+.Up, .Down {
+    text-decoration: underline;
+}
+.Up:hover, .Down:hover {
+    cursor: pointer;
+}
+
+@keyframes created {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+.hist-row {
+    font-size: 18px;
+}
+.new-hist-row {
+    animation-name: created;
+    animation-duration:  2s;
+    animation-fill-mode: forwards;
+    animation-play-state: paused;
+}
+
+
+@keyframes disappear {
+    0% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+
+.message-buy, .message-sell {
+    animation-name: disappear;
+    animation-duration:  1.8s;
+    animation-fill-mode: forwards;
+    animation-play-state: paused;
+    width: 120px;
+    font-size: 25px;
+    font-weight: 400;
+    border: 1px solid gray;
+    border-radius: 5px;
+    padding: 5px 150px 5px 150px;
+    color: whitesmoke;
+    text-align: center;
+    margin-left: 4vw;
+}
+.message-buy {
+    background-color: rgba(2, 240, 22, 0.165);
+    /* background-color: rgba(255, 205, 4, 0.165); */
+}
+.message-sell {
+    background-color: rgba(255, 104, 3, 0.289);
+}
+
+.intro-text {
+    display: flex;
+    justify-content: center;
+    width: 98vw;
+    font-size: 25px;
+    font-weight: 400;
+    border: 1px solid gray;
+    border-radius: 5px;
+    padding: 10px 0 10px 0;
+    background-color: rgba(232, 232, 232, 0.3);
+    color: bisque;
+    margin: 20px 0 20px 0;
+}
+.register-text {
+    color:whitesmoke;
+    font-size: 20px;
+    margin-top: 25px;
+}
+
+@keyframes aparecer{
+    0% {
+        margin-left: -250px;
+        opacity: 0;
+    }
+    60%{
+        opacity: 0;
+    }
+    100% {
+        margin-left: 0px;
+        opacity: 1;
+    }
+}
+#action-buttons {
+    animation-name: aparecer;
+    animation-duration:  1.5s;
+    animation-fill-mode: forwards;
+    animation-play-state: paused;
+}

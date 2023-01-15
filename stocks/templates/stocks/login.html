@@ -1,0 +1,16 @@
+{% extends "stocks/layout.html" %}
+
+{% block body %}
+
+    <form action="{% url 'login' %}" method="post">
+        {% csrf_token %}
+        <div class="flex-container-rows">
+            <h1 style="margin: 80px 0 20px 0">Login</h1>
+            <input autofocus class="ticker-inp long login" type="text" name="username" placeholder="Username" required>
+            <input class="ticker-inp long login" type="password" name="password" placeholder="Password" style="margin-bottom: 10px" required>
+            <input class="login-btn" type="submit" value="Enter">
+            <div class="register-text">Don't have an account? </div><a class='brand' href="{% url 'register' %}">Register here.</a>
+        </div>
+    </form>
+
+{% endblock %}
