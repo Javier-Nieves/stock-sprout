@@ -267,7 +267,7 @@ def ActualizeMini():
 
 # ! this module runs in background and periodically summons Actualize function
 scheduler = BackgroundScheduler({'apscheduler.job_defaults.max_instances': 4})
-scheduler.add_job(ActualizeMini, 'interval', seconds=60)
+scheduler.add_job(ActualizeMini, 'interval', seconds=120)
 scheduler.start()
 
 
