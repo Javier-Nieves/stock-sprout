@@ -95,6 +95,7 @@ def indexPost(request):
             except:
                 # get API data for the ticker
                 check = checkStock(name)
+                print(name)
                 # ? create Stock db entry
                 Stocks.objects.create(ticker=name, company=check['company'], day=check['day'], desc=check['desc'], price=check['price'], 
                 pe=check['pe'], fpe=check['fpe'], pb=check['pb'], debt=check['debt'],roe=check['roe'], profitMargins=check['profitMargins'], 

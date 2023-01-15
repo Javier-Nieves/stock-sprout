@@ -21,7 +21,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(find_dotenv())
 SECRET_KEY = os.environ['SECRET_KEY']
 
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
 
