@@ -189,7 +189,7 @@ def histPost(request, title, dividend):
     #     dividend = div_form.cleaned_data['dividend']
     stk = Stocks.objects.get(ticker="DIV")
     # ? create new dividend entry in DB
-    History.objects.create(user=request.user, stock=stk, action="Div", SPrice=dividend, note=title)
+    History.objects.create(user=request.user, stock=stk, action="Div", SPrice=dividend, BPrice=0, MyPriceHist=0, ammount=0, note=title)
     port.profit += dividend
     port.save()
 

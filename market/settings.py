@@ -75,11 +75,25 @@ WSGI_APPLICATION = 'market.wsgi.application'
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
 DATABASES = {
+    # ! Local
     # 'default': {
     #     'ENGINE': 'django.db.backends.sqlite3',
     #     'NAME': BASE_DIR / 'db.sqlite3',
     # }
-    'default': dj_database_url.parse(os.environ.get("DATABASE_URL"))
+
+    # # ! for Development
+    # 'default': dj_database_url.parse(os.environ.get("DATABASE_URL"))
+
+    # ! Postgres
+        'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'stock_sprout',
+        'USER': 'stock_sprout_user',
+        'PASSWORD': 'ggUHqNF5BPSWWT9D9oKU2kPjNGHZaQgQ',
+        'HOST': 'dpg-cf1m4r82i3mnjclfdf80-a.oregon-postgres.render.com',
+        'PORT': '5432',
+    }
+    
 }
 
 
@@ -118,6 +132,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
 STATIC_URL = 'static/'
+# ! adds staticfiles folder and all it's content, allowing to have styles in development
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
 # Default primary key field type
