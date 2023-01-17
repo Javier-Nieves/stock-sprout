@@ -1,6 +1,6 @@
 # Stock Sprout
 ## URL: [stock-sprout.onrender.com](stock-sprout.onrender.com)
-#### Video Demo:
+#### Video Demo: [https://youtu.be/HFDE5aihhmA](https://youtu.be/HFDE5aihhmA)
 
 ## Description:
 Stock Sprout is a Django-JS web application used for stock exchange monitoring. Users can create their portfolio, adding stocks via API (from Yahoo Finance), stocks’ **prices will update automatically** and day and overall price changes will be displayed in the table on the main page.
