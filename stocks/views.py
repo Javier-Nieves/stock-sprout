@@ -317,7 +317,7 @@ def register(request):
             user.save()
         except IntegrityError:
             return render(request, "stocks/register.html", {
-                "message": "Username already taken."
+                "message": "User already exists."
             })
         login(request, user)
         return HttpResponseRedirect(reverse("index"))

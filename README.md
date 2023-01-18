@@ -5,9 +5,40 @@
 ## Description:
 Stock Sprout is a Django-JS web application used for stock exchange monitoring. Users can create their portfolio, adding stocks via API (from Yahoo Finance), stocks’ **prices will update automatically** and day and overall price changes will be displayed in the table on the main page.
 Users can also research any company's metrics (*like PE, PB, Dividends, etc.*) on the **Companies' page** and look at the transactions log on the **History page**.
-
 All functions and views except login and register are parts of the *single-page application* made with JS. Backend is Django with 5 models and 2 forms, database is PostgreSQL.
 
+## Distinctiveness and Complexity
+Stock Sprout is an app about stock exchange and companies’ financial data, which wasn’t covered in CS50w course. Unlike other projects a user here is a receiver and analyzer or information, they don’t send letters, neither they post texts or items for sale. The user gathers financial data and forms a personal investment portfolio. The app also uses Python requests module to send API’s and not JS as in other projects.
+
+#### Speaking of complexity: 
+1. Application is made in single-page format, which is good practice nowadays and is more complex than ordinary multi-pages app. 
+2.	Application is deployed and operates online, not in IDE.
+3.	Automatic stocks/companies updates are implemented and operate in a scalable fashion (API requests per account are minimized).
+4.	API’s are more complex than before and collect many parameters from 3 different routes.
+5.	The project uses Django forms and PostgreSQL database instead of SQLite and simple forms.
+6.	In Python code GET and POST method are separated by decorators, 4+1 DB models and serialization are used.
+7.	On the part of JS – app is created dynamically, “fetch” is used to communicate with a backend, dividends on the history view are added without reloading the page.
+8.	On the part of CSS – animation is used in multiple places, app is mobile-responsive.
+9.	HTML also changes for different conditions, depending on authentication and also whether the user has an empty portfolio or not.
+
+## Files
+Stock Sprout is a Django application with one app - *Stocks*, so the main structure is standard: models.py for DB models, views.py for main Python code, urls.py for url patterns and two API routes. Admin.py contains all 5 database models.
+In the Templates subfolder 4 HTML templates are located, which are:
+1.	Index.html with all the main views
+2.	Login.html for separate login page
+3.	Register.html for separate register page
+4.	Layout.html for base template, on which every other one is based.
+
+Settings.py is configurated for production – Secret key is hidden in environment variable, debug is set to "False" and Database is set to work with online PostgreSQL DB.
+
+Staticfiles folder and build.sh script are needed to online deployment. The folder contains all media materials, CSS stylesheet and JS script file Stocks.JS. 
+
+Application is operating online on [stock-sprout.onrender.com](stock-sprout.onrender.com). 
+But to run it from IDE one must:
+1.	Create **.env** file in the project’s main directory with environment variable SECRET_KEY = 'any_random_value'.
+2.	Type ‘python manage.py runserver’ as usual
+
+#App structure:
 ## Register and Login pages
 Unauthorized user is able to search for companies’ financial metrics and nothing else. Login and register pages allow users to create their accounts on Stock Sprout.
 The pages are pretty basic, frontend forbid empty fields, while backend checks user uniqueness and password-confirmation match.
