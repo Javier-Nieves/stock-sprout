@@ -1,5 +1,5 @@
 # Stock Sprout
-## URL: [stock-sprout.onrender.com](stock-sprout.onrender.com)
+## URL: [stock-sprout.onrender.com](https://stock-sprout.onrender.com/)
 #### Video Demo: [https://youtu.be/HFDE5aihhmA](https://youtu.be/HFDE5aihhmA)
 
 ## Description:
@@ -33,7 +33,7 @@ Settings.py is configurated for production – Secret key is hidden in environme
 
 Staticfiles folder and build.sh script are needed to online deployment. The folder contains all media materials, CSS stylesheet and JS script file Stocks.JS. 
 
-Application is operating online on [stock-sprout.onrender.com](stock-sprout.onrender.com). 
+Application is operating online on [stock-sprout.onrender.com](https://stock-sprout.onrender.com/). 
 But to run it from IDE one must:
 1.	Create **.env** file in the project’s main directory with environment variable SECRET_KEY = 'any_random_value'.
 2.	Type ‘python manage.py runserver’ as usual
