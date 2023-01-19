@@ -162,8 +162,10 @@ def indexPost(request):
 def company_view (request, name):
     # if Company View is summoned via top link - open random company from DB
     if name == 'random':
-        StockList = list(Stocks.objects.all())
-        name = random.choice(StockList).ticker
+        name = 'DIV'
+        while name == 'DIV':
+            StockList = list(Stocks.objects.all())
+            name = random.choice(StockList).ticker
 
     # ? if company exists in DB:
     try:

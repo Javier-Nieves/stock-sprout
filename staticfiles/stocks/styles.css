@@ -59,6 +59,9 @@ h1 {
     font-family: 'Snell Roundhand', sans-serif;
     color: whitesmoke;
 }
+.brand:hover {
+    text-decoration: underline;
+}
 #title {
     font-size: 45px;
     font-family: 'Snell Roundhand', sans-serif;

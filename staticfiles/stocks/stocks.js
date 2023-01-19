@@ -5,7 +5,6 @@ document.addEventListener('DOMContentLoaded', function() {
     tar = event.target;
     let ClName = tar.parentElement.className;
 
-
     // ! Companies view
     // * from History
     if (ClName.includes("hist-row")) {
@@ -288,7 +287,7 @@ function show_company (name) {
 
       // populate forms with company's data
       document.querySelector('#company-recom').innerHTML = `<div class="comp-param-text"> Recommendation: </div> <div class="comp-param-value-big">${result.comp.recom} </div>`;
-      document.querySelector('#company-title').innerHTML = result.comp.company;
+      document.querySelector('#company-title').innerHTML = MakeCapitalized(result.comp.company);
       document.querySelector('#company-desc').innerHTML = result.comp.desc;
       document.querySelector('#company-pe').innerHTML = `<div class="comp-param-text"> PE: </div> <div class="comp-param-value">${result.comp.pe.toFixed(1)} </div>`;
       document.querySelector('#company-fpe').innerHTML = `<div class="comp-param-text"> Forward PE: </div> <div class="comp-param-value">${result.comp.fpe.toFixed(1)}</div>`;
@@ -307,4 +306,15 @@ function show_company (name) {
       txt = changed.slice(0,-3) + " " + changed.slice(-3);
     }
     return txt
+  }
+
+  function MakeCapitalized(string) {
+    var low = string.toLowerCase();
+    var converted = low.charAt(0).toUpperCase() + low.slice(1);
+    for (let i=0; i<string.length; i++) {
+        if (converted.charAt(i) === ' ' || converted.charAt(i) === '&' || converted.charAt(i) === '-') {
+          converted = converted.slice(0,i+1) + converted.charAt(i+1).toUpperCase() + converted.slice(i+2);
+        }
+    }
+    return converted
   }
