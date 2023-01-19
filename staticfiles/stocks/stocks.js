@@ -235,7 +235,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 3000);
         setTimeout(function(){
         success_msg.remove();
-        }, 7000);
+        }, 5000);
     }
     form.addEventListener('submit', submitForm);
 
@@ -243,15 +243,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // ! --- functions ----
 
-
     // * for alerts to disappear
     setTimeout(function(){
-      try{document.getElementById("message").style.animationPlayState = "running";}
+      try{
+        let mes = document.getElementById("message");
+        mes.style.animationPlayState = "running";
+        setTimeout(function(){
+          mes.remove();
+        }, 2000);
+      } 
       catch{}
     }, 3000);  // in 3 sec  
-
-
-  
 
 
 function show_company (name) {
@@ -306,5 +308,3 @@ function show_company (name) {
     }
     return txt
   }
-
-// moneyFormat("12346");
