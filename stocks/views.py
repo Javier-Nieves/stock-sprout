@@ -40,8 +40,7 @@ def index(request, message=""):  # with default value of message
     else:
         return render(request, 'stocks/index.html', {
             'form': form,
-            'message': message,
-            'history': "history"
+            'message': message
             })
 
 

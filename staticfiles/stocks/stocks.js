@@ -25,7 +25,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     // * from search button in Index
     if (tar.parentElement.parentElement.className.includes("ticker-link")) {
-      console.log('icludes')
       var name = document.querySelector('#hidden-ticker').value;
       console.log(name);
       show_company(name);
@@ -192,52 +191,54 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
     // ! Dividend form handling
-    let form = document.getElementById("Div-form");
-    function submitForm(event){
-      event.preventDefault();
-      let title = document.querySelector("#Div-title").value;
-      let amount = document.querySelector("#Div-amount").value;
-      // make a call to back-end to add this dividend to the DB
-       fetch(`/history/${title}/${amount}`)
+    try{
+      let form = document.getElementById("Div-form");
+      function submitForm(event){
+        event.preventDefault();
+        let title = document.querySelector("#Div-title").value;
+        let amount = document.querySelector("#Div-amount").value;
+        // make a call to back-end to add this dividend to the DB
+        fetch(`/history/${title}/${amount}`)
 
-        // creatig new row in table on 1st position
-        let HistRow = document.querySelector('#HistTable').insertRow(0);
-        HistRow.className = 'new-hist-row';
-        HistRow.style.backgroundColor = 'rgba(255, 205, 4, 0.165)';
-        var cell1 = HistRow.insertCell(0);
-        var cell2 = HistRow.insertCell(1);
-        var cell3 = HistRow.insertCell(2);
-        var cell4 = HistRow.insertCell(3);
-        var cell5 = HistRow.insertCell(4);
-        var cell6 = HistRow.insertCell(5);
-        var cell7 = HistRow.insertCell(6);
-        var cell8 = HistRow.insertCell(7);
-        cell1.innerHTML = "DIV";
-        cell2.innerHTML = `${title}`;
-        cell3.innerHTML = "Div";
-        cell4.innerHTML = "-";
-        cell5.innerHTML = "-";
-        cell6.innerHTML = "-";
-        cell7.innerHTML = "-";
-        cell8.innerHTML = `${amount}`;
-        cell8.className = "green-text";
-        HistRow.style.animationPlayState = 'running';
+          // creatig new row in table on 1st position
+          let HistRow = document.querySelector('#HistTable').insertRow(0);
+          HistRow.className = 'new-hist-row';
+          HistRow.style.backgroundColor = 'rgba(255, 205, 4, 0.165)';
+          var cell1 = HistRow.insertCell(0);
+          var cell2 = HistRow.insertCell(1);
+          var cell3 = HistRow.insertCell(2);
+          var cell4 = HistRow.insertCell(3);
+          var cell5 = HistRow.insertCell(4);
+          var cell6 = HistRow.insertCell(5);
+          var cell7 = HistRow.insertCell(6);
+          var cell8 = HistRow.insertCell(7);
+          cell1.innerHTML = "DIV";
+          cell2.innerHTML = `${title}`;
+          cell3.innerHTML = "Div";
+          cell4.innerHTML = "-";
+          cell5.innerHTML = "-";
+          cell6.innerHTML = "-";
+          cell7.innerHTML = "-";
+          cell8.innerHTML = `${amount}`;
+          cell8.className = "green-text";
+          HistRow.style.animationPlayState = 'running';
 
-        form.reset();
-        let success_msg = document.createElement('a');
-        success_msg.className = "message-buy";
-        success_msg.id = 'message';
-        success_msg.innerHTML = "-= Dividends received =-";
-        document.querySelector(".left-group").append(success_msg);
-        setTimeout(function(){
-          success_msg.style.animationPlayState = "running";
-        }, 3000);
-        setTimeout(function(){
-        success_msg.remove();
-        }, 5000);
+          form.reset();
+          let success_msg = document.createElement('a');
+          success_msg.className = "message-buy";
+          success_msg.id = 'message';
+          success_msg.innerHTML = "-= Dividends received =-";
+          document.querySelector(".left-group").append(success_msg);
+          setTimeout(function(){
+            success_msg.style.animationPlayState = "running";
+          }, 3000);
+          setTimeout(function(){
+          success_msg.remove();
+          }, 5000);
+      }
+      form.addEventListener('submit', submitForm);
     }
-    form.addEventListener('submit', submitForm);
-
+    catch{}
 })
 
 // ! --- functions ----
@@ -260,8 +261,8 @@ function show_company (name) {
   try{document.querySelector('#summary-row-top').style.display = 'none';
   document.querySelector('#history-view').style.display = 'none';}
   catch{}
-
   document.querySelector('#company-view').style.display = 'block';
+
   fetch(`/companies/${name}`)
     .then(response => response.json())
     .then(result => {
