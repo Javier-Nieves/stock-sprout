@@ -60,8 +60,10 @@ def indexPost(request):
         # process the data in form.cleaned_data as required
         # geting ticker name
         ticker = ticker_form.cleaned_data['stock_ticker']
-        # check - all info about that ticker
+        # check = all info about that ticker
         check = checkStock(ticker)
+        if check == None:
+            return index(request, "Stock doesn't exist")
         buy_form = BuyForm()
         if request.user.is_authenticated:
             return render(request, 'stocks/index.html', {
@@ -279,7 +281,7 @@ def login_view(request):
     if request.method == "POST":
 
         # * Attempt to sign user in
-        username = request.POST["username"]
+        username = request.POST["username"].lower()
         password = request.POST["password"]
         user = authenticate(request, username=username, password=password)
 
@@ -302,7 +304,7 @@ def logout_view(request):
 
 def register(request):
     if request.method == "POST":
-        username = request.POST["username"]
+        username = request.POST["username"].lower()
         email = request.POST["email"]
 
         # * Ensure password matches confirmation
