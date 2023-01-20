@@ -32,7 +32,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // * company search button in Company View
     if (tar.className.includes("comp-search-btn")) {
       let tick = document.querySelector("#comp-search").value.toUpperCase();
-      console.log(tick)
       document.querySelector("#comp-search").value = '';
       show_company(tick);
     }
@@ -224,17 +223,7 @@ document.addEventListener('DOMContentLoaded', function() {
           HistRow.style.animationPlayState = 'running';
 
           form.reset();
-          let success_msg = document.createElement('a');
-          success_msg.className = "message-buy";
-          success_msg.id = 'message';
-          success_msg.innerHTML = "-= Dividends received =-";
-          document.querySelector(".left-group").append(success_msg);
-          setTimeout(function(){
-            success_msg.style.animationPlayState = "running";
-          }, 3000);
-          setTimeout(function(){
-          success_msg.remove();
-          }, 5000);
+          ShowMessage('Dividends received');
       }
       form.addEventListener('submit', submitForm);
     }
@@ -262,11 +251,13 @@ function show_company (name) {
   document.querySelector('#history-view').style.display = 'none';}
   catch{}
   document.querySelector('#company-view').style.display = 'block';
-
   fetch(`/companies/${name}`)
     .then(response => response.json())
     .then(result => {
       // console.log(comp)
+      if (result.message) {
+          ShowMessage(`${result.message}`);
+      }
       let roe = result.comp.roe * 100;
       let yield = result.comp.dividends / result.comp.price * 100;
       let marg = result.comp.profitMargins * 100;
@@ -318,4 +309,18 @@ function show_company (name) {
         }
     }
     return converted
+  }
+
+  function ShowMessage(text) {
+    let success_msg = document.createElement('a');
+          success_msg.className = "message-buy";
+          success_msg.id = 'message';
+          success_msg.innerHTML = `-= ${text} =-`;
+          document.querySelector(".left-group").append(success_msg);
+          setTimeout(function(){
+            success_msg.style.animationPlayState = "running";
+          }, 3000);
+          setTimeout(function(){
+          success_msg.remove();
+          }, 5000);
   }

@@ -3,7 +3,7 @@ from django import forms
 class TickerForm(forms.Form):
     stock_ticker = forms.CharField(label='', max_length=10, widget=forms.TextInput(
                               attrs={'class': "ticker-inp",
-                              'placeholder': "Ticker"}))
+                              'placeholder': "Company"}))
 
 class BuyForm(forms.Form):
     buy_price = forms.FloatField(label='', widget=forms.TextInput(

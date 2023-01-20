@@ -61,8 +61,13 @@ def indexPost(request):
         ticker = ticker_form.cleaned_data['stock_ticker']
         # check = all info about that ticker
         check = checkStock(ticker)
+
+        # if company name is entered - find it's ticker
         if check == None:
-            return index(request, "Stock doesn't exist")
+            check = checkStock(getTicker(ticker))
+            if check == None:
+                return index(request, "Stock doesn't exist")
+
         buy_form = BuyForm()
         if request.user.is_authenticated:
             return render(request, 'stocks/index.html', {
@@ -160,7 +165,18 @@ def indexPost(request):
             return HttpResponse("<h1>How did you get here?</h1>")
 
 
-def company_view (request, name):
+def company_view(request, name):
+    # print('starting: ', name)
+    if checkStock(name) == None and name!="random":
+        name = getTicker(name)
+        # print('inside: ', name)
+        # print('checking: ',checkStock(name))
+        if checkStock(name) == None:
+            print('No such company!!!')
+            return JsonResponse({
+            "message": "No such company"
+            }, status=200)
+
     # if Company View is summoned via top link - open random company from DB
     if name == 'random':
         name = 'DIV'
@@ -246,6 +262,22 @@ def checkStock(ticker):
     except (KeyError, TypeError, ValueError):
         return None
 
+
+# ! look up a ticker for company name entered
+def getTicker(company_name):
+    yfinance = "https://query2.finance.yahoo.com/v1/finance/search"
+    user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36'
+    params = {"q": company_name, "quotes_count": 1, "country": "United States"}
+    res = requests.get(url=yfinance, params=params, headers={'User-Agent': user_agent})
+    data = res.json()
+    try:
+        company_code = data['quotes'][0]['symbol']
+    except:
+        company_code = 'nothing'
+
+    return company_code
+
+
 # ! paper actualizer
 def ActualizeMini():
     for paper in Stocks.objects.all():
@@ -272,7 +304,6 @@ def ActualizeMini():
 scheduler = BackgroundScheduler({'apscheduler.job_defaults.max_instances': 4})
 scheduler.add_job(ActualizeMini, 'interval', seconds=120)
 scheduler.start()
-
 
 # ? ------------------- login & co ------------------------
 
