@@ -51,7 +51,7 @@ On the top of the main view user can find 5 cells with general portfolio informa
 - **Profit** value, which is money difference between Invested and Current + all dividends and deals profits from before
 - **Day change** of one's portfolio in $ and %
 
-Next is the *search field*. User can fill in a company's ticker to see its name, price and analytics’ Target Price and Analysis. When the company is searched UI will show "buy" and "sell" buttons, alongside two fields for the deal's price and amount.
+Next is the *search field*. User can fill in a company's ticker or name to see its name, price and analytics’ Target Price and Analysis. When the company is searched UI will show "buy" and "sell" buttons, alongside two fields for the deal's price and amount.
 Stock Sprout is not a broker, so a user can *"buy"* a stock for any price, which allows to add their old deals to the table. Other method of using the app is to create a test portfolio for beginners in investment.
 
 Once bought, stocks are added to the user's DB and main-table. Companies' metrics are updated once in 120 seconds and will be displayed in the table upon refreshing the page. Top 5 cells will be automatically updated as well.
@@ -65,7 +65,7 @@ On this view user can find information on any company. If it exists in the site'
 
 Page contains the company's name, brief description and its main financial parameters. 
 
-*"Random"* button will quickly display one company from the site's DB and *"Search"* form will display the company's data by ticker.
+*"Random"* button will quickly display one company from the site's DB and *"Search"* form will display the company's data by name or ticker.
 
 ## History view
 Contains History table, in which all deals appear in reverse chronological order. *Buy* deals change **My Price** parameter and *Sell* deals generate **Profit**. Table's row also lead to the company's page.

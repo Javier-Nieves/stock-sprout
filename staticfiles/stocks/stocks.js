@@ -279,8 +279,8 @@ function show_company (name) {
 
       // populate forms with company's data
       document.querySelector('#company-recom').innerHTML = `<div class="comp-param-text"> Recommendation: </div> <div class="comp-param-value-big">${result.comp.recom} </div>`;
-      document.querySelector('#company-title').innerHTML = MakeCapitalized(result.comp.company);
-      document.querySelector('#company-desc').innerHTML = result.comp.desc;
+      document.querySelector('#company-title').innerHTML = `${MakeCapitalized(result.comp.company)} <div class='comp-param-text' style='text-align:center;'>${result.comp.ticker}</div>`;
+      document.querySelector('#company-desc').innerHTML = truncate(result.comp.desc, 600);
       document.querySelector('#company-pe').innerHTML = `<div class="comp-param-text"> PE: </div> <div class="comp-param-value">${result.comp.pe.toFixed(1)} </div>`;
       document.querySelector('#company-fpe').innerHTML = `<div class="comp-param-text"> Forward PE: </div> <div class="comp-param-value">${result.comp.fpe.toFixed(1)}</div>`;
       document.querySelector('#company-pb').innerHTML = `<div class="comp-param-text"> PB: </div> <div class="comp-param-value">${result.comp.pb.toFixed(1)}</div>`;
@@ -289,7 +289,14 @@ function show_company (name) {
       document.querySelector('#company-profitMargins').innerHTML = `<div class="comp-param-text"> Profit Margins: </div> <div class="comp-param-value">${marg.toFixed(1)} %</div>`;
       document.querySelector('#company-dividends').innerHTML = `<div class="comp-param-text"> Dividends: </div> <div class="comp-param-value">$ ${result.comp.dividends.toFixed(2)}</div>`;
       document.querySelector('#company-dividends-yield').innerHTML = `<div class="comp-param-text"> Dividends yield: </div> <div class="comp-param-value"> ${yield.toFixed(1)} %</div>`;
+    
+      document.querySelector('#company-desc').addEventListener('click', () => {
+        console.log('clicked');
+        document.querySelector('#company-desc').innerHTML = result.comp.desc;
+      })
+
     })
+
   }
 
   function moneyFormat(string) {
@@ -311,6 +318,12 @@ function show_company (name) {
     return converted
   }
 
+  function truncate(str, length) {
+    return str.length > length
+      ? `${str.substr(0, length)}...`
+      : str;
+  }
+
   function ShowMessage(text) {
     let success_msg = document.createElement('a');
           success_msg.className = "message-buy";
@@ -322,5 +335,5 @@ function show_company (name) {
           }, 3000);
           setTimeout(function(){
           success_msg.remove();
-          }, 5000);
+          }, 4800);
   }

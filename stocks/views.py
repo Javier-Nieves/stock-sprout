@@ -101,7 +101,6 @@ def indexPost(request):
             except:
                 # get API data for the ticker
                 check = checkStock(name)
-                print(name)
                 # ? create Stock db entry
                 Stocks.objects.create(ticker=name, company=check['company'], day=check['day'], desc=check['desc'], price=check['price'], 
                 pe=check['pe'], fpe=check['fpe'], pb=check['pb'], debt=check['debt'],roe=check['roe'], profitMargins=check['profitMargins'], 
@@ -166,11 +165,8 @@ def indexPost(request):
 
 
 def company_view(request, name):
-    # print('starting: ', name)
     if checkStock(name) == None and name!="random":
         name = getTicker(name)
-        # print('inside: ', name)
-        # print('checking: ',checkStock(name))
         if checkStock(name) == None:
             print('No such company!!!')
             return JsonResponse({
