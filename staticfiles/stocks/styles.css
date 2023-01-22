@@ -207,6 +207,17 @@ h1 {
     color: bisque;
     padding: 5px 20px;
 }
+.big-green-btn {
+    background-color: bisque;
+    border: 1px solid gray;
+    border-radius: 10px;
+    font-size: 30px;
+    font-weight: 600;
+    font-family: Didot, serif;
+    padding: 0 8px 0 8px;
+    margin-left: 3vw;
+    height: 65px;
+}
 .div-btn:hover {
     background-color: rgba(70, 3, 81, 0.718);
     cursor: pointer;
@@ -216,7 +227,7 @@ h1 {
     box-shadow: 0 0 5px #a1b1c3;
     cursor: pointer;
 }
-.buy-btn:hover {
+.buy-btn:hover, .big-green-btn:hover {
     background-color: rgba(32, 75, 162, 0.718);
     box-shadow: 0 0 5px #a1b1c3;
     color: whitesmoke;
@@ -304,7 +315,7 @@ tbody tr:hover {
 .hist-row {
     font-size: 18px;
 }
-.new-hist-row {
+.new-hist-row, #hidden-buy-form {
     animation-name: created;
     animation-duration:  2s;
     animation-fill-mode: forwards;

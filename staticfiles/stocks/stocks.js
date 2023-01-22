@@ -21,6 +21,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // * by link on top
     if (tar.className.includes("companies-btn")) {
       var name = 'random';
+      document.querySelector('#hidden-buy-form').style.display = 'none';
+      try {
+        document.querySelector('.big-green-btn').style.display = 'block';
+      }
+      catch{}
       show_company(name);
     }
     // * from search button in Index
@@ -33,6 +38,8 @@ document.addEventListener('DOMContentLoaded', function() {
     if (tar.className.includes("comp-search-btn")) {
       let tick = document.querySelector("#comp-search").value.toUpperCase();
       document.querySelector("#comp-search").value = '';
+      document.querySelector('#hidden-buy-form').style.display = 'none';
+      document.querySelector('.big-green-btn').style.display = 'block';
       show_company(tick);
     }
 
@@ -264,10 +271,30 @@ function show_company (name) {
       let potential = (result.comp.targetPrice / result.comp.price - 1) * 100;
 
       if (result.comp.day > 0) {
-        document.querySelector('#company-price').innerHTML = `<div class="comp-param-text"> Price: </div> <div><div class="comp-param-value-big"><div>$ ${result.comp.price.toFixed(2)}</div> <div class='green-text med-text'>${result.comp.day.toFixed(1)} % </div></div></div>`;
+        document.querySelector('#company-price').innerHTML = `
+        <div style='display:flex; align-items: center;'>
+          <div>
+            <div class="comp-param-text"> Price: </div> 
+            <div class="comp-param-value-big" style="margin-left: 3vw;">
+              <div>$ ${result.comp.price.toFixed(2)}</div> 
+              <div class='green-text med-text'>${result.comp.day.toFixed(1)} % </div>
+            </div>
+          </div>
+          <button class="big-green-btn">Buy</button>
+        </div>`;
       }
       else {
-        document.querySelector('#company-price').innerHTML = `<div class="comp-param-text"> Price: </div> <div class="comp-param-value-big">$ ${result.comp.price.toFixed(2)} <div class='red-text med-text'>${result.comp.day.toFixed(1)} % </div></div>`;
+        document.querySelector('#company-price').innerHTML = `
+        <div style='display:flex; align-items: center;'>
+          <div>
+            <div class="comp-param-text"> Price: </div> 
+            <div class="comp-param-value-big" style="margin-left: 3vw;">
+              <div>$ ${result.comp.price.toFixed(2)}</div> 
+              <div class='red-text med-text'>${result.comp.day.toFixed(1)} % </div>
+            </div>
+          </div>
+          <button class="big-green-btn">Buy</button>
+        </div>`;
       }
 
       if (potential > 0) {
@@ -277,10 +304,24 @@ function show_company (name) {
         document.querySelector('#company-targetPrice').innerHTML = `<div class="comp-param-text"> Target price: </div> <div class="comp-param-value-big">$ ${result.comp.targetPrice.toFixed(2)} <div class='red-text med-text'>${potential.toFixed(1)} % </div></div>`;
       }
 
-      // populate forms with company's data
+      // populate forms with company's data 
+      document.querySelector('#hidden-ticker-comp').value = result.comp.ticker;
       document.querySelector('#company-recom').innerHTML = `<div class="comp-param-text"> Recommendation: </div> <div class="comp-param-value-big">${result.comp.recom} </div>`;
       document.querySelector('#company-title').innerHTML = `${MakeCapitalized(result.comp.company)} <div class='comp-param-text' style='text-align:center;'>${result.comp.ticker}</div>`;
-      document.querySelector('#company-desc').innerHTML = truncate(result.comp.desc, 600);
+      var fullText = result.comp.desc;
+      var par = true;
+      document.querySelector('#company-desc').innerHTML = truncate(fullText, 600);
+        document.querySelector('#company-desc').addEventListener('click', () => {
+          if (par) {
+            document.querySelector('#company-desc').innerHTML = fullText;
+            par = false;
+          }
+          else {
+            document.querySelector('#company-desc').innerHTML = truncate(fullText, 600);
+            par = true;
+          }
+        });
+      try {
       document.querySelector('#company-pe').innerHTML = `<div class="comp-param-text"> PE: </div> <div class="comp-param-value">${result.comp.pe.toFixed(1)} </div>`;
       document.querySelector('#company-fpe').innerHTML = `<div class="comp-param-text"> Forward PE: </div> <div class="comp-param-value">${result.comp.fpe.toFixed(1)}</div>`;
       document.querySelector('#company-pb').innerHTML = `<div class="comp-param-text"> PB: </div> <div class="comp-param-value">${result.comp.pb.toFixed(1)}</div>`;
@@ -289,10 +330,13 @@ function show_company (name) {
       document.querySelector('#company-profitMargins').innerHTML = `<div class="comp-param-text"> Profit Margins: </div> <div class="comp-param-value">${marg.toFixed(1)} %</div>`;
       document.querySelector('#company-dividends').innerHTML = `<div class="comp-param-text"> Dividends: </div> <div class="comp-param-value">$ ${result.comp.dividends.toFixed(2)}</div>`;
       document.querySelector('#company-dividends-yield').innerHTML = `<div class="comp-param-text"> Dividends yield: </div> <div class="comp-param-value"> ${yield.toFixed(1)} %</div>`;
-    
-      document.querySelector('#company-desc').addEventListener('click', () => {
-        console.log('clicked');
-        document.querySelector('#company-desc').innerHTML = result.comp.desc;
+      }
+      catch{}
+
+      document.querySelector('.big-green-btn').addEventListener('click', () => {
+        document.querySelector('#hidden-buy-form').style.display = 'block';
+        document.querySelector('.big-green-btn').style.display = 'none';
+        document.querySelector('#hidden-buy-form').style.animationPlayState = "running";
       })
 
     })

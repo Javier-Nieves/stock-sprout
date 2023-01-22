@@ -157,6 +157,18 @@
         <div id="company-targetPrice"></div>
         <div id="company-recom"></div>
     </div>
+
+    <div id="hidden-buy-form" style="display:none">
+        <form action="{% url 'indexPost' %}" method="post">
+            {% csrf_token %}
+            <div class="flex-container">
+                <input class="buy-btn" type="submit" name="buy_btn" value="Buy" style="height:38px; margin-right:-10px;">
+                <div class="type-field">{{ buyForm }}</div>
+            </div>
+            <input id="hidden-ticker-comp" type="hidden" name="hidden-ticker">
+        </form>
+    </div>
+
     <div class="summary-row">
         <div id="company-pe"></div>
         <div id="company-fpe"></div>
