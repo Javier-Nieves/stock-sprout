@@ -90,6 +90,11 @@ h1 {
     border-radius: 10px;
     padding: 10px;
 }
+#company-price {
+    padding: 0;
+    display: flex;
+    justify-content: space-between;
+}
 .sum-text {
     font-size: 20px;
 }
@@ -214,9 +219,9 @@ h1 {
     font-size: 30px;
     font-weight: 600;
     font-family: Didot, serif;
-    padding: 0 8px 0 8px;
-    margin-left: 3vw;
-    height: 65px;
+    padding: 35px 10px 35px 10px;
+    /* margin-left: 3vw; */
+    /* height: 65px; */
 }
 .div-btn:hover {
     background-color: rgba(70, 3, 81, 0.718);

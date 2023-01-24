@@ -18,20 +18,24 @@ document.addEventListener('DOMContentLoaded', function() {
       var name = tar.parentElement.querySelector('#company-ticker').innerHTML;
       show_company(name);
     }
+
     // * by link on top
     if (tar.className.includes("companies-btn")) {
       var name = 'random';
-      document.querySelector('#hidden-buy-form').style.display = 'none';
+      try {
+        document.querySelector('#hidden-buy-form').style.display = 'none';
+      }
+      catch{}
       try {
         document.querySelector('.big-green-btn').style.display = 'block';
       }
       catch{}
       show_company(name);
     }
+
     // * from search button in Index
     if (tar.parentElement.parentElement.className.includes("ticker-link")) {
       var name = document.querySelector('#hidden-ticker').value;
-      console.log(name);
       show_company(name);
     }
     // * company search button in Company View
@@ -261,7 +265,6 @@ function show_company (name) {
   fetch(`/companies/${name}`)
     .then(response => response.json())
     .then(result => {
-      // console.log(comp)
       if (result.message) {
           ShowMessage(`${result.message}`);
       }
@@ -270,31 +273,14 @@ function show_company (name) {
       let marg = result.comp.profitMargins * 100;
       let potential = (result.comp.targetPrice / result.comp.price - 1) * 100;
 
-      if (result.comp.day > 0) {
-        document.querySelector('#company-price').innerHTML = `
-        <div style='display:flex; align-items: center;'>
-          <div>
-            <div class="comp-param-text"> Price: </div> 
-            <div class="comp-param-value-big" style="margin-left: 3vw;">
-              <div>$ ${result.comp.price.toFixed(2)}</div> 
-              <div class='green-text med-text'>${result.comp.day.toFixed(1)} % </div>
-            </div>
-          </div>
-          <button class="big-green-btn">Buy</button>
-        </div>`;
+      document.querySelector('#res-comp-price').innerHTML = `$ ${result.comp.price.toFixed(2)}`;
+      document.querySelector('#res-comp-day').innerHTML = `${result.comp.day.toFixed(1)} % `;
+
+      if (result.comp.day < 0) {
+        document.querySelector('#res-comp-day').classList.replace("green-text", "red-text");
       }
       else {
-        document.querySelector('#company-price').innerHTML = `
-        <div style='display:flex; align-items: center;'>
-          <div>
-            <div class="comp-param-text"> Price: </div> 
-            <div class="comp-param-value-big" style="margin-left: 3vw;">
-              <div>$ ${result.comp.price.toFixed(2)}</div> 
-              <div class='red-text med-text'>${result.comp.day.toFixed(1)} % </div>
-            </div>
-          </div>
-          <button class="big-green-btn">Buy</button>
-        </div>`;
+        document.querySelector('#res-comp-day').classList.replace("red-text", "green-text");
       }
 
       if (potential > 0) {

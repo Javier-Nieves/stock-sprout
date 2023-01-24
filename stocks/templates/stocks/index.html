@@ -153,7 +153,18 @@
     <div class="comp-text" id="company-desc" class="comp-desc"></div>
 
     <div class="company-price-row">
-        <div id="company-price"></div>
+        <div id="company-price">
+            <div>
+                <div class="comp-param-text" style="padding-left:10px; margin-top: 10px"> Price: </div> 
+                <div class="comp-param-value-big" style="margin-left: 1vw;">
+                  <div id="res-comp-price"></div> 
+                  <div id="res-comp-day" class='green-text med-text'></div>
+                </div>
+              </div>
+              {% if user.is_authenticated %}
+                <button class="big-green-btn">Buy</button>
+              {% endif %}
+        </div>
         <div id="company-targetPrice"></div>
         <div id="company-recom"></div>
     </div>

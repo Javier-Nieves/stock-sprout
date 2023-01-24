@@ -61,7 +61,7 @@ Main table can be ordered up and down by clicking *Sigma* (Sum), *Change* or *Co
 Each row of the table contains main information about the deal and the company. By clicking it or by clicking the filled search box the user will be shown the...
 
 ## Company view 
-On this view user can find information on any company. If it exists in the site's database, the user will be shown the information right away, otherwise API request will provide the information more slowly.
+On this view user can find information on any company and add it to their portfolio. If it exists in the site's database, the user will be shown the information right away, otherwise API request will provide the information more slowly.
 
 Page contains the company's name, brief description and its main financial parameters. 
 
