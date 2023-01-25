@@ -201,15 +201,6 @@
 <div id="history-view" style="display:none;">
     <div class="title-bar">
         <h1>History</h1>
-        <!-- <form id="Div-form" action="{% url 'histPost' %}" method="post">
-            {% csrf_token %}
-            <div style="display: flex">
-                <div class="type-field">
-                    <input class="div-btn" type="submit" value="Dividend">
-                    {{ divForm }}
-                </div>
-            </div>
-        </form> -->
             <form id="Div-form">
                 <div style="display:flex">
                     <div class="type-field">
@@ -239,7 +230,14 @@
             <tr class="hist-row" id="rest" style="background-color: rgba(114, 115, 115, 0.3)">
                 <td id="hist-company-name">{{item.stock.ticker}}</td>
                 {% if item.action == 'Div' %}
-                <td>{{item.note}}</td>
+                <td class="div-title">{{item.note}}</td>
+                <td id="change-title-cell" style="display:none">
+                    <div class="flex-container">
+                        <input class='ticker-inp long' type="text" id="change-title" value="{{item.note}}">
+                        <input id="div-title-change-btn" class="div-btn" type="submit" value="Change">
+                        <input id="hidden-hist-id" type="hidden" value="{{item.id}}">
+                    </div>
+                </td>
                 {% else %}
                 <td>{{item.stock.company}}</td>
                 {% endif %}

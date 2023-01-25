@@ -210,6 +210,14 @@ def histPost(request, title, dividend):
 
     return index(request, 'Dividends received')
 
+def histChange(request, ident, newText):
+    # ? change the dividend entry in DB
+    changing = History.objects.get(id=ident)
+    changing.note = newText
+    changing.save()
+
+    return index(request, 'Entry modified')
+
 
 # ! ------------------ functions ---------------
 

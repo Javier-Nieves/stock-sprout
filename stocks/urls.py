@@ -14,5 +14,6 @@ urlpatterns = [
     # API Route
     path("companies/<str:name>", views.company_view, name="company"),
     path("history/<str:title>/<int:dividend>", views.histPost, name="dividends"),
+    path("change/<int:ident>/<str:newText>", views.histChange, name="div-title")
 
 ]

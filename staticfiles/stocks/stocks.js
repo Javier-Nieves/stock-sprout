@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', function() {
         show_company(name);
       }
     }
+
     // * from Main Table Index
     if (ClName.includes("table-row")) {
       var name = tar.parentElement.querySelector('#company-ticker').innerHTML;
@@ -54,26 +55,48 @@ document.addEventListener('DOMContentLoaded', function() {
       document.querySelector('#history-view').style.display = 'block';
       document.querySelector('#company-view').style.display = 'none';
 
-    let HistRows = document.querySelectorAll('.hist-row');
-    HistRows.forEach(Item => {
-      if (Item.querySelector('.hist-action').innerHTML == "Buy") {
-        // console.log("buy");
-        Item.querySelector('.hist-sell').innerHTML = "-";
-      }
-      else if (Item.querySelector('.hist-action').innerHTML == "Sell") {
-        Item.querySelector('.hist-buy').innerHTML = "-";
-        Item.style.backgroundColor = 'rgba(126, 21, 218, 0.08)';
-      }
-      else if (Item.querySelector('.hist-action').innerHTML == "Div") {
-        Item.querySelector('.hist-buy').innerHTML = "-";
-        Item.querySelector('.hist-amount').innerHTML = "-";
-        Item.querySelector('.hist-price').innerHTML = "-";
-        Item.querySelector('#hist-profit').innerHTML = Item.querySelector('.hist-sell').innerHTML;
-        Item.querySelector('#hist-profit').style.color = 'rgba(78, 235, 0, 0.908)';
-        Item.querySelector('.hist-sell').innerHTML = "-";
-        Item.style.backgroundColor = 'rgba(255, 205, 4, 0.165)';
-      }
-    })
+      let HistRows = document.querySelectorAll('.hist-row');
+      HistRows.forEach(Item => {
+        if (Item.querySelector('.hist-action').innerHTML == "Buy") {
+          // console.log("buy");
+          Item.querySelector('.hist-sell').innerHTML = "-";
+        }
+        else if (Item.querySelector('.hist-action').innerHTML == "Sell") {
+          Item.querySelector('.hist-buy').innerHTML = "-";
+          Item.style.backgroundColor = 'rgba(126, 21, 218, 0.08)';
+        }
+        else if (Item.querySelector('.hist-action').innerHTML == "Div") {
+          Item.querySelector('.hist-buy').innerHTML = "-";
+          Item.querySelector('.hist-amount').innerHTML = "-";
+          Item.querySelector('.hist-price').innerHTML = "-";
+          Item.querySelector('#hist-profit').innerHTML = Item.querySelector('.hist-sell').innerHTML;
+          Item.querySelector('#hist-profit').style.color = 'rgba(78, 235, 0, 0.908)';
+          Item.querySelector('.hist-sell').innerHTML = "-";
+          Item.style.backgroundColor = 'rgba(255, 205, 4, 0.165)';
+        }
+
+        // if dividend title is clicked - change div title
+        Item.addEventListener('click', event => {
+          let tar2 = event.target;
+              if (tar2.className.includes("div-title")) {
+                Item.querySelector('.div-title').style.display = 'none';
+                Item.querySelector('#change-title-cell').style.display = 'block';
+                Item.querySelector('#change-title-cell').style.padding = '5px';
+
+                Item.querySelector('#div-title-change-btn').addEventListener('click',() => {
+                  let newTitle = Item.querySelector('#change-title').value;
+                  let ident = Item.querySelector("#hidden-hist-id").value;
+
+                  fetch(`/change/${ident}/${newTitle}`);
+
+                  Item.querySelector('.div-title').style.display = 'block';
+                  Item.querySelector('#change-title-cell').style.display = 'none';
+                  Item.querySelector('.div-title').innerHTML = newTitle;
+                })
+
+              }
+          })
+      })
     }
   })
 
