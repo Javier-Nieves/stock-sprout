@@ -280,6 +280,22 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 function show_company (name) {
+  // clear all fields
+    document.querySelector('#company-title').innerHTML = 'Loading...';
+    document.querySelector('#company-desc').innerHTML = "Company's info is beeing received";
+    document.querySelector('#res-comp-price').innerHTML ='';
+    document.querySelector('#res-comp-day').innerHTML = '';
+    document.querySelector('#company-targetPrice').innerHTML = '';
+    document.querySelector('#company-recom').innerHTML = '';
+    document.querySelector('#company-pe').innerHTML = '';
+    document.querySelector('#company-fpe').innerHTML = '';
+    document.querySelector('#company-pb').innerHTML = '';
+    document.querySelector('#company-roe').innerHTML = '';
+    document.querySelector('#company-debt').innerHTML = '';
+    document.querySelector('#company-profitMargins').innerHTML = '';
+    document.querySelector('#company-dividends').innerHTML = '';
+    document.querySelector('#company-dividends-yield').innerHTML = '';
+      
   document.querySelector('#portfolio-view').style.display = 'none';
   try{document.querySelector('#summary-row-top').style.display = 'none';
   document.querySelector('#history-view').style.display = 'none';}
