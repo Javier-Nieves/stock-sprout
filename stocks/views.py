@@ -10,107 +10,107 @@ from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.urls import reverse
 
-from .forms import TickerForm, BuyForm
+from .forms import SearchForm, BuyForm
 from .models import User, Stocks, MyPrice, Portfolio, History
 
 
-def index(request, message=""):  # with default value of message
-    form = TickerForm()
+def index(request, message=""):  # with default empty value for message
+    search_form = SearchForm()
     buy_form = BuyForm()
 
     # ? does user have a portfolio?
     if request.user.is_authenticated:
         try:
-            mine = Portfolio.objects.get(owner=request.user)
+            portfolio = Portfolio.objects.get(owner=request.user)
         except:
             Portfolio.objects.create(owner=request.user)
-            mine = Portfolio.objects.get(owner=request.user)
+            portfolio = Portfolio.objects.get(owner=request.user)
 
         prices = MyPrice.objects.filter(investor=request.user)
         history = History.objects.filter(user=request.user)
         return render(request, 'stocks/index.html', {
-            'form': form,
+            'search_form': search_form,
             'buyForm': buy_form,
-            'port': mine.stock.all(),
+            'portfolio': portfolio.stock.all(),
             'prices': prices,
             'history': history,
-            'profit': mine.profit,
+            'profit': portfolio.profit,
             'message': message
             })
     else:
         return render(request, 'stocks/index.html', {
-            'form': form,
+            'search_form': search_form,
             'message': message
             })
 
 
 @require_POST
 def indexPost(request):
-    ticker_form = TickerForm(request.POST)
+    search_form = SearchForm(request.POST)
     buy_form = BuyForm(request.POST)
     if request.user.is_authenticated:
-        mine = Portfolio.objects.get(owner=request.user)
+        portfolio = Portfolio.objects.get(owner=request.user)
         prices = MyPrice.objects.filter(investor=request.user)
         history = History.objects.filter(user=request.user)
 
     # ! if ticker is being searched
     # check whether form is valid:
-    if ticker_form.is_valid():
+    if search_form.is_valid():
         # process the data in form.cleaned_data as required
         # geting ticker name
-        ticker = ticker_form.cleaned_data['stock_ticker']
-        # check = all info about that ticker
-        check = checkStock(ticker)
+        ticker = search_form.cleaned_data['stock_ticker']
+        # compData = all info about that ticker
+        compData = checkStock(ticker)
 
         # if company name is entered - find it's ticker
-        if check == None:
-            check = checkStock(getTicker(ticker))
-            if check == None:
+        if compData == None:
+            compData = checkStock(getTicker(ticker))
+            if compData == None:
                 return index(request, "Stock doesn't exist")
 
         buy_form = BuyForm()
         if request.user.is_authenticated:
             return render(request, 'stocks/index.html', {
-            'form': ticker_form,
+            'search_form': search_form,
             'buyForm': buy_form,
-            'check': check,
-            'port': mine.stock.all(),
+            'compData': compData,
+            'portfolio': portfolio.stock.all(),
             'prices': prices,
             'history': history,
-            'profit': mine.profit
+            'profit': portfolio.profit
             })
         else: 
             return render(request, 'stocks/index.html', {
-            'form': ticker_form,
+            'search_form': search_form,
             'buyForm': buy_form,
-            'check': check
+            'compData': compData
             })
 
     # ! BUY
-    name = request.POST.get('hidden-ticker').upper()
+    ticker = request.POST.get('hidden-ticker').upper()
     # if stock is being added to the portfolio
     if buy_form.is_valid():
-        port = Portfolio.objects.get(owner=request.user)
-        amount = buy_form.cleaned_data['buy_ticker']
+        portfolio = Portfolio.objects.get(owner=request.user)
+        amount = buy_form.cleaned_data['buy_amount']
         form_price = buy_form.cleaned_data['buy_price']
         # ! stock is being bought
         if 'buy_btn' in request.POST:
             # if the stock doesn't exist in the DB
             try: 
-                Stocks.objects.get(ticker=name)
+                Stocks.objects.get(ticker=ticker)
             except:
                 # get API data for the ticker
-                check = checkStock(name)
+                compData = checkStock(ticker)
                 # ? create Stock db entry
-                Stocks.objects.create(ticker=name, company=check['company'], day=check['day'], desc=check['desc'], price=check['price'], 
-                pe=check['pe'], fpe=check['fpe'], pb=check['pb'], debt=check['debt'],roe=check['roe'], profitMargins=check['profitMargins'], 
-                divs=check['dividends'], targetPrice=check['targetPrice'], recom=check['recom'])
+                Stocks.objects.create(ticker=ticker, company=compData['company'], day=compData['day'], desc=compData['desc'], price=compData['price'], 
+                pe=compData['pe'], fpe=compData['fpe'], pb=compData['pb'], debt=compData['debt'],roe=compData['roe'], profitMargins=compData['profitMargins'], 
+                divs=compData['dividends'], targetPrice=compData['targetPrice'], recom=compData['recom'])
 
             # does User already have this stock?
-            stock = Stocks.objects.get(ticker=name)
+            stock = Stocks.objects.get(ticker=ticker)
 
-            if not stock in port.stock.all():
-                port.stock.add(stock)
+            if not stock in portfolio.stock.all():
+                portfolio.stock.add(stock)
 
             # * MyPrice update
             if MyPrice.objects.filter(investor=request.user, stock=stock).exists():
@@ -131,11 +131,11 @@ def indexPost(request):
         elif 'sell_btn' in request.POST:
             
             # is there such stock in the db?
-            if Stocks.objects.filter(ticker=name).exists():
+            if Stocks.objects.filter(ticker=ticker).exists():
                 
                 # Does user have this stock?
-                stock = Stocks.objects.get(ticker=name)
-                if not stock in mine.stock.all():
+                stock = Stocks.objects.get(ticker=ticker)
+                if not stock in portfolio.stock.all():
                     return index(request, "You don't have this stock")
                 
                 # Does user have enough of this stock to sell
@@ -145,12 +145,12 @@ def indexPost(request):
 
                 else:
                     MP.quant -= amount
-                    port.profit += amount * form_price - amount * MP.myPrice
-                    port.save()
+                    portfolio.profit += amount * form_price - amount * MP.myPrice
+                    portfolio.save()
                     MP.save()
                     # delete stock from portfolio if everything is sold
                     if MP.quant == 0:
-                        port.stock.remove(stock)
+                        portfolio.stock.remove(stock)
                         MP.delete()
 
                      # * History update on sell
@@ -196,7 +196,7 @@ def company_view(request, name):
 
 
 def histPost(request, title, dividend):
-    port = Portfolio.objects.get(owner=request.user)
+    portfolio = Portfolio.objects.get(owner=request.user)
     # ?Django form was used previously, but form submittions reloads the page, so JS is used instead
     # div_form = DividendForm(request.POST)
     # if div_form.is_valid():
@@ -205,8 +205,8 @@ def histPost(request, title, dividend):
     stk = Stocks.objects.get(ticker="DIV")
     # ? create new dividend entry in DB
     History.objects.create(user=request.user, stock=stk, action="Div", SPrice=dividend, BPrice=0, MyPriceHist=0, ammount=0, note=title)
-    port.profit += dividend
-    port.save()
+    portfolio.profit += dividend
+    portfolio.save()
 
     return index(request, 'Dividends received')
 

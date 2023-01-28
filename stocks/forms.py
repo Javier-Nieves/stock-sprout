@@ -1,6 +1,6 @@
 from django import forms
 
-class TickerForm(forms.Form):
+class SearchForm(forms.Form):
     stock_ticker = forms.CharField(label='', max_length=10, widget=forms.TextInput(
                               attrs={'class': "ticker-inp",
                               'placeholder': "Company"}))
@@ -13,7 +13,7 @@ class BuyForm(forms.Form):
                               'min': '0.01',
                               'step': '0.01'
                               }))
-    buy_ticker = forms.IntegerField(label='', widget=forms.TextInput(
+    buy_amount = forms.IntegerField(label='', widget=forms.TextInput(
                               attrs={'class': "ticker-buy",
                               'placeholder': "Amount",
                               'type': 'number',

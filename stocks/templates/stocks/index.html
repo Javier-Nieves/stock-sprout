@@ -19,7 +19,7 @@
 <!-- ! portfolio  view -->
 <div id="portfolio-view" style="width: 100vw;">
     {% if user.is_authenticated %}
-        {% if not port.exists %}
+        {% if not portfolio.exists %}
             <div class="intro-text">1) Search for a company using it's ticker </div>
         {% endif %}
     {% endif %}
@@ -27,25 +27,25 @@
     <div class="top-row">
         <form action="{% url 'indexPost' %}" method="post">
             {% csrf_token %}
-            <div class="type-field">{{ form }}</div>
+            <div class="type-field">{{ search_form }}</div>
             <input class="search-btn" type="submit" value="Search">
         </form>
         
         <div class="ticker-search-container">
         <ul class="ticker-search-box">
-            <div><strong style="color: whitesmoke">Company:</strong><span id="check-filled"> {{check.company}}</span></div>
-            <div><strong>Analysis:</strong> {{check.recom}}</div>
+            <div><strong style="color: whitesmoke">Company:</strong><span id="check-filled"> {{compData.company}}</span></div>
+            <div><strong>Analysis:</strong> {{compData.recom}}</div>
         </ul>
         <ul class="ticker-search-box">
-            <div><strong>Price:</strong> $ {{check.price}}</div>
-            <div><strong>TargetPrice:</strong> $ {{check.targetPrice}}</div>
-            <input id="hidden-ticker" type="hidden" name="hidden-ticker" value="{{ check.ticker }}">
+            <div><strong>Price:</strong> $ {{compData.price}}</div>
+            <div><strong>TargetPrice:</strong> $ {{compData.targetPrice}}</div>
+            <input id="hidden-ticker" type="hidden" name="hidden-ticker" value="{{ compData.ticker }}">
         </ul>
         </div>
         
 
         {% if user.is_authenticated %}
-            {% if check.company != None %}
+            {% if compData.company != None %}
             <div id="action-buttons">
             <form action="{% url 'indexPost' %}" method="post">
                 {% csrf_token %}
@@ -54,7 +54,7 @@
                     <input class="buy-btn" type="submit" name="buy_btn" value="Buy">
                     <input class="sell-btn" type="submit" name="sell_btn" value="Sell">
                 </div>
-                <input id="hidden-ticker" type="hidden" name="hidden-ticker" value="{{ check.ticker }}">
+                <input id="hidden-ticker" type="hidden" name="hidden-ticker" value="{{ compData.ticker }}">
             </form>
             </div>
             {% endif %} 
@@ -70,7 +70,7 @@
         3) Keep track of their investments history and profits <br>
         4) Add dividends </div>
     {% else %}
-        {% if not port.exists %}
+        {% if not portfolio.exists %}
         <div class="intro-text">2) Enter amount and price payed for the stock. Then push "Buy" </div>
         {% endif %}
     {% endif %}
@@ -104,7 +104,7 @@
         </tr>
         {% endif %}
 
-            {% for item in port reversed%}
+            {% for item in portfolio reversed%}
                 {% for price in prices %}
                     {% if price.stock == item%}
             <tr class="table-row">
@@ -132,7 +132,7 @@
     </table>
 
 {% if user.is_authenticated %}
-    {% if not port.exists %}
+    {% if not portfolio.exists %}
     <div class="intro-text">3) Watch the stock's dynamics in the table  </div>
     {% endif %}
     </div>
