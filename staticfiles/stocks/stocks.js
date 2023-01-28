@@ -55,17 +55,16 @@ document.addEventListener('DOMContentLoaded', function() {
       document.querySelector('#history-view').style.display = 'block';
       document.querySelector('#company-view').style.display = 'none';
 
-      const HistRows = document.querySelectorAll('.hist-row');
+      let HistRows = document.querySelectorAll('.hist-row');
       HistRows.forEach(Item => {
-        if (Item.querySelector('.hist-action').innerHTML == "Buy") {
-          // console.log("buy");
+        if (Item.querySelector('.hist-action').innerHTML === "Buy") {
           Item.querySelector('.hist-sell').innerHTML = "-";
         }
-        else if (Item.querySelector('.hist-action').innerHTML == "Sell") {
+        else if (Item.querySelector('.hist-action').innerHTML === "Sell") {
           Item.querySelector('.hist-buy').innerHTML = "-";
           Item.style.backgroundColor = 'rgba(126, 21, 218, 0.08)';
         }
-        else if (Item.querySelector('.hist-action').innerHTML == "Div") {
+        else if (Item.querySelector('.hist-action').innerHTML === "Div") {
           Item.querySelector('.hist-buy').innerHTML = "-";
           Item.querySelector('.hist-amount').innerHTML = "-";
           Item.querySelector('.hist-price').innerHTML = "-";
@@ -205,12 +204,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
       }
       // * switch class after sorting in main table
-      if (whichSort.includes('Up')) {
-        sortTar.classList.replace("Up", "Down");
-      }
-      else {
-        sortTar.classList.replace("Down", "Up");
-      }
+      if (whichSort.includes('Up')) sortTar.classList.replace("Up", "Down");
+      else sortTar.classList.replace("Down", "Up");
     })
 
     try {
@@ -304,9 +299,7 @@ function show_company (compName) {
   fetch(`/companies/${compName}`)
     .then(response => response.json())
     .then(result => {
-      if (result.message) {
-          ShowMessage(`${result.message}`);
-      }
+      if (result.message) ShowMessage(`${result.message}`);
       const roe = result.comp.roe * 100;
       const yield = result.comp.dividends / result.comp.price * 100;
       const marg = result.comp.profitMargins * 100;
@@ -315,19 +308,11 @@ function show_company (compName) {
       document.querySelector('#res-comp-price').innerHTML = `$ ${result.comp.price.toFixed(2)}`;
       document.querySelector('#res-comp-day').innerHTML = `${result.comp.day.toFixed(1)} % `;
 
-      if (result.comp.day < 0) {
-        document.querySelector('#res-comp-day').classList.replace("green-text", "red-text");
-      }
-      else {
-        document.querySelector('#res-comp-day').classList.replace("red-text", "green-text");
-      }
+      if (result.comp.day < 0) document.querySelector('#res-comp-day').classList.replace("green-text", "red-text");
+      else document.querySelector('#res-comp-day').classList.replace("red-text", "green-text");
 
-      if (potential > 0) {
-        document.querySelector('#company-targetPrice').innerHTML = `<div class="comp-param-text"> Target price: </div> <div class="comp-param-value-big">$ ${result.comp.targetPrice.toFixed(2)} <div class='green-text med-text'>${potential.toFixed(1)} % </div></div>`;
-      }
-      else {
-        document.querySelector('#company-targetPrice').innerHTML = `<div class="comp-param-text"> Target price: </div> <div class="comp-param-value-big">$ ${result.comp.targetPrice.toFixed(2)} <div class='red-text med-text'>${potential.toFixed(1)} % </div></div>`;
-      }
+      if (potential > 0) document.querySelector('#company-targetPrice').innerHTML = `<div class="comp-param-text"> Target price: </div> <div class="comp-param-value-big">$ ${result.comp.targetPrice.toFixed(2)} <div class='green-text med-text'>${potential.toFixed(1)} % </div></div>`;
+      else document.querySelector('#company-targetPrice').innerHTML = `<div class="comp-param-text"> Target price: </div> <div class="comp-param-value-big">$ ${result.comp.targetPrice.toFixed(2)} <div class='red-text med-text'>${potential.toFixed(1)} % </div></div>`;
 
       // populate forms with company's data 
       document.querySelector('#hidden-ticker-comp').value = result.comp.ticker;
@@ -370,9 +355,7 @@ function show_company (compName) {
 
   function moneyFormat(string) {
     const changed = string.toString();
-    if (3 < changed.length < 7) {
-      txt = changed.slice(0,-3) + " " + changed.slice(-3);
-    }
+    if (3 < changed.length < 7) txt = changed.slice(0,-3) + " " + changed.slice(-3);
     return txt
   }
 
