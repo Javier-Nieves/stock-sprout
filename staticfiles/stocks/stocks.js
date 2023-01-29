@@ -15,9 +15,7 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }
     // * from Main Table Index
-    if (clName.includes("table-row")) {
-      compName = tar.parentElement.querySelector('#company-ticker').innerHTML;
-    }
+    if (clName.includes("table-row")) compName = tar.parentElement.querySelector('#company-ticker').innerHTML;
     // * by link on top
     if (tar.className.includes("companies-btn")) {
       compName = 'random';
@@ -31,9 +29,7 @@ document.addEventListener('DOMContentLoaded', function() {
       catch{}
     }
     // * from search button in Index
-    if (tar.parentElement.parentElement.className.includes("ticker-link")) {
-      compName = document.querySelector('#hidden-ticker').value;
-    }
+    if (tar.parentElement.parentElement.className.includes("ticker-link")) compName = document.querySelector('#hidden-ticker').value;
     // * company search button in Company View
     if (tar.className.includes("comp-search-btn")) {
       compName = document.querySelector("#comp-search").value.toUpperCase();
@@ -134,16 +130,10 @@ document.addEventListener('DOMContentLoaded', function() {
     try {
     document.querySelector('#invested-main').innerHTML = `<div class="sum-text"> Invested: </div> <div class="sum-value">$ ${ moneyFormat(sum1) } </div>`;
     document.querySelector('#present-main').innerHTML = `<div class="sum-text"> Now: </div> <div class="sum-value"> $ ${ moneyFormat(sum2) } </div>`;
-    
-    if (a >= 0) document.querySelector('#percent-main').innerHTML = `<div class="sum-text"> Change: </div> <div class="green-text sum-value"> ${ a } % </div>`;
-    else document.querySelector('#percent-main').innerHTML = `<div class="sum-text"> Change: </div> <div class="red-text sum-value"> ${ a } % </div>`;
-
-    if (sum2 - sum1 + hidProfit >= 0) document.querySelector('#profit-main').innerHTML = `<div class="sum-text"> Profit: </div> <div class="green-text sum-value"> $ ${ moneyFormat(prof) } </div>`;
-    else document.querySelector('#profit-main').innerHTML = `<div class="sum-text"> Profit: </div> <div class="red-text sum-value"> $ ${ moneyFormat(prof) } </div>`;
-
-    if (dayChMoney >= 0) document.querySelector('#day-main').innerHTML = `<div class="sum-text"> Day change: </div> <div class="green-text sum-value">$ ${dayChMoney} &nbsp ${dayCh} % </div>`;
-    else document.querySelector('#day-main').innerHTML = `<div class="sum-text"> Day change: </div> <div class="red-text sum-value">$ ${dayChMoney} &nbsp ${dayCh} % </div>`;
-
+    // * look, the conditional operators
+    document.querySelector('#percent-main').innerHTML = `<div class="sum-text"> Change: </div> <div class="${a >= 0 ? 'green' : 'red'}-text sum-value"> ${ a } % </div>`;
+    document.querySelector('#profit-main').innerHTML = `<div class="sum-text"> Profit: </div> <div class="${sum2 - sum1 + hidProfit >= 0 ? 'green' : 'red'}-text sum-value"> $ ${ moneyFormat(prof) } </div>`;
+    document.querySelector('#day-main').innerHTML = `<div class="sum-text"> Day change: </div> <div class="${dayChMoney >= 0 ? 'green' : 'red'}-text sum-value">$ ${dayChMoney} &nbsp ${dayCh} % </div>`;
     }
     catch {}
     
@@ -302,8 +292,7 @@ function show_company (compName) {
       if (result.comp.day < 0) document.querySelector('#res-comp-day').classList.replace("green-text", "red-text");
       else document.querySelector('#res-comp-day').classList.replace("red-text", "green-text");
 
-      if (potential > 0) document.querySelector('#company-targetPrice').innerHTML = `<div class="comp-param-text"> Target price: </div> <div class="comp-param-value-big">$ ${result.comp.targetPrice.toFixed(2)} <div class='green-text med-text'>${potential.toFixed(1)} % </div></div>`;
-      else document.querySelector('#company-targetPrice').innerHTML = `<div class="comp-param-text"> Target price: </div> <div class="comp-param-value-big">$ ${result.comp.targetPrice.toFixed(2)} <div class='red-text med-text'>${potential.toFixed(1)} % </div></div>`;
+      document.querySelector('#company-targetPrice').innerHTML = `<div class="comp-param-text"> Target price: </div> <div class="comp-param-value-big">$ ${result.comp.targetPrice.toFixed(2)} <div class='${potential > 0 ? 'green' : 'red'}-text med-text'>${potential.toFixed(1)} % </div></div>`;
 
       // populate forms with company's data 
       document.querySelector('#hidden-ticker-comp').value = result.comp.ticker;
@@ -363,6 +352,7 @@ function show_company (compName) {
   }
 
   function truncate(str, length) {
+    // conditional (ternary) operator is like If-Else statement. [condition ? (ifTrue); : (else);]
     return str.length > length
       ? `${str.substr(0, length)}...`
       : str;
