@@ -1,8 +1,9 @@
+'use strict';
 document.addEventListener('DOMContentLoaded', function() {
 
   // ? what's clicked?
   document.addEventListener('click', event => {
-    tar = event.target;
+    const tar = event.target;
     const clName = tar.parentElement.className;
 
     
@@ -90,6 +91,7 @@ document.addEventListener('DOMContentLoaded', function() {
                   Item.querySelector('.div-title').style.display = 'block';
                   Item.querySelector('#change-title-cell').style.display = 'none';
                   Item.querySelector('.div-title').innerHTML = newTitle;
+                  ShowMessage("good", 'Entry modified');
                 })
 
               }
@@ -125,7 +127,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let a = parseFloat((sum2/sum1 - 1) * 100).toFixed(1);
     a = +a || 0;
     let hidProfit = parseFloat(document.querySelector('#hidden-profit').value);
-    prof = parseFloat(sum2 - sum1 + hidProfit).toFixed();
+    let prof = parseFloat(sum2 - sum1 + hidProfit).toFixed();
 
     try {
     document.querySelector('#invested-main').innerHTML = `<div class="sum-text"> Invested: </div> <div class="sum-value">$ ${ moneyFormat(sum1) } </div>`;
@@ -140,7 +142,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // ! sorting
     document.addEventListener('click', event => {
       let table, rows, switching, i, x, y, shouldSwitch;
-      sortTar = event.target;
+      const sortTar = event.target;
       // which parameter will sort the table
       const whichSort = sortTar.className;
       table = document.getElementById("mainTable");
@@ -202,6 +204,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // ! Dividend form handling
     try{
       const form = document.getElementById("Div-form");
+
       function submitForm(event){
         event.preventDefault();
         const title = document.querySelector("#Div-title").value;
@@ -233,8 +236,9 @@ document.addEventListener('DOMContentLoaded', function() {
           HistRow.style.animationPlayState = 'running';
 
           form.reset();
-          ShowMessage('Dividends received');
+          ShowMessage("good", 'Dividends received');
       }
+
       form.addEventListener('submit', submitForm);
     }
     catch{}
@@ -277,12 +281,13 @@ function show_company (compName) {
   document.querySelector('#history-view').style.display = 'none';}
   catch{}
   document.querySelector('#company-view').style.display = 'block';
+
   fetch(`/companies/${compName}`)
     .then(response => response.json())
     .then(result => {
-      if (result.message) ShowMessage(`${result.message}`);
+      if (result.message) ShowMessage('bad', `${result.message}`);
       const roe = result.comp.roe * 100;
-      const yield = result.comp.dividends / result.comp.price * 100;
+      const divYield = result.comp.dividends / result.comp.price * 100;
       const marg = result.comp.profitMargins * 100;
       const potential = (result.comp.targetPrice / result.comp.price - 1) * 100;
 
@@ -319,7 +324,7 @@ function show_company (compName) {
       document.querySelector('#company-debt').innerHTML = `<div class="comp-param-text"> Debt to Equity: </div> <div class="comp-param-value">${result.comp.debt.toFixed(2)}</div>`;
       document.querySelector('#company-profitMargins').innerHTML = `<div class="comp-param-text"> Profit Margins: </div> <div class="comp-param-value">${marg.toFixed(1)} %</div>`;
       document.querySelector('#company-dividends').innerHTML = `<div class="comp-param-text"> Dividends: </div> <div class="comp-param-value">$ ${result.comp.dividends.toFixed(2)}</div>`;
-      document.querySelector('#company-dividends-yield').innerHTML = `<div class="comp-param-text"> Dividends yield: </div> <div class="comp-param-value"> ${yield.toFixed(1)} %</div>`;
+      document.querySelector('#company-dividends-yield').innerHTML = `<div class="comp-param-text"> Dividends yield: </div> <div class="comp-param-value"> ${divYield.toFixed(1)} %</div>`;
       }
       catch{}
 
@@ -358,9 +363,9 @@ function show_company (compName) {
       : str;
   }
 
-  function ShowMessage(text) {
+  function ShowMessage(color, text) {
     const success_msg = document.createElement('a');
-          success_msg.className = "message-buy";
+          success_msg.className = `${color === "good" ? "message-buy" : "message-sell"}`;
           success_msg.id = 'message';
           success_msg.innerHTML = `-= ${text} =-`;
           document.querySelector(".left-group").append(success_msg);

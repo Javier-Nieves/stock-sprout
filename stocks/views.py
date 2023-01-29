@@ -208,7 +208,8 @@ def histPost(request, title, dividend):
     portfolio.profit += dividend
     portfolio.save()
 
-    return index(request, 'Dividends received')
+    return JsonResponse({'status':'false'}, status=204)
+    # return index(request, 'Dividends received', status=204)
 
 def histChange(request, ident, newText):
     # ? change the dividend entry in DB
@@ -216,7 +217,7 @@ def histChange(request, ident, newText):
     changing.note = newText
     changing.save()
 
-    return index(request, 'Entry modified')
+    return JsonResponse({'status':'false'}, status=204)
 
 
 # ! ------------------ functions ---------------
