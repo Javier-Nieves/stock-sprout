@@ -325,14 +325,14 @@ function show_company (compName) {
       document.querySelector('#company-profitMargins').innerHTML = `<div class="comp-param-text"> Profit Margins: </div> <div class="comp-param-value">${marg.toFixed(1)} %</div>`;
       document.querySelector('#company-dividends').innerHTML = `<div class="comp-param-text"> Dividends: </div> <div class="comp-param-value">$ ${result.comp.dividends.toFixed(2)}</div>`;
       document.querySelector('#company-dividends-yield').innerHTML = `<div class="comp-param-text"> Dividends yield: </div> <div class="comp-param-value"> ${divYield.toFixed(1)} %</div>`;
-      }
-      catch{}
 
       document.querySelector('.big-green-btn').addEventListener('click', () => {
         document.querySelector('#hidden-buy-form').style.display = 'block';
         document.querySelector('.big-green-btn').style.display = 'none';
         document.querySelector('#hidden-buy-form').style.animationPlayState = "running";
       })
+      }
+      catch{}
       blurAllFields(false);
     })
   }
@@ -380,7 +380,7 @@ function show_company (compName) {
       // clear all fields
       if (bool) document.querySelector('.big-loader').classList.remove('hidden');
       else document.querySelector('.big-loader').classList.add('hidden');
-      
+
       document.querySelector('#company-title').style.filter = `${bool ? "blur(4px)" : 'blur(0)'}`;
       document.querySelector('#company-desc').style.filter = `${bool ? "blur(4px)" : 'blur(0)'}`;
       document.querySelector('.company-price-row').style.filter = `${bool ? "blur(4px)" : 'blur(0)'}`;
