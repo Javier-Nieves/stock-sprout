@@ -339,7 +339,7 @@ tbody tr:hover {
     }
 }
 
-.message-buy, .message-sell {
+.message-buy, .message-sell, .message-tell {
     animation-name: disappear;
     animation-duration:  1.8s;
     animation-fill-mode: forwards;
@@ -352,7 +352,9 @@ tbody tr:hover {
     padding: 5px 150px 5px 150px;
     color: whitesmoke;
     text-align: center;
-    margin-left: 4vw;
+    margin-left: 6vw;
+    /* position: absolute;
+    left: 40%; */
 }
 .message-buy {
     background-color: rgba(2, 240, 22, 0.165);
@@ -360,6 +362,9 @@ tbody tr:hover {
 }
 .message-sell {
     background-color: rgba(255, 104, 3, 0.289);
+}
+.message-tell {
+    background-color: rgba(240, 194, 27, 0.3);
 }
 
 .intro-text {
@@ -409,7 +414,7 @@ tbody tr:hover {
     height: 50px;
     animation: spin 2s linear infinite;
     position: absolute;
-    left: 47%;
+    left: 44%;
   }
   .big-loader {
     border: 13px solid #cbcbcb52; /* Light grey */

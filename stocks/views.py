@@ -7,8 +7,7 @@ from django.shortcuts import render
 from django.contrib.auth import authenticate, login, logout
 from django.views.decorators.http import require_POST
 from django.db import IntegrityError
-from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
-from django.urls import reverse
+from django.http import HttpResponse, JsonResponse
 
 from .forms import SearchForm, BuyForm
 from .models import User, Stocks, MyPrice, Portfolio, History
@@ -323,7 +322,7 @@ def login_view(request):
         # * Check if authentication is successful
         if user is not None:
             login(request, user)
-            return HttpResponseRedirect(reverse("index"))
+            return index(request, "You are logged in")
         else:
             return render(request, "stocks/login.html", {
                 "message": "Invalid username and/or password."
@@ -334,7 +333,7 @@ def login_view(request):
 
 def logout_view(request):
     logout(request)
-    return HttpResponseRedirect(reverse("index"))
+    return index(request, "Logged out")
 
 
 def register(request):
@@ -359,6 +358,6 @@ def register(request):
                 "message": "User already exists."
             })
         login(request, user)
-        return HttpResponseRedirect(reverse("index"))
+        return index(request, "You are registered")
     else:
         return render(request, "stocks/register.html")
