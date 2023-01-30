@@ -401,7 +401,7 @@ tbody tr:hover {
     animation-play-state: paused;
 }
 
-.loader {
+.loader, .big-loader {
     border: 10px solid #cbcbcb52; /* Light grey */
     border-top: 10px solid bisque; /* Blue */
     border-radius: 80%;
@@ -411,6 +411,14 @@ tbody tr:hover {
     position: absolute;
     left: 47%;
   }
+  .big-loader {
+    border: 13px solid #cbcbcb52; /* Light grey */
+    border-top: 13px solid bisque; /* Blue */
+    width: 110px;
+    height: 110px;
+    top: 40%;
+    left: 43%;
+  }
   
   @keyframes spin {
     0% { transform: rotate(0deg); }
@@ -418,9 +426,9 @@ tbody tr:hover {
   }
 
   .overlay {
-    /* position: absolute;
+    position: absolute;
     top: 0;
-    left: 0; */
+    left: 0;
     width: 100%;
     height: 100%;
     background-color: rgba(0, 0, 0, 0.6);

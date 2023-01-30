@@ -143,57 +143,60 @@
 <!-- ! Company view -->
 <div id="company-view" style="display:none;">
 
-    <div class="title-bar">
-        <button class="search-btn companies-btn">Random</button>
-        <h1 id="company-title"></h1>
-        <div>
-            <input class="search-btn comp-search-btn" type="submit" value="Search">
-            <input class="ticker-inp", placeholder="Company", id="comp-search">
-        </div>
-    </div>
-    <div class="comp-text" id="company-desc" class="comp-desc"></div>
+        <div class="loader-comp hidden"></div>
 
-    <div class="company-price-row">
-        <div id="company-price">
+        <div class="title-bar">
+            <button class="search-btn companies-btn">Random</button>
+            <h1 id="company-title"></h1>
             <div>
-                <div class="comp-param-text" style="padding-left:10px; margin-top: 10px"> Price: </div> 
-                <div class="comp-param-value-big" style="margin-left: 1vw;">
-                  <div id="res-comp-price"></div> 
-                  <div id="res-comp-day" class='green-text med-text'></div>
-                </div>
-              </div>
-              {% if user.is_authenticated %}
-                <button class="big-green-btn">Buy</button>
-              {% endif %}
-        </div>
-        <div id="company-targetPrice"></div>
-        <div id="company-recom"></div>
-    </div>
-
-    <div id="hidden-buy-form" style="display:none">
-        <form action="{% url 'indexPost' %}" method="post">
-            {% csrf_token %}
-            <div class="flex-container">
-                <input class="buy-btn" type="submit" name="buy_btn" value="Buy" style="height:38px; margin-right:-10px;">
-                <div class="type-field">{{ buyForm }}</div>
+                <input class="search-btn comp-search-btn" type="submit" value="Search">
+                <input class="ticker-inp", placeholder="Company", id="comp-search">
             </div>
-            <input id="hidden-ticker-comp" type="hidden" name="hidden-ticker">
-        </form>
-    </div>
+        </div>
+        <div class="comp-text" id="company-desc" class="comp-desc"></div>
 
-    <div class="summary-row">
-        <div id="company-pe"></div>
-        <div id="company-fpe"></div>
-        <div id="company-pb"></div>
-        <div id="company-roe"></div>
-    </div>
-    <div class="summary-row">
-        <div id="company-debt"></div>
-        <div id="company-profitMargins"></div>
-        <div id="company-dividends"></div>
-        <div id="company-dividends-yield"></div>
-    </div>
+        <div class="company-price-row">
+            <div id="company-price">
+                <div>
+                    <div class="comp-param-text" style="padding-left:10px; margin-top: 10px"> Price: </div> 
+                    <div class="comp-param-value-big" style="margin-left: 1vw;">
+                    <div id="res-comp-price"></div> 
+                    <div id="res-comp-day" class='green-text med-text'></div>
+                    </div>
+                </div>
+                {% if user.is_authenticated %}
+                    <button class="big-green-btn">Buy</button>
+                {% endif %}
+            </div>
+            <div id="company-targetPrice"></div>
+            <div id="company-recom"></div>
+        </div>
 
+        <div id="hidden-buy-form" style="display:none">
+            <form action="{% url 'indexPost' %}" method="post">
+                {% csrf_token %}
+                <div class="flex-container">
+                    <input class="buy-btn" type="submit" name="buy_btn" value="Buy" style="height:38px; margin-right:-10px;">
+                    <div class="type-field">{{ buyForm }}</div>
+                </div>
+                <input id="hidden-ticker-comp" type="hidden" name="hidden-ticker">
+            </form>
+        </div>
+
+        <div class="summary-row">
+            <div id="company-pe"></div>
+            <div id="company-fpe"></div>
+            <div id="company-pb"></div>
+            <div id="company-roe"></div>
+        </div>
+        <div class="summary-row">
+            <div id="company-debt"></div>
+            <div id="company-profitMargins"></div>
+            <div id="company-dividends"></div>
+            <div id="company-dividends-yield"></div>
+        </div>
+
+        <div class="big-loader hidden"></div>
 
 </div>
 

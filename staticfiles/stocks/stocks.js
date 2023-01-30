@@ -271,32 +271,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 function show_company (compName) {
-  // clear all fields
-    document.querySelector('#company-title').innerHTML = 'Loading...';
-    document.querySelector('#company-desc').innerHTML = "Company's info is beeing received";
-    document.querySelector('#res-comp-price').innerHTML ='';
-    document.querySelector('#res-comp-day').innerHTML = '';
-    document.querySelector('#company-targetPrice').innerHTML = '';
-    document.querySelector('#company-recom').innerHTML = '';
-    document.querySelector('#company-pe').innerHTML = '';
-    document.querySelector('#company-fpe').innerHTML = '';
-    document.querySelector('#company-pb').innerHTML = '';
-    document.querySelector('#company-roe').innerHTML = '';
-    document.querySelector('#company-debt').innerHTML = '';
-    document.querySelector('#company-profitMargins').innerHTML = '';
-    document.querySelector('#company-dividends').innerHTML = '';
-    document.querySelector('#company-dividends-yield').innerHTML = '';
-      
-  document.querySelector('#portfolio-view').style.display = 'none';
-  try{document.querySelector('#summary-row-top').style.display = 'none';
-  document.querySelector('#history-view').style.display = 'none';}
-  catch{}
-  document.querySelector('#company-view').style.display = 'block';
+    document.querySelector('#portfolio-view').style.display = 'none';
+    try{document.querySelector('#summary-row-top').style.display = 'none';
+    document.querySelector('#history-view').style.display = 'none';}
+    catch{}
+    document.querySelector('#company-view').style.display = 'block';
+    
+  blurAllFields(true);
 
   fetch(`/companies/${compName}`)
     .then(response => response.json())
     .then(result => {
-      if (result.message) ShowMessage('bad', `${result.message}`);
+      if (result.message) {
+        ShowMessage('bad', `${result.message}`);
+        blurAllFields(false);
+      }
       const roe = result.comp.roe * 100;
       const divYield = result.comp.dividends / result.comp.price * 100;
       const marg = result.comp.profitMargins * 100;
@@ -344,9 +333,8 @@ function show_company (compName) {
         document.querySelector('.big-green-btn').style.display = 'none';
         document.querySelector('#hidden-buy-form').style.animationPlayState = "running";
       })
-
+      blurAllFields(false);
     })
-
   }
 
   function moneyFormat(string) {
@@ -386,4 +374,19 @@ function show_company (compName) {
           setTimeout(function(){
           success_msg.remove();
           }, 4800);
+  }
+
+  function blurAllFields(bool) {
+      // clear all fields
+      if (bool) document.querySelector('.big-loader').classList.remove('hidden');
+      else document.querySelector('.big-loader').classList.add('hidden');
+      
+      document.querySelector('#company-title').style.filter = `${bool ? "blur(4px)" : 'blur(0)'}`;
+      document.querySelector('#company-desc').style.filter = `${bool ? "blur(4px)" : 'blur(0)'}`;
+      document.querySelector('.company-price-row').style.filter = `${bool ? "blur(4px)" : 'blur(0)'}`;
+      document.querySelector('#hidden-buy-form').style.filter = `${bool ? "blur(4px)" : 'blur(0)'}`;
+      const sumRows = document.querySelectorAll('.summary-row');
+      sumRows.forEach( (item) => {
+        item.style.filter = `${bool ? "blur(4px)" : 'blur(0)'}`;
+      })
   }
