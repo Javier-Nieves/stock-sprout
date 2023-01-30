@@ -222,6 +222,7 @@ def histChange(request, ident, newText):
 
 # ! ------------------ functions ---------------
 
+# ! get company financial data by ticker (API function)
 def checkStock(ticker):
     try:
         url = f"https://query1.finance.yahoo.com/v11/finance/quoteSummary/{ticker}?modules=financialData"
@@ -240,10 +241,9 @@ def checkStock(ticker):
     # Parse responses
     try:
         quote = response.json()
-        #print(quote)
         quoteComp = responseComp.json()
         quoteDesc = responseDesc.json()
-        # initial 3 dists preparation
+        # initial 3 dicts preparation
         Comp = quoteComp["optionChain"]["result"][0]["quote"]
         Desc = quoteDesc["quoteSummary"]["result"][0]["assetProfile"]
         Fin = quote["quoteSummary"]["result"][0]["financialData"]

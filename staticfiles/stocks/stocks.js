@@ -191,14 +191,25 @@ document.addEventListener('DOMContentLoaded', function() {
       else sortTar.classList.replace("Down", "Up");
     })
 
+    // ! search form mutations
     try {
       // * if company is searched - make Search field clickable and Buy button appear
-      if (document.querySelector('#check-filled').innerHTML != '') {
+      if (document.querySelector('#check-filled').innerHTML !== '') {
         document.querySelector('.ticker-search-container').className = 'ticker-link';
         document.getElementById("action-buttons").style.animationPlayState = "running";
       }
     }
     catch{}
+    document.querySelector(".search-btn").addEventListener('click', () => {
+      document.querySelector('.search-btn').value = 'Loading..';
+      document.querySelector('.loader').classList.remove('hidden');
+      const innerBoxes = document.querySelectorAll('.ticker-search-box');
+      console.log(innerBoxes);
+      innerBoxes.forEach ( (item) => {
+        console.log(item);
+        item.style.filter = 'blur(3px)';
+      })
+    })
 
 
     // ! Dividend form handling
@@ -356,11 +367,11 @@ function show_company (compName) {
     return converted
   }
 
-  function truncate(str, length) {
+  function truncate(string, length) {
     // conditional (ternary) operator is like If-Else statement. [condition ? (ifTrue); : (else);]
-    return str.length > length
-      ? `${str.substr(0, length)}...`
-      : str;
+    return string.length > length
+      ? `${string.substr(0, length)}...`
+      : string;
   }
 
   function ShowMessage(color, text) {

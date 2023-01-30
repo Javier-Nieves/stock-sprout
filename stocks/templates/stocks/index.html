@@ -30,17 +30,18 @@
             <div class="type-field">{{ search_form }}</div>
             <input class="search-btn" type="submit" value="Search">
         </form>
-        
+
         <div class="ticker-search-container">
-        <ul class="ticker-search-box">
-            <div><strong style="color: whitesmoke">Company:</strong><span id="check-filled"> {{compData.company}}</span></div>
-            <div><strong>Analysis:</strong> {{compData.recom}}</div>
-        </ul>
-        <ul class="ticker-search-box">
-            <div><strong>Price:</strong> $ {{compData.price}}</div>
-            <div><strong>TargetPrice:</strong> $ {{compData.targetPrice}}</div>
-            <input id="hidden-ticker" type="hidden" name="hidden-ticker" value="{{ compData.ticker }}">
-        </ul>
+            <ul class="ticker-search-box">
+                <div><strong style="color: whitesmoke">Company: </strong><span id="check-filled">{{compData.company}}</span></div>
+                <div><strong>Analysis: </strong>{{compData.recom}}</div>
+            </ul>
+            <div class="loader hidden"></div>
+            <ul class="ticker-search-box">
+                <div><strong>Price: </strong>$ {{compData.price}}</div>
+                <div><strong>TargetPrice: </strong>$ {{compData.targetPrice}}</div>
+                <input id="hidden-ticker" type="hidden" name="hidden-ticker" value="{{ compData.ticker }}">
+            </ul>
         </div>
         
 
