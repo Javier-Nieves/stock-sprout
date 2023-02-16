@@ -27,7 +27,7 @@ def index(request, message=""):  # with default empty value for message
 
         prices = MyPrice.objects.filter(investor=request.user)
         history = History.objects.filter(user=request.user)
-        return render(request, 'stocks/index.html', {
+        return render(request, 'stocks/index.html', {  # return HttpResponseRedirect(reverse('view_recipe', kwargs={'pk': recipe.pk, 'share': share}))
             'search_form': search_form,
             'buyForm': buy_form,
             'portfolio': portfolio.stock.all(),

@@ -132,7 +132,7 @@ document.addEventListener('DOMContentLoaded', function() {
     try {
     document.querySelector('#invested-main').innerHTML = `<div class="sum-text"> Invested: </div> <div class="sum-value">$ ${ moneyFormat(sum1) } </div>`;
     document.querySelector('#present-main').innerHTML = `<div class="sum-text"> Now: </div> <div class="sum-value"> $ ${ moneyFormat(sum2) } </div>`;
-    // * look, the conditional operators
+    // * atention, the conditional operators
     document.querySelector('#percent-main').innerHTML = `<div class="sum-text"> Change: </div> <div class="${a >= 0 ? 'green' : 'red'}-text sum-value"> ${ a } % </div>`;
     document.querySelector('#profit-main').innerHTML = `<div class="sum-text"> Profit: </div> <div class="${sum2 - sum1 + hidProfit >= 0 ? 'green' : 'red'}-text sum-value"> $ ${ moneyFormat(prof) } </div>`;
     document.querySelector('#day-main').innerHTML = `<div class="sum-text"> Day change: </div> <div class="${dayChMoney >= 0 ? 'green' : 'red'}-text sum-value">$ ${dayChMoney} &nbsp ${dayCh} % </div>`;
@@ -154,8 +154,8 @@ document.addEventListener('DOMContentLoaded', function() {
           shouldSwitch = false;
           // * parameter determination
           if (whichSort.includes('sortSigma')) {
-          x = rows[i].querySelector(".sigma-row").innerHTML;
-          y = rows[i + 1].querySelector(".sigma-row").innerHTML;
+            x = rows[i].querySelector(".sigma-row").innerHTML;
+            y = rows[i + 1].querySelector(".sigma-row").innerHTML;
           }
           else if (whichSort.includes('sortChange')) {
             x = rows[i].querySelector("#change-field").innerHTML;
@@ -204,9 +204,7 @@ document.addEventListener('DOMContentLoaded', function() {
       document.querySelector('.search-btn').value = 'Loading..';
       document.querySelector('.loader').classList.remove('hidden');
       const innerBoxes = document.querySelectorAll('.ticker-search-box');
-      console.log(innerBoxes);
       innerBoxes.forEach ( (item) => {
-        console.log(item);
         item.style.filter = 'blur(3px)';
       })
     })
@@ -337,6 +335,8 @@ function show_company (compName) {
     })
   }
 
+
+  // ! other helper functions 
   function moneyFormat(string) {
     const changed = string.toString();
     let txt;

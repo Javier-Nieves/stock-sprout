@@ -20,7 +20,7 @@
 <div id="portfolio-view" style="width: 100vw;">
     {% if user.is_authenticated %}
         {% if not portfolio.exists %}
-            <div class="intro-text">1) Search for a company using it's ticker </div>
+            <div class="intro-text">1) Search for a company using it's name or ticker</div>
         {% endif %}
     {% endif %}
     <!-- ? search + company info + buy/sell -->

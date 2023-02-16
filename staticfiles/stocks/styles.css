@@ -341,7 +341,7 @@ tbody tr:hover {
 
 .message-buy, .message-sell, .message-tell {
     animation-name: disappear;
-    animation-duration:  1.8s;
+    animation-duration:  2s;
     animation-fill-mode: forwards;
     animation-play-state: paused;
     width: 120px;
