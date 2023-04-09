@@ -1,43 +1,45 @@
+'use strict';
 document.addEventListener('DOMContentLoaded', function() {
 
   // ? what's clicked?
   document.addEventListener('click', event => {
-    tar = event.target;
-    let ClName = tar.parentElement.className;
+    const tar = event.target;
+    const clName = tar.parentElement.className;
 
-
+    
     // ! Companies view
     // * from History
-    if (ClName.includes("hist-row")) {
+    let compName;
+    if (clName.includes("hist-row")) {
       if (tar.parentElement.querySelector('.hist-action').innerHTML != 'Div') {
-        var name = tar.parentElement.querySelector('#hist-company-name').innerHTML;
-        show_company(name);
+        compName = tar.parentElement.querySelector('#hist-company-name').innerHTML;
       }
     }
     // * from Main Table Index
-    if (ClName.includes("table-row")) {
-      var name = tar.parentElement.querySelector('#company-ticker').innerHTML;
-      show_company(name);
-    }
+    if (clName.includes("table-row")) compName = tar.parentElement.querySelector('#company-ticker').innerHTML;
     // * by link on top
     if (tar.className.includes("companies-btn")) {
-      var name = 'random';
-      show_company(name);
+      compName = 'random';
+      try {
+        document.querySelector('#hidden-buy-form').style.display = 'none';
+      }
+      catch{}
+      try {
+        document.querySelector('.big-green-btn').style.display = 'block';
+      }
+      catch{}
     }
     // * from search button in Index
-    if (tar.parentElement.parentElement.className.includes("ticker-link")) {
-      console.log('icludes')
-      var name = document.querySelector('#hidden-ticker').value;
-      console.log(name);
-      show_company(name);
-    }
+    if (tar.parentElement.parentElement.className.includes("ticker-link")) compName = document.querySelector('#hidden-ticker').value;
     // * company search button in Company View
     if (tar.className.includes("comp-search-btn")) {
-      let tick = document.querySelector("#comp-search").value.toUpperCase();
-      console.log(tick)
+      compName = document.querySelector("#comp-search").value.toUpperCase();
       document.querySelector("#comp-search").value = '';
-      show_company(tick);
+      document.querySelector('#hidden-buy-form').style.display = 'none';
+      document.querySelector('.big-green-btn').style.display = 'block';
     }
+    if (compName) show_company(compName);
+
 
     // ! History view
     if (tar.className.includes('history-btn')) {
@@ -46,31 +48,60 @@ document.addEventListener('DOMContentLoaded', function() {
       document.querySelector('#history-view').style.display = 'block';
       document.querySelector('#company-view').style.display = 'none';
 
-    let HistRows = document.querySelectorAll('.hist-row');
-    HistRows.forEach(Item => {
-      if (Item.querySelector('.hist-action').innerHTML == "Buy") {
-        // console.log("buy");
-        Item.querySelector('.hist-sell').innerHTML = "-";
-      }
-      else if (Item.querySelector('.hist-action').innerHTML == "Sell") {
-        Item.querySelector('.hist-buy').innerHTML = "-";
-        Item.style.backgroundColor = 'rgba(126, 21, 218, 0.08)';
-      }
-      else if (Item.querySelector('.hist-action').innerHTML == "Div") {
-        Item.querySelector('.hist-buy').innerHTML = "-";
-        Item.querySelector('.hist-amount').innerHTML = "-";
-        Item.querySelector('.hist-price').innerHTML = "-";
-        Item.querySelector('#hist-profit').innerHTML = Item.querySelector('.hist-sell').innerHTML;
-        Item.querySelector('#hist-profit').style.color = 'rgba(78, 235, 0, 0.908)';
-        Item.querySelector('.hist-sell').innerHTML = "-";
-        Item.style.backgroundColor = 'rgba(255, 205, 4, 0.165)';
-      }
-    })
+      let HistRows = document.querySelectorAll('.hist-row');
+      HistRows.forEach(Item => {
+        let action = Item.querySelector('.hist-action').innerHTML;
+
+        // switch statement is an if-else alternative
+        switch (action) {
+          case 'Buy':
+            Item.querySelector('.hist-sell').innerHTML = "-";
+            break;
+          case 'Sell':
+            Item.querySelector('.hist-buy').innerHTML = "-";
+            Item.style.backgroundColor = 'rgba(126, 21, 218, 0.08)';
+            break;
+          case 'Div':
+            Item.querySelector('.hist-buy').innerHTML = "-";
+            Item.querySelector('.hist-amount').innerHTML = "-";
+            Item.querySelector('.hist-price').innerHTML = "-";
+            Item.querySelector('#hist-profit').innerHTML = Item.querySelector('.hist-sell').innerHTML;
+            Item.querySelector('#hist-profit').style.color = 'rgba(78, 235, 0, 0.908)';
+            Item.querySelector('.hist-sell').innerHTML = "-";
+            Item.style.backgroundColor = 'rgba(255, 205, 4, 0.165)';
+            break;
+          default:
+            console.log('Incorrect action!');
+        }
+
+        // if dividend title is clicked - change div title
+        Item.addEventListener('click', event => {
+          const tar2 = event.target;
+              if (tar2.className.includes("div-title")) {
+                Item.querySelector('.div-title').style.display = 'none';
+                Item.querySelector('#change-title-cell').style.display = 'block';
+                Item.querySelector('#change-title-cell').style.padding = '5px';
+
+                Item.querySelector('#div-title-change-btn').addEventListener('click',() => {
+                  const newTitle = Item.querySelector('#change-title').value;
+                  const ident = Item.querySelector("#hidden-hist-id").value;
+
+                  fetch(`/change/${ident}/${newTitle}`);
+
+                  Item.querySelector('.div-title').style.display = 'block';
+                  Item.querySelector('#change-title-cell').style.display = 'none';
+                  Item.querySelector('.div-title').innerHTML = newTitle;
+                  ShowMessage("good", 'Entry modified');
+                })
+
+              }
+          })
+      })
     }
   })
 
     // ! Top 5 columns information
-    let rows = document.querySelectorAll('.table-row');
+    const rows = document.querySelectorAll('.table-row');
     let sum1 = 0;
     let sum2 = 0;
     let dayCh = 0;
@@ -84,8 +115,8 @@ document.addEventListener('DOMContentLoaded', function() {
       sum1 += myPr * Qu;
       sum2 += Si;
       dayCh += Si / (100 + dayOne) * 100;
-
     });
+
     let dayChMoney = parseFloat(sum2 - dayCh).toFixed(1);
     dayCh = parseFloat((sum2 / dayCh - 1) * 100).toFixed(2);
     // ? next line will do a toNumber conversion and provide a default value if dayCh = NaN
@@ -96,42 +127,24 @@ document.addEventListener('DOMContentLoaded', function() {
     let a = parseFloat((sum2/sum1 - 1) * 100).toFixed(1);
     a = +a || 0;
     let hidProfit = parseFloat(document.querySelector('#hidden-profit').value);
-    prof = parseFloat(sum2 - sum1 + hidProfit).toFixed();
+    let prof = parseFloat(sum2 - sum1 + hidProfit).toFixed();
 
     try {
     document.querySelector('#invested-main').innerHTML = `<div class="sum-text"> Invested: </div> <div class="sum-value">$ ${ moneyFormat(sum1) } </div>`;
     document.querySelector('#present-main').innerHTML = `<div class="sum-text"> Now: </div> <div class="sum-value"> $ ${ moneyFormat(sum2) } </div>`;
-    
-    if (a >= 0) {
-      document.querySelector('#percent-main').innerHTML = `<div class="sum-text"> Change: </div> <div class="green-text sum-value"> ${ a } % </div>`;
-    }
-    else {
-      document.querySelector('#percent-main').innerHTML = `<div class="sum-text"> Change: </div> <div class="red-text sum-value"> ${ a } % </div>`;
-    }
-
-    if (sum2 - sum1 + hidProfit >= 0) {
-      document.querySelector('#profit-main').innerHTML = `<div class="sum-text"> Profit: </div> <div class="green-text sum-value"> $ ${ moneyFormat(prof) } </div>`;
-    }
-    else {
-      document.querySelector('#profit-main').innerHTML = `<div class="sum-text"> Profit: </div> <div class="red-text sum-value"> $ ${ moneyFormat(prof) } </div>`;
-    }
-
-    if (dayChMoney >= 0) {
-      document.querySelector('#day-main').innerHTML = `<div class="sum-text"> Day change: </div> <div class="green-text sum-value">$ ${dayChMoney} &nbsp ${dayCh} % </div>`;
-    }
-    else {
-      document.querySelector('#day-main').innerHTML = `<div class="sum-text"> Day change: </div> <div class="red-text sum-value">$ ${dayChMoney} &nbsp ${dayCh} % </div>`;
-    }
-
+    // * atention, the conditional operators
+    document.querySelector('#percent-main').innerHTML = `<div class="sum-text"> Change: </div> <div class="${a >= 0 ? 'green' : 'red'}-text sum-value"> ${ a } % </div>`;
+    document.querySelector('#profit-main').innerHTML = `<div class="sum-text"> Profit: </div> <div class="${sum2 - sum1 + hidProfit >= 0 ? 'green' : 'red'}-text sum-value"> $ ${ moneyFormat(prof) } </div>`;
+    document.querySelector('#day-main').innerHTML = `<div class="sum-text"> Day change: </div> <div class="${dayChMoney >= 0 ? 'green' : 'red'}-text sum-value">$ ${dayChMoney} &nbsp ${dayCh} % </div>`;
     }
     catch {}
     
     // ! sorting
     document.addEventListener('click', event => {
-      let SortParam, table, rows, switching, i, x, y, shouldSwitch;
-      sortTar = event.target;
+      let table, rows, switching, i, x, y, shouldSwitch;
+      const sortTar = event.target;
       // which parameter will sort the table
-      let whichSort = sortTar.className;
+      const whichSort = sortTar.className;
       table = document.getElementById("mainTable");
       switching = true;
       while (switching) {
@@ -141,8 +154,8 @@ document.addEventListener('DOMContentLoaded', function() {
           shouldSwitch = false;
           // * parameter determination
           if (whichSort.includes('sortSigma')) {
-          x = rows[i].querySelector(".sigma-row").innerHTML;
-          y = rows[i + 1].querySelector(".sigma-row").innerHTML;
+            x = rows[i].querySelector(".sigma-row").innerHTML;
+            y = rows[i + 1].querySelector(".sigma-row").innerHTML;
           }
           else if (whichSort.includes('sortChange')) {
             x = rows[i].querySelector("#change-field").innerHTML;
@@ -174,120 +187,134 @@ document.addEventListener('DOMContentLoaded', function() {
         }
       }
       // * switch class after sorting in main table
-      if (whichSort.includes('Up')) {
-        sortTar.classList.replace("Up", "Down");
-      }
-      else {
-        sortTar.classList.replace("Down", "Up");
-      }
+      if (whichSort.includes('Up')) sortTar.classList.replace("Up", "Down");
+      else sortTar.classList.replace("Down", "Up");
     })
 
+    // ! search form mutations
     try {
       // * if company is searched - make Search field clickable and Buy button appear
-      if (document.querySelector('#check-filled').innerHTML != '') {
-        let items = document.querySelector('.ticker-search-container').className = 'ticker-link';
+      if (document.querySelector('#check-filled').innerHTML !== '') {
+        document.querySelector('.ticker-search-container').className = 'ticker-link';
         document.getElementById("action-buttons").style.animationPlayState = "running";
       }
     }
     catch{}
+    document.querySelector(".search-btn").addEventListener('click', () => {
+      document.querySelector('.search-btn').value = 'Loading..';
+      document.querySelector('.loader').classList.remove('hidden');
+      const innerBoxes = document.querySelectorAll('.ticker-search-box');
+      innerBoxes.forEach ( (item) => {
+        item.style.filter = 'blur(3px)';
+      })
+    })
 
 
     // ! Dividend form handling
-    let form = document.getElementById("Div-form");
-    function submitForm(event){
-      event.preventDefault();
-      let title = document.querySelector("#Div-title").value;
-      let amount = document.querySelector("#Div-amount").value;
-      // make a call to back-end to add this dividend to the DB
-       fetch(`/history/${title}/${amount}`)
+    try{
+      const form = document.getElementById("Div-form");
 
-        // creatig new row in table on 1st position
-        let HistRow = document.querySelector('#HistTable').insertRow(0);
-        HistRow.className = 'new-hist-row';
-        HistRow.style.backgroundColor = 'rgba(255, 205, 4, 0.165)';
-        var cell1 = HistRow.insertCell(0);
-        var cell2 = HistRow.insertCell(1);
-        var cell3 = HistRow.insertCell(2);
-        var cell4 = HistRow.insertCell(3);
-        var cell5 = HistRow.insertCell(4);
-        var cell6 = HistRow.insertCell(5);
-        var cell7 = HistRow.insertCell(6);
-        var cell8 = HistRow.insertCell(7);
-        cell1.innerHTML = "DIV";
-        cell2.innerHTML = `${title}`;
-        cell3.innerHTML = "Div";
-        cell4.innerHTML = "-";
-        cell5.innerHTML = "-";
-        cell6.innerHTML = "-";
-        cell7.innerHTML = "-";
-        cell8.innerHTML = `${amount}`;
-        cell8.className = "green-text";
-        HistRow.style.animationPlayState = 'running';
+      function submitForm(event){
+        event.preventDefault();
+        const title = document.querySelector("#Div-title").value;
+        const amount = document.querySelector("#Div-amount").value;
+        // make a call to back-end to add this dividend to the DB
+        fetch(`/history/${title}/${amount}`)
 
-        form.reset();
-        let success_msg = document.createElement('a');
-        success_msg.className = "message-buy";
-        success_msg.id = 'message';
-        success_msg.innerHTML = "-= Dividends received =-";
-        document.querySelector(".left-group").append(success_msg);
-        setTimeout(function(){
-          success_msg.style.animationPlayState = "running";
-        }, 3000);
-        setTimeout(function(){
-        success_msg.remove();
-        }, 7000);
+          // creatig new row in table on 1st position
+          const HistRow = document.querySelector('#HistTable').insertRow(0);
+          HistRow.className = 'new-hist-row';
+          HistRow.style.backgroundColor = 'rgba(255, 205, 4, 0.165)';
+          var cell1 = HistRow.insertCell(0);
+          var cell2 = HistRow.insertCell(1);
+          var cell3 = HistRow.insertCell(2);
+          var cell4 = HistRow.insertCell(3);
+          var cell5 = HistRow.insertCell(4);
+          var cell6 = HistRow.insertCell(5);
+          var cell7 = HistRow.insertCell(6);
+          var cell8 = HistRow.insertCell(7);
+          cell1.innerHTML = "DIV";
+          cell2.innerHTML = `${title}`;
+          cell3.innerHTML = "Div";
+          cell4.innerHTML = "-";
+          cell5.innerHTML = "-";
+          cell6.innerHTML = "-";
+          cell7.innerHTML = "-";
+          cell8.innerHTML = `${amount}`;
+          cell8.className = "green-text";
+          HistRow.style.animationPlayState = 'running';
+
+          form.reset();
+          ShowMessage("good", 'Dividends received');
+      }
+
+      form.addEventListener('submit', submitForm);
     }
-    form.addEventListener('submit', submitForm);
-
+    catch{}
 })
 
 // ! --- functions ----
 
-
     // * for alerts to disappear
     setTimeout(function(){
-      try{document.getElementById("message").style.animationPlayState = "running";}
+      try{
+        const mes = document.getElementById("message");
+        mes.style.animationPlayState = "running";
+        setTimeout(function(){
+          mes.remove();
+        }, 2000);
+      } 
       catch{}
     }, 3000);  // in 3 sec  
 
 
-  
+function show_company (compName) {
+    document.querySelector('#portfolio-view').style.display = 'none';
+    try{document.querySelector('#summary-row-top').style.display = 'none';
+    document.querySelector('#history-view').style.display = 'none';}
+    catch{}
+    document.querySelector('#company-view').style.display = 'block';
+    
+  blurAllFields(true);
 
-
-function show_company (name) {
-  document.querySelector('#portfolio-view').style.display = 'none';
-  try{document.querySelector('#summary-row-top').style.display = 'none';
-  document.querySelector('#history-view').style.display = 'none';}
-  catch{}
-
-  document.querySelector('#company-view').style.display = 'block';
-  fetch(`/companies/${name}`)
+  fetch(`/companies/${compName}`)
     .then(response => response.json())
     .then(result => {
-      // console.log(comp)
-      let roe = result.comp.roe * 100;
-      let yield = result.comp.dividends / result.comp.price * 100;
-      let marg = result.comp.profitMargins * 100;
-      let potential = (result.comp.targetPrice / result.comp.price - 1) * 100;
+      if (result.message) {
+        ShowMessage('bad', `${result.message}`);
+        blurAllFields(false);
+      }
+      const roe = result.comp.roe * 100;
+      const divYield = result.comp.dividends / result.comp.price * 100;
+      const marg = result.comp.profitMargins * 100;
+      const potential = (result.comp.targetPrice / result.comp.price - 1) * 100;
 
-      if (result.comp.day > 0) {
-        document.querySelector('#company-price').innerHTML = `<div class="comp-param-text"> Price: </div> <div><div class="comp-param-value-big"><div>$ ${result.comp.price.toFixed(2)}</div> <div class='green-text med-text'>${result.comp.day.toFixed(1)} % </div></div></div>`;
-      }
-      else {
-        document.querySelector('#company-price').innerHTML = `<div class="comp-param-text"> Price: </div> <div class="comp-param-value-big">$ ${result.comp.price.toFixed(2)} <div class='red-text med-text'>${result.comp.day.toFixed(1)} % </div></div>`;
-      }
+      document.querySelector('#res-comp-price').innerHTML = `$ ${result.comp.price.toFixed(2)}`;
+      document.querySelector('#res-comp-day').innerHTML = `${result.comp.day.toFixed(1)} % `;
 
-      if (potential > 0) {
-        document.querySelector('#company-targetPrice').innerHTML = `<div class="comp-param-text"> Target price: </div> <div class="comp-param-value-big">$ ${result.comp.targetPrice.toFixed(2)} <div class='green-text med-text'>${potential.toFixed(1)} % </div></div>`;
-      }
-      else {
-        document.querySelector('#company-targetPrice').innerHTML = `<div class="comp-param-text"> Target price: </div> <div class="comp-param-value-big">$ ${result.comp.targetPrice.toFixed(2)} <div class='red-text med-text'>${potential.toFixed(1)} % </div></div>`;
-      }
+      if (result.comp.day < 0) document.querySelector('#res-comp-day').classList.replace("green-text", "red-text");
+      else document.querySelector('#res-comp-day').classList.replace("red-text", "green-text");
 
-      // populate forms with company's data
+      document.querySelector('#company-targetPrice').innerHTML = `<div class="comp-param-text"> Target price: </div> <div class="comp-param-value-big">$ ${result.comp.targetPrice.toFixed(2)} <div class='${potential > 0 ? 'green' : 'red'}-text med-text'>${potential.toFixed(1)} % </div></div>`;
+
+      // populate forms with company's data 
+      document.querySelector('#hidden-ticker-comp').value = result.comp.ticker;
       document.querySelector('#company-recom').innerHTML = `<div class="comp-param-text"> Recommendation: </div> <div class="comp-param-value-big">${result.comp.recom} </div>`;
-      document.querySelector('#company-title').innerHTML = result.comp.company;
-      document.querySelector('#company-desc').innerHTML = result.comp.desc;
+      document.querySelector('#company-title').innerHTML = `${MakeCapitalized(result.comp.company)} <div class='comp-param-text' style='text-align:center;'>${result.comp.ticker}</div>`;
+      const fullText = result.comp.desc;
+      let par = true;
+      document.querySelector('#company-desc').innerHTML = truncate(fullText, 600);
+        document.querySelector('#company-desc').addEventListener('click', () => {
+          if (par) {
+            document.querySelector('#company-desc').innerHTML = fullText;
+            par = false;
+          }
+          else {
+            document.querySelector('#company-desc').innerHTML = truncate(fullText, 600);
+            par = true;
+          }
+        });
+      try {
       document.querySelector('#company-pe').innerHTML = `<div class="comp-param-text"> PE: </div> <div class="comp-param-value">${result.comp.pe.toFixed(1)} </div>`;
       document.querySelector('#company-fpe').innerHTML = `<div class="comp-param-text"> Forward PE: </div> <div class="comp-param-value">${result.comp.fpe.toFixed(1)}</div>`;
       document.querySelector('#company-pb').innerHTML = `<div class="comp-param-text"> PB: </div> <div class="comp-param-value">${result.comp.pb.toFixed(1)}</div>`;
@@ -295,16 +322,71 @@ function show_company (name) {
       document.querySelector('#company-debt').innerHTML = `<div class="comp-param-text"> Debt to Equity: </div> <div class="comp-param-value">${result.comp.debt.toFixed(2)}</div>`;
       document.querySelector('#company-profitMargins').innerHTML = `<div class="comp-param-text"> Profit Margins: </div> <div class="comp-param-value">${marg.toFixed(1)} %</div>`;
       document.querySelector('#company-dividends').innerHTML = `<div class="comp-param-text"> Dividends: </div> <div class="comp-param-value">$ ${result.comp.dividends.toFixed(2)}</div>`;
-      document.querySelector('#company-dividends-yield').innerHTML = `<div class="comp-param-text"> Dividends yield: </div> <div class="comp-param-value"> ${yield.toFixed(1)} %</div>`;
+      document.querySelector('#company-dividends-yield').innerHTML = `<div class="comp-param-text"> Dividends yield: </div> <div class="comp-param-value"> ${divYield.toFixed(1)} %</div>`;
+
+      document.querySelector('.big-green-btn').addEventListener('click', () => {
+        document.querySelector('#hidden-buy-form').style.display = 'block';
+        document.querySelector('.big-green-btn').style.display = 'none';
+        document.querySelector('#hidden-buy-form').style.animationPlayState = "running";
+      })
+      }
+      catch{}
+      blurAllFields(false);
     })
   }
 
+
+  // ! other helper functions 
   function moneyFormat(string) {
-    let changed = string.toString();
-    if (3 < changed.length < 7) {
-      txt = changed.slice(0,-3) + " " + changed.slice(-3);
-    }
+    const changed = string.toString();
+    let txt;
+    if (3 < changed.length < 7) txt = changed.slice(0,-3) + " " + changed.slice(-3);
     return txt
   }
 
-// moneyFormat("12346");
+  function MakeCapitalized(string) {
+    const low = string.toLowerCase();
+    let converted = low.charAt(0).toUpperCase() + low.slice(1);
+    for (let i=0; i<string.length; i++) {
+        if (converted.charAt(i) === ' ' || converted.charAt(i) === '&' || converted.charAt(i) === '-') {
+          converted = converted.slice(0,i+1) + converted.charAt(i+1).toUpperCase() + converted.slice(i+2);
+        }
+    }
+    return converted
+  }
+
+  function truncate(string, length) {
+    // conditional (ternary) operator is like If-Else statement. [condition ? (ifTrue); : (else);]
+    return string.length > length
+      ? `${string.substr(0, length)}...`
+      : string;
+  }
+
+  function ShowMessage(color, text) {
+    const success_msg = document.createElement('a');
+          success_msg.className = `${color === "good" ? "message-buy" : "message-sell"}`;
+          success_msg.id = 'message';
+          success_msg.innerHTML = `-= ${text} =-`;
+          document.querySelector(".left-group").append(success_msg);
+          setTimeout(function(){
+            success_msg.style.animationPlayState = "running";
+          }, 3000);
+          setTimeout(function(){
+          success_msg.remove();
+          }, 4800);
+  }
+
+  function blurAllFields(bool) {
+      // clear all fields
+      if (bool) document.querySelector('.big-loader').classList.remove('hidden');
+      else document.querySelector('.big-loader').classList.add('hidden');
+
+      document.querySelector('#company-title').style.filter = `${bool ? "blur(4px)" : 'blur(0)'}`;
+      document.querySelector('#company-desc').style.filter = `${bool ? "blur(4px)" : 'blur(0)'}`;
+      document.querySelector('.company-price-row').style.filter = `${bool ? "blur(4px)" : 'blur(0)'}`;
+      document.querySelector('#hidden-buy-form').style.filter = `${bool ? "blur(4px)" : 'blur(0)'}`;
+      const sumRows = document.querySelectorAll('.summary-row');
+      sumRows.forEach( (item) => {
+        item.style.filter = `${bool ? "blur(4px)" : 'blur(0)'}`;
+      })
+  }

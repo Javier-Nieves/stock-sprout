@@ -15,11 +15,8 @@ strong {
 html {
     display: flex;
     flex-direction: column;
-    background-image: url("coffee.jpg");
+    background-image: url("coffee2.jpg");
     background-size: cover;
-    background-attachment: fixed;
-    background-color: #20232ffa;
-    background-blend-mode: color;
     padding: 10px;
     height: 100vh;
     width: 100vw;
@@ -62,6 +59,9 @@ h1 {
     font-family: 'Snell Roundhand', sans-serif;
     color: whitesmoke;
 }
+.brand:hover {
+    text-decoration: underline;
+}
 #title {
     font-size: 45px;
     font-family: 'Snell Roundhand', sans-serif;
@@ -89,6 +89,11 @@ h1 {
     border: 1px solid gray;
     border-radius: 10px;
     padding: 10px;
+}
+#company-price {
+    padding: 0;
+    display: flex;
+    justify-content: space-between;
 }
 .sum-text {
     font-size: 20px;
@@ -134,13 +139,15 @@ h1 {
 
 /* ? search for company*/
 .ticker-search-container, .ticker-link {
+    position: relative;
     background-color: rgba(114, 115, 115, 0.3);
     border: 1px solid gray;
     border-radius: 10px;
     display: flex;
     flex-direction: row;
+    align-items: center;
 }
-.ticker-link:hover {
+.ticker-link:hover, #company-desc:hover {
     background-color: rgba(255, 246, 196, 0.31);
     box-shadow: 0 0 5px #a1b1c3;
     cursor: pointer;
@@ -207,6 +214,17 @@ h1 {
     color: bisque;
     padding: 5px 20px;
 }
+.big-green-btn {
+    background-color: bisque;
+    border: 1px solid gray;
+    border-radius: 10px;
+    font-size: 30px;
+    font-weight: 600;
+    font-family: Didot, serif;
+    padding: 35px 18px 35px 18px;
+    /* margin-left: 3vw; */
+    /* height: 65px; */
+}
 .div-btn:hover {
     background-color: rgba(70, 3, 81, 0.718);
     cursor: pointer;
@@ -216,7 +234,7 @@ h1 {
     box-shadow: 0 0 5px #a1b1c3;
     cursor: pointer;
 }
-.buy-btn:hover {
+.buy-btn:hover, .big-green-btn:hover {
     background-color: rgba(32, 75, 162, 0.718);
     box-shadow: 0 0 5px #a1b1c3;
     color: whitesmoke;
@@ -246,7 +264,6 @@ h1 {
     color: whitesmoke;
     font-size: 13px;
 }
-
 
 
 ul {
@@ -305,7 +322,7 @@ tbody tr:hover {
 .hist-row {
     font-size: 18px;
 }
-.new-hist-row {
+.new-hist-row, #hidden-buy-form {
     animation-name: created;
     animation-duration:  2s;
     animation-fill-mode: forwards;
@@ -322,9 +339,9 @@ tbody tr:hover {
     }
 }
 
-.message-buy, .message-sell {
+.message-buy, .message-sell, .message-tell {
     animation-name: disappear;
-    animation-duration:  1.8s;
+    animation-duration:  2s;
     animation-fill-mode: forwards;
     animation-play-state: paused;
     width: 120px;
@@ -335,7 +352,9 @@ tbody tr:hover {
     padding: 5px 150px 5px 150px;
     color: whitesmoke;
     text-align: center;
-    margin-left: 4vw;
+    margin-left: 6vw;
+    /* position: absolute;
+    left: 40%; */
 }
 .message-buy {
     background-color: rgba(2, 240, 22, 0.165);
@@ -343,6 +362,9 @@ tbody tr:hover {
 }
 .message-sell {
     background-color: rgba(255, 104, 3, 0.289);
+}
+.message-tell {
+    background-color: rgba(240, 194, 27, 0.3);
 }
 
 .intro-text {
@@ -383,3 +405,42 @@ tbody tr:hover {
     animation-fill-mode: forwards;
     animation-play-state: paused;
 }
+
+.loader, .big-loader {
+    border: 10px solid #cbcbcb52; /* Light grey */
+    border-top: 10px solid bisque; /* Blue */
+    border-radius: 80%;
+    width: 50px;
+    height: 50px;
+    animation: spin 2s linear infinite;
+    position: absolute;
+    left: 44%;
+  }
+  .big-loader {
+    border: 13px solid #cbcbcb52; /* Light grey */
+    border-top: 13px solid bisque; /* Blue */
+    width: 110px;
+    height: 110px;
+    top: 40%;
+    left: 43%;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  .overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(3px);
+    z-index: 5;
+  }
+
+  .hidden {
+    display: none;
+  }
