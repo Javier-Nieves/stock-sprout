@@ -1,6 +1,6 @@
 APScheduler==3.9.1.post1
 dj_database_url==1.0.0
-Django==4.0.6
+Django
 python-dotenv==0.21.0
 requests==2.27.1
 psycopg2==2.9.3
