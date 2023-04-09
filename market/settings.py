@@ -3,13 +3,12 @@ import os
 from dotenv import load_dotenv, find_dotenv
 import dj_database_url
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 load_dotenv(find_dotenv())
 SECRET_KEY = os.environ['SECRET_KEY']
 
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
 
@@ -72,16 +71,27 @@ DATABASES = {
     # # ! for Development
     # 'default': dj_database_url.parse(os.environ.get("DATABASE_URL"))
 
-    # ! Postgres
-        'default': {
+    # ! Postgres Render
+    # 'default': {
+    #     'ENGINE': 'django.db.backends.postgresql_psycopg2',
+    #     'NAME': 'stock_sprout',
+    #     'USER': 'stock_sprout_user',
+    #     'PASSWORD': 'ggUHqNF5BPSWWT9D9oKU2kPjNGHZaQgQ',
+    #     'HOST': 'dpg-cf1m4r82i3mnjclfdf80-a.oregon-postgres.render.com',
+    #     'PORT': '5432',
+    # }
+
+    # ! Postgre Neon
+    'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'stock_sprout',
-        'USER': 'stock_sprout_user',
-        'PASSWORD': 'ggUHqNF5BPSWWT9D9oKU2kPjNGHZaQgQ',
-        'HOST': 'dpg-cf1m4r82i3mnjclfdf80-a.oregon-postgres.render.com',
+        'NAME': 'stock-sprout',
+        'USER': os.environ['DB_USER'],
+        'PASSWORD': os.environ['DB_PASSWORD'],
+        'HOST': os.environ['DB_HOST'],
+        # postgres://Javier-Nieves:wp79QtLIRioz@ep-broad-sun-445884.us-east-2.aws.neon.tech/stock-sprout
         'PORT': '5432',
     }
-    
+
 }
 
 
@@ -109,7 +119,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'America/Bogota'
 
 USE_I18N = True
 
