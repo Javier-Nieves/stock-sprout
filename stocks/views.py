@@ -35,12 +35,12 @@ def index(request, message=""):  # with default empty value for message
             'history': history,
             'profit': portfolio.profit,
             'message': message
-            })
+        })
     else:
         return render(request, 'stocks/index.html', {
             'search_form': search_form,
             'message': message
-            })
+        })
 
 
 @require_POST
@@ -70,19 +70,19 @@ def indexPost(request):
         buy_form = BuyForm()
         if request.user.is_authenticated:
             return render(request, 'stocks/index.html', {
-            'search_form': search_form,
-            'buyForm': buy_form,
-            'compData': compData,
-            'portfolio': portfolio.stock.all(),
-            'prices': prices,
-            'history': history,
-            'profit': portfolio.profit
+                'search_form': search_form,
+                'buyForm': buy_form,
+                'compData': compData,
+                'portfolio': portfolio.stock.all(),
+                'prices': prices,
+                'history': history,
+                'profit': portfolio.profit
             })
-        else: 
+        else:
             return render(request, 'stocks/index.html', {
-            'search_form': search_form,
-            'buyForm': buy_form,
-            'compData': compData
+                'search_form': search_form,
+                'buyForm': buy_form,
+                'compData': compData
             })
 
     # ! BUY
@@ -95,15 +95,16 @@ def indexPost(request):
         # ! stock is being bought
         if 'buy_btn' in request.POST:
             # if the stock doesn't exist in the DB
-            try: 
+            try:
                 Stocks.objects.get(ticker=ticker)
             except:
                 # get API data for the ticker
                 compData = checkStock(ticker)
                 # ? create Stock db entry
-                Stocks.objects.create(ticker=ticker, company=compData['company'], day=compData['day'], desc=compData['desc'], price=compData['price'], 
-                pe=compData['pe'], fpe=compData['fpe'], pb=compData['pb'], debt=compData['debt'],roe=compData['roe'], profitMargins=compData['profitMargins'], 
-                divs=compData['dividends'], targetPrice=compData['targetPrice'], recom=compData['recom'])
+                Stocks.objects.create(ticker=ticker, company=compData['company'], day=compData['day'], desc=compData['desc'], price=compData['price'],
+                                      pe=compData['pe'], fpe=compData['fpe'], pb=compData['pb'], debt=compData[
+                                          'debt'], roe=compData['roe'], profitMargins=compData['profitMargins'],
+                                      divs=compData['dividends'], targetPrice=compData['targetPrice'], recom=compData['recom'])
 
             # does User already have this stock?
             stock = Stocks.objects.get(ticker=ticker)
@@ -114,29 +115,33 @@ def indexPost(request):
             # * MyPrice update
             if MyPrice.objects.filter(investor=request.user, stock=stock).exists():
                 MP = MyPrice.objects.get(investor=request.user, stock=stock)
-                MP.myPrice = (MP.myPrice * MP.quant + amount * form_price) / (MP.quant + amount)
+                MP.myPrice = (MP.myPrice * MP.quant + amount *
+                              form_price) / (MP.quant + amount)
                 MP.quant += amount
                 MP.save()
             else:
-                MyPrice.objects.create(investor=request.user, stock=stock, quant=amount, myPrice=form_price)
+                MyPrice.objects.create(
+                    investor=request.user, stock=stock, quant=amount, myPrice=form_price)
 
             # * History update on buy
+            number = History.objects.last().id
             MP = MyPrice.objects.get(investor=request.user, stock=stock)
-            History.objects.create(user=request.user, stock=stock, ammount=amount, MyPriceHist=MP.myPrice, BPrice=form_price, action="Buy")
+            History.objects.create(id=number+1, user=request.user, stock=stock, ammount=amount,
+                                   MyPriceHist=MP.myPrice, BPrice=form_price, action="Buy")
 
             return index(request, 'buy')
 
-        # ! stock is being sold
+        # ! SELL
         elif 'sell_btn' in request.POST:
-            
+
             # is there such stock in the db?
             if Stocks.objects.filter(ticker=ticker).exists():
-                
+
                 # Does user have this stock?
                 stock = Stocks.objects.get(ticker=ticker)
                 if not stock in portfolio.stock.all():
-                    return index(request, "You don't have this stock")
-                
+                    return index(request, "You don't have this stock :(")
+
                 # Does user have enough of this stock to sell
                 MP = MyPrice.objects.get(investor=request.user, stock=stock)
                 if amount > MP.quant:
@@ -153,7 +158,9 @@ def indexPost(request):
                         MP.delete()
 
                      # * History update on sell
-                    History.objects.create(user=request.user, stock=stock, ammount=amount, SPrice=form_price, MyPriceHist=MP.myPrice, action="Sell")
+                    number = History.objects.last().id
+                    History.objects.create(id=number+1, user=request.user, stock=stock, ammount=amount,
+                                           SPrice=form_price, MyPriceHist=MP.myPrice, action="Sell")
 
                     return index(request, 'sell')
 
@@ -164,12 +171,11 @@ def indexPost(request):
 
 
 def company_view(request, name):
-    if checkStock(name) == None and name!="random":
+    if checkStock(name) == None and name != "random":
         name = getTicker(name)
         if checkStock(name) == None:
-            print('No such company!!!')
             return JsonResponse({
-            "message": "No such company"
+                "message": "No such company"
             }, status=200)
 
     # if Company View is summoned via top link - open random company from DB
@@ -181,17 +187,17 @@ def company_view(request, name):
 
     # ? if company exists in DB:
     try:
-        # function returns company data in JSON form straight from the DB 
+        # function returns company data in JSON form straight from the DB
         comp = Stocks.objects.get(ticker=name).serialize()
         return JsonResponse({
             "comp": comp
-            }, status=200)
+        }, status=200)
 
     # ? for new companies
     except:
         return JsonResponse({
             "comp": checkStock(name)
-            }, status=200)
+        }, status=200)
 
 
 def histPost(request, title, dividend):
@@ -203,12 +209,16 @@ def histPost(request, title, dividend):
     #     dividend = div_form.cleaned_data['dividend']
     stk = Stocks.objects.get(ticker="DIV")
     # ? create new dividend entry in DB
-    History.objects.create(user=request.user, stock=stk, action="Div", SPrice=dividend, BPrice=0, MyPriceHist=0, ammount=0, note=title)
+    number = History.objects.last().id
+
+    History.objects.create(id=number+1, user=request.user, stock=stk, action="Div",
+                           SPrice=dividend, BPrice=0, MyPriceHist=0, ammount=0, note=title)
     portfolio.profit += dividend
     portfolio.save()
 
-    return JsonResponse({'status':'false'}, status=204)
+    return JsonResponse({'status': 'false'}, status=204)
     # return index(request, 'Dividends received', status=204)
+
 
 def histChange(request, ident, newText):
     # ? change the dividend entry in DB
@@ -216,7 +226,7 @@ def histChange(request, ident, newText):
     changing.note = newText
     changing.save()
 
-    return JsonResponse({'status':'false'}, status=204)
+    return JsonResponse({'status': 'false'}, status=204)
 
 
 # ! ------------------ functions ---------------
@@ -227,7 +237,8 @@ def checkStock(ticker):
         url = f"https://query1.finance.yahoo.com/v11/finance/quoteSummary/{ticker}?modules=financialData"
         urlComp = f"https://query1.finance.yahoo.com/v7/finance/options/{ticker}"
         urlDesc = f"https://query1.finance.yahoo.com/v11/finance/quoteSummary/{ticker}?modules=assetProfile"
-        headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'}
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'}
         response = requests.get(url, headers=headers)
         responseComp = requests.get(urlComp, headers=headers)
         responseDesc = requests.get(urlDesc, headers=headers)
@@ -272,7 +283,8 @@ def getTicker(company_name):
     yfinance = "https://query2.finance.yahoo.com/v1/finance/search"
     user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36'
     params = {"q": company_name, "quotes_count": 1, "country": "United States"}
-    res = requests.get(url=yfinance, params=params, headers={'User-Agent': user_agent})
+    res = requests.get(url=yfinance, params=params,
+                       headers={'User-Agent': user_agent})
     data = res.json()
     try:
         company_code = data['quotes'][0]['symbol']
@@ -304,12 +316,14 @@ def ActualizeMini():
     print('actualized at ', datetime.datetime.now())
     return HttpResponse(status=204)
 
+
 # ! this module runs in background and periodically summons Actualize function
 scheduler = BackgroundScheduler({'apscheduler.job_defaults.max_instances': 4})
 scheduler.add_job(ActualizeMini, 'interval', seconds=120)
 scheduler.start()
 
 # ? ------------------- login & co ------------------------
+
 
 def login_view(request):
     if request.method == "POST":
