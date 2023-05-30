@@ -348,7 +348,9 @@ tbody tr:hover {
     animation-fill-mode: forwards;
     animation-play-state: paused;
 }
-
+table {
+    margin-bottom: 3vh;
+}
 
 @keyframes disappear {
     0% {

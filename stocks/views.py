@@ -1,6 +1,7 @@
 import requests
 import datetime
 import random
+import json
 from apscheduler.schedulers.background import BackgroundScheduler
 
 from django.shortcuts import render
@@ -8,6 +9,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.views.decorators.http import require_POST
 from django.db import IntegrityError
 from django.http import HttpResponse, JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 
 from .forms import SearchForm, BuyForm
 from .models import User, Stocks, MyPrice, Portfolio, History
@@ -201,7 +203,8 @@ def company_view(request, name):
         }, status=200)
 
 
-def histPost(request, title, dividend):
+@csrf_exempt
+def histPost(request):
     portfolio = Portfolio.objects.get(owner=request.user)
     # ?Django form was used previously, but form submittions reloads the page, so JS is used instead
     # div_form = DividendForm(request.POST)
@@ -209,12 +212,18 @@ def histPost(request, title, dividend):
     #     title = div_form.cleaned_data['title']
     #     dividend = div_form.cleaned_data['dividend']
     stk = Stocks.objects.get(ticker="DIV")
+
+    if request.method == "PUT":
+        data = json.loads(request.body)
+        title = data["title"]
+        dividend = data["amount"]
+
     # ? create new dividend entry in DB
     number = History.objects.last().id
 
     History.objects.create(id=number+1, user=request.user, stock=stk, action="Div",
                            SPrice=dividend, BPrice=0, MyPriceHist=0, ammount=0, note=title)
-    portfolio.profit += dividend
+    portfolio.profit += float(dividend)
     portfolio.save()
 
     return JsonResponse({'status': 'false'}, status=204)

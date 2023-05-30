@@ -230,13 +230,21 @@ document.addEventListener("DOMContentLoaded", function () {
   // ! Dividend form handling
   try {
     const form = document.getElementById("Div-form");
+    form.addEventListener("submit", submitForm);
 
     function submitForm(event) {
       event.preventDefault();
       const title = document.querySelector("#Div-title").value;
-      const amount = document.querySelector("#Div-amount").value;
+      const amount = document.querySelector("#Div-amount").value.toString();
+      console.log(amount, typeof amount);
       // make a call to back-end to add this dividend to the DB
-      fetch(`/history/${title}/${amount}`);
+      fetch(`/history/dividend`, {
+        method: "PUT",
+        body: JSON.stringify({
+          title: title,
+          amount: amount,
+        }),
+      });
 
       // creatig new row in table on 1st position
       const HistRow = document.querySelector("#HistTable").insertRow(0);
@@ -261,11 +269,20 @@ document.addEventListener("DOMContentLoaded", function () {
       cell8.className = "green-text";
       HistRow.style.animationPlayState = "running";
 
+      // update profit value
+      const profitWindow = document
+        .querySelector("#profit-main")
+        .querySelector(".sum-value");
+      // get rid of space and $ sign
+      const profitValue = profitWindow.innerHTML
+        .replace(/\s/g, "")
+        .match(/\d+/g);
+      let newValue = parseInt(profitValue) + Math.round(Number(amount));
+      profitWindow.innerHTML = `$ ${moneyFormat(newValue)}`;
+
       form.reset();
       ShowMessage("good", "Dividends received");
     }
-
-    form.addEventListener("submit", submitForm);
   } catch {}
   capitalizeName();
 });
