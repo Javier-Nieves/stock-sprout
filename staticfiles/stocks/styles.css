@@ -1,3 +1,4 @@
+@import url(https://fonts.googleapis.com/css?family=Raleway:400,700,900,400italic,700italic,900italic);
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {
   -webkit-appearance: none;
@@ -48,23 +49,42 @@ form {
 }
 
 h1 {
-    font-family: 'Snell Roundhand', cursive, Serif;
-    font-size: 50px;
+    /* font-family: 'Dancing Script', cursive; */
+    font-family: 'Tangerine', cursive;
+    font-size: 8vh;
     font-weight: 600;
     margin: 0px;
     color: bisque;
 }
 .brand {
     font-size: 35px;
-    font-family: 'Snell Roundhand', sans-serif;
+    /* font-family: 'Dancing Script', cursive; */
+    font-family: 'Tangerine', cursive;
     color: whitesmoke;
+    font-size: 6vh;
 }
 .brand:hover {
-    text-decoration: underline;
+    /* text-decoration: underline; */
+    animation: flicker 1s infinite alternate;
 }
+@keyframes flicker {
+    0%, 18%, 22%, 25%, 53%, 57%, 100% {
+      text-shadow:
+        0 0 3px #fff,
+        0 0 8px #fff,
+        0 0 13px #fff,
+        0 0 30px #0fa,
+        0 0 50px #0fa,
+        0 0 80px #0fa,
+        0 0 100px #0fa
+    }
+    20%, 24%, 55% {       
+      text-shadow: none;
+    }
+  }
 #title {
     font-size: 45px;
-    font-family: 'Snell Roundhand', sans-serif;
+    font-family: 'Dancing Script', cursive;
     padding-bottom: 15px;
     text-align: center;
     color: whitesmoke;

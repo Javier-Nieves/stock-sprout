@@ -150,6 +150,7 @@ def indexPost(request):
                 else:
                     MP.quant -= amount
                     portfolio.profit += amount * form_price - amount * MP.myPrice
+                    print()
                     portfolio.save()
                     MP.save()
                     # delete stock from portfolio if everything is sold
