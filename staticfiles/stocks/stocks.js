@@ -1,108 +1,141 @@
 "use strict";
 document.addEventListener("DOMContentLoaded", function () {
-  // ? what's clicked?
+  // ? Top 5 columns information
+  fillTopInfo();
+
   document.addEventListener("click", (event) => {
     const tar = event.target;
-    const clName = tar.parentElement.className;
-
-    // ! Companies view
-    // * from History
-    let compName;
-    if (clName.includes("hist-row")) {
-      if (tar.parentElement.querySelector(".hist-action").innerHTML != "Div") {
-        compName =
-          tar.parentElement.querySelector("#hist-company-name").innerHTML;
-      }
-    }
-    // * from Main Table Index
-    if (clName.includes("table-row"))
-      compName = tar.parentElement.querySelector("#company-ticker").innerHTML;
-    // * by link on top
-    if (tar.className.includes("companies-btn")) {
-      compName = "random";
-      try {
-        document.querySelector("#hidden-buy-form").style.display = "none";
-      } catch {}
-      try {
-        document.querySelector(".big-green-btn").style.display = "block";
-      } catch {}
-    }
-    // * from search button in Index
-    if (tar.parentElement.parentElement.className.includes("ticker-link"))
-      compName = document.querySelector("#hidden-ticker").value;
-    // * company search button in Company View
-    if (tar.className.includes("comp-search-btn")) {
-      compName = document.querySelector("#comp-search").value.toUpperCase();
-      document.querySelector("#comp-search").value = "";
-      document.querySelector("#hidden-buy-form").style.display = "none";
-      document.querySelector(".big-green-btn").style.display = "block";
-    }
-    if (compName) show_company(compName);
-
-    // ! History view
-    if (tar.className.includes("history-btn")) {
-      document.querySelector("#portfolio-view").style.display = "none";
-      document.querySelector("#summary-row-top").style.display = "flex";
-      document.querySelector("#history-view").style.display = "block";
-      document.querySelector("#company-view").style.display = "none";
-
-      let HistRows = document.querySelectorAll(".hist-row");
-      HistRows.forEach((Item) => {
-        let action = Item.querySelector(".hist-action").innerHTML;
-
-        // switch statement is an if-else alternative
-        switch (action) {
-          case "Buy":
-            Item.querySelector(".hist-sell").innerHTML = "-";
-            break;
-          case "Sell":
-            Item.querySelector(".hist-buy").innerHTML = "-";
-            Item.style.backgroundColor = "rgba(126, 21, 218, 0.08)";
-            break;
-          case "Div":
-            Item.querySelector(".hist-buy").innerHTML = "-";
-            Item.querySelector(".hist-amount").innerHTML = "-";
-            Item.querySelector(".hist-price").innerHTML = "-";
-            Item.querySelector("#hist-profit").innerHTML =
-              Item.querySelector(".hist-sell").innerHTML;
-            Item.querySelector("#hist-profit").style.color =
-              "rgba(78, 235, 0, 0.908)";
-            Item.querySelector(".hist-sell").innerHTML = "-";
-            Item.style.backgroundColor = "rgba(255, 205, 4, 0.165)";
-            break;
-          default:
-            console.log("Incorrect action!");
-        }
-
-        // if dividend title is clicked - change div title
-        Item.addEventListener("click", (event) => {
-          const tar2 = event.target;
-          if (tar2.className.includes("div-title")) {
-            Item.querySelector(".div-title").style.display = "none";
-            Item.querySelector("#change-title-cell").style.display = "block";
-            Item.querySelector("#change-title-cell").style.padding = "5px";
-
-            Item.querySelector("#div-title-change-btn").addEventListener(
-              "click",
-              () => {
-                const newTitle = Item.querySelector("#change-title").value;
-                const ident = Item.querySelector("#hidden-hist-id").value;
-
-                fetch(`/change/${ident}/${newTitle}`);
-
-                Item.querySelector(".div-title").style.display = "block";
-                Item.querySelector("#change-title-cell").style.display = "none";
-                Item.querySelector(".div-title").innerHTML = newTitle;
-                ShowMessage("good", "Entry modified");
-              }
-            );
-          }
-        });
-      });
+    // ? show some view
+    showingCompany(tar);
+    showingHistory(tar);
+    // ? or sort main table
+    if (tar.className.includes("Up") || tar.className.includes("Down")) {
+      sortTable(tar);
     }
   });
 
-  // ! Top 5 columns information
+  // ? search form mutations
+  // * if company is searched - make Search field clickable and Buy button appear
+  if (document.querySelector("#check-filled").innerHTML !== "") {
+    document.querySelector(".ticker-search-container").className =
+      "ticker-link";
+    document.getElementById("action-buttons").style.animationPlayState =
+      "running";
+  }
+  document.querySelector("#main-view-search").addEventListener("click", () => {
+    document.querySelector("#main-view-search").value = "Loading..";
+    document.querySelector(".loader").classList.remove("hidden");
+    const innerBoxes = document.querySelectorAll(".ticker-search-box");
+    innerBoxes.forEach((item) => {
+      item.style.filter = "blur(3px)";
+    });
+  });
+
+  // ? Dividend form handling
+  const form = document.getElementById("Div-form");
+  form.addEventListener("submit", getDividend);
+
+  capitalizeName();
+});
+
+// ! --- functions ----
+
+function showingCompany(tar) {
+  const clName = tar.parentElement.className;
+  // * from History
+  let compName;
+  if (clName.includes("hist-row")) {
+    if (tar.parentElement.querySelector(".hist-action").innerHTML != "Div") {
+      compName =
+        tar.parentElement.querySelector("#hist-company-name").innerHTML;
+    }
+  }
+  // * from Main Table Index
+  if (clName.includes("table-row"))
+    compName = tar.parentElement.querySelector("#company-ticker").innerHTML;
+  // * by link on top
+  if (tar.className.includes("companies-btn")) {
+    compName = "random";
+    try {
+      document.querySelector("#hidden-buy-form").style.display = "none";
+      document.querySelector(".big-green-btn").style.display = "block";
+    } catch {}
+  }
+  // * from search button in Index
+  if (tar.parentElement.parentElement.className.includes("ticker-link"))
+    compName = document.querySelector("#hidden-ticker").value;
+  // * company search button in Company View
+  if (tar.className.includes("comp-search-btn")) {
+    compName = document.querySelector("#comp-search").value.toUpperCase();
+    document.querySelector("#comp-search").value = "";
+    document.querySelector("#hidden-buy-form").style.display = "none";
+    document.querySelector(".big-green-btn").style.display = "block";
+  }
+  if (compName) show_company(compName);
+}
+
+function showingHistory(tar) {
+  if (tar.className.includes("history-btn")) {
+    document.querySelector("#portfolio-view").style.display = "none";
+    document.querySelector("#summary-row-top").style.display = "flex";
+    document.querySelector("#history-view").style.display = "block";
+    document.querySelector("#company-view").style.display = "none";
+
+    let HistRows = document.querySelectorAll(".hist-row");
+    HistRows.forEach((Item) => {
+      let action = Item.querySelector(".hist-action").innerHTML;
+      // switch statement is an if-else alternative
+      switch (action) {
+        case "Buy":
+          Item.querySelector(".hist-sell").innerHTML = "-";
+          break;
+        case "Sell":
+          Item.querySelector(".hist-buy").innerHTML = "-";
+          Item.style.backgroundColor = "rgba(126, 21, 218, 0.08)";
+          break;
+        case "Div":
+          Item.querySelector(".hist-buy").innerHTML = "-";
+          Item.querySelector(".hist-amount").innerHTML = "-";
+          Item.querySelector(".hist-price").innerHTML = "-";
+          Item.querySelector("#hist-profit").innerHTML =
+            Item.querySelector(".hist-sell").innerHTML;
+          Item.querySelector("#hist-profit").style.color =
+            "rgba(78, 235, 0, 0.908)";
+          Item.querySelector(".hist-sell").innerHTML = "-";
+          Item.style.backgroundColor = "rgba(255, 205, 4, 0.165)";
+          break;
+        default:
+          console.log("Incorrect action!");
+      }
+
+      // if dividend title is clicked - change div title
+      Item.addEventListener("click", (event) => {
+        const tar2 = event.target;
+        if (tar2.className.includes("div-title")) {
+          Item.querySelector(".div-title").style.display = "none";
+          Item.querySelector("#change-title-cell").style.display = "block";
+          Item.querySelector("#change-title-cell").style.padding = "5px";
+
+          Item.querySelector("#div-title-change-btn").addEventListener(
+            "click",
+            () => {
+              const newTitle = Item.querySelector("#change-title").value;
+              const ident = Item.querySelector("#hidden-hist-id").value;
+
+              fetch(`/change/${ident}/${newTitle}`);
+
+              Item.querySelector(".div-title").style.display = "block";
+              Item.querySelector("#change-title-cell").style.display = "none";
+              Item.querySelector(".div-title").innerHTML = newTitle;
+              ShowMessage("good", "Entry modified");
+            }
+          );
+        }
+      });
+    });
+  }
+}
+function fillTopInfo() {
   const rows = document.querySelectorAll(".table-row");
   let sum1 = 0;
   let sum2 = 0;
@@ -159,135 +192,103 @@ document.addEventListener("DOMContentLoaded", function () {
       dayChMoney >= 0 ? "green" : "red"
     }-text sum-value">$ ${dayChMoney} &nbsp ${dayCh} % </div>`;
   } catch {}
+}
 
-  // ! sorting
-  document.addEventListener("click", (event) => {
-    let table, rows, switching, i, x, y, shouldSwitch;
-    const sortTar = event.target;
-    // which parameter will sort the table
-    const whichSort = sortTar.className;
-    table = document.getElementById("mainTable");
-    switching = true;
-    while (switching) {
-      switching = false;
-      rows = table.rows;
-      for (i = 1; i < rows.length - 1; i++) {
-        shouldSwitch = false;
-        // * parameter determination
-        if (whichSort.includes("sortSigma")) {
-          x = rows[i].querySelector(".sigma-row").innerHTML;
-          y = rows[i + 1].querySelector(".sigma-row").innerHTML;
-        } else if (whichSort.includes("sortChange")) {
-          x = rows[i].querySelector("#change-field").innerHTML;
-          y = rows[i + 1].querySelector("#change-field").innerHTML;
-        } else if (whichSort.includes("sortDay")) {
-          x = rows[i].querySelector("#day-one").innerHTML;
-          y = rows[i + 1].querySelector("#day-one").innerHTML;
+function sortTable(tar) {
+  let table, rows, switching, i, x, y, shouldSwitch;
+  const whichSort = tar.className;
+  table = document.getElementById("mainTable");
+  switching = true;
+  while (switching) {
+    switching = false;
+    rows = table.rows;
+    for (i = 1; i < rows.length - 1; i++) {
+      shouldSwitch = false;
+      // * parameter determination
+      if (whichSort.includes("sortSigma")) {
+        x = rows[i].querySelector(".sigma-row").innerHTML;
+        y = rows[i + 1].querySelector(".sigma-row").innerHTML;
+      } else if (whichSort.includes("sortChange")) {
+        x = rows[i].querySelector("#change-field").innerHTML;
+        y = rows[i + 1].querySelector("#change-field").innerHTML;
+      } else if (whichSort.includes("sortDay")) {
+        x = rows[i].querySelector("#day-one").innerHTML;
+        y = rows[i + 1].querySelector("#day-one").innerHTML;
+      }
+
+      // * direction determination
+      if (whichSort.includes("Up")) {
+        if (parseFloat(x) < parseFloat(y)) {
+          shouldSwitch = true;
+          break;
         }
-
-        // * direction determination
-        if (whichSort.includes("Up")) {
-          if (parseFloat(x) < parseFloat(y)) {
-            shouldSwitch = true;
-            break;
-          }
-        } else if (whichSort.includes("Down")) {
-          if (parseFloat(x) > parseFloat(y)) {
-            shouldSwitch = true;
-            break;
-          }
+      } else if (whichSort.includes("Down")) {
+        if (parseFloat(x) > parseFloat(y)) {
+          shouldSwitch = true;
+          break;
         }
       }
-      if (shouldSwitch) {
-        rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-        switching = true;
-      }
     }
-    // * switch class after sorting in main table
-    if (whichSort.includes("Up")) sortTar.classList.replace("Up", "Down");
-    else sortTar.classList.replace("Down", "Up");
+    if (shouldSwitch) {
+      rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+      switching = true;
+    }
+  }
+  // * switch classes after sorting in main table
+  if (whichSort.includes("Up")) tar.classList.replace("Up", "Down");
+  else tar.classList.replace("Down", "Up");
+}
+
+function getDividend(event) {
+  event.preventDefault();
+  const form = document.getElementById("Div-form");
+  const title = document.querySelector("#Div-title").value;
+  const amount = document.querySelector("#Div-amount").value.toString();
+  console.log(amount, typeof amount);
+  // make a call to back-end to add this dividend to the DB
+  fetch(`/history/dividend`, {
+    method: "PUT",
+    body: JSON.stringify({
+      title: title,
+      amount: amount,
+    }),
   });
 
-  // ! search form mutations
-  try {
-    // * if company is searched - make Search field clickable and Buy button appear
-    if (document.querySelector("#check-filled").innerHTML !== "") {
-      document.querySelector(".ticker-search-container").className =
-        "ticker-link";
-      document.getElementById("action-buttons").style.animationPlayState =
-        "running";
-    }
-  } catch {}
-  document.querySelector(".search-btn").addEventListener("click", () => {
-    document.querySelector(".search-btn").value = "Loading..";
-    document.querySelector(".loader").classList.remove("hidden");
-    const innerBoxes = document.querySelectorAll(".ticker-search-box");
-    innerBoxes.forEach((item) => {
-      item.style.filter = "blur(3px)";
-    });
-  });
+  // creatig new row in table on 1st position
+  const HistRow = document.querySelector("#HistTable").insertRow(0);
+  HistRow.className = "new-hist-row";
+  HistRow.style.backgroundColor = "rgba(255, 205, 4, 0.165)";
+  var cell1 = HistRow.insertCell(0);
+  var cell2 = HistRow.insertCell(1);
+  var cell3 = HistRow.insertCell(2);
+  var cell4 = HistRow.insertCell(3);
+  var cell5 = HistRow.insertCell(4);
+  var cell6 = HistRow.insertCell(5);
+  var cell7 = HistRow.insertCell(6);
+  var cell8 = HistRow.insertCell(7);
+  cell1.innerHTML = "DIV";
+  cell2.innerHTML = `${title}`;
+  cell3.innerHTML = "Div";
+  cell4.innerHTML = "-";
+  cell5.innerHTML = "-";
+  cell6.innerHTML = "-";
+  cell7.innerHTML = "-";
+  cell8.innerHTML = `${amount}`;
+  cell8.className = "green-text";
+  HistRow.style.animationPlayState = "running";
 
-  // ! Dividend form handling
-  try {
-    const form = document.getElementById("Div-form");
-    form.addEventListener("submit", submitForm);
+  // update profit value
+  const profitWindow = document
+    .querySelector("#profit-main")
+    .querySelector(".sum-value");
+  // get rid of space and $ sign
+  const profitValue = profitWindow.innerHTML.replace(/\s/g, "").match(/\d+/g);
+  let newValue = parseInt(profitValue) + Math.round(Number(amount));
+  profitWindow.innerHTML = `$ ${moneyFormat(newValue)}`;
 
-    function submitForm(event) {
-      event.preventDefault();
-      const title = document.querySelector("#Div-title").value;
-      const amount = document.querySelector("#Div-amount").value.toString();
-      console.log(amount, typeof amount);
-      // make a call to back-end to add this dividend to the DB
-      fetch(`/history/dividend`, {
-        method: "PUT",
-        body: JSON.stringify({
-          title: title,
-          amount: amount,
-        }),
-      });
-
-      // creatig new row in table on 1st position
-      const HistRow = document.querySelector("#HistTable").insertRow(0);
-      HistRow.className = "new-hist-row";
-      HistRow.style.backgroundColor = "rgba(255, 205, 4, 0.165)";
-      var cell1 = HistRow.insertCell(0);
-      var cell2 = HistRow.insertCell(1);
-      var cell3 = HistRow.insertCell(2);
-      var cell4 = HistRow.insertCell(3);
-      var cell5 = HistRow.insertCell(4);
-      var cell6 = HistRow.insertCell(5);
-      var cell7 = HistRow.insertCell(6);
-      var cell8 = HistRow.insertCell(7);
-      cell1.innerHTML = "DIV";
-      cell2.innerHTML = `${title}`;
-      cell3.innerHTML = "Div";
-      cell4.innerHTML = "-";
-      cell5.innerHTML = "-";
-      cell6.innerHTML = "-";
-      cell7.innerHTML = "-";
-      cell8.innerHTML = `${amount}`;
-      cell8.className = "green-text";
-      HistRow.style.animationPlayState = "running";
-
-      // update profit value
-      const profitWindow = document
-        .querySelector("#profit-main")
-        .querySelector(".sum-value");
-      // get rid of space and $ sign
-      const profitValue = profitWindow.innerHTML
-        .replace(/\s/g, "")
-        .match(/\d+/g);
-      let newValue = parseInt(profitValue) + Math.round(Number(amount));
-      profitWindow.innerHTML = `$ ${moneyFormat(newValue)}`;
-
-      form.reset();
-      ShowMessage("good", "Dividends received");
-    }
-  } catch {}
-  capitalizeName();
-});
-
-// ! --- functions ----
+  form.reset();
+  ShowMessage("good", "Dividends received");
+}
 
 // * for alerts to disappear
 setTimeout(function () {
@@ -439,6 +440,14 @@ function moneyFormat(string) {
   return txt;
 }
 
+function capitalizeName() {
+  try {
+    const name = document.querySelector(".username");
+    let myName = name.innerHTML;
+    name.innerHTML = MakeCapitalized(myName);
+  } catch {}
+}
+
 function MakeCapitalized(string) {
   const low = string.toLowerCase();
   let converted = low.charAt(0).toUpperCase() + low.slice(1);
@@ -499,12 +508,4 @@ function blurAllFields(bool) {
   sumRows.forEach((item) => {
     item.style.filter = `${bool ? "blur(4px)" : "blur(0)"}`;
   });
-}
-
-function capitalizeName() {
-  try {
-    const name = document.querySelector(".username");
-    let myName = name.innerHTML;
-    name.innerHTML = MakeCapitalized(myName);
-  } catch {}
 }

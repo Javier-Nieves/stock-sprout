@@ -28,7 +28,7 @@
         <form action="{% url 'indexPost' %}" method="post">
             {% csrf_token %}
             <div class="type-field">{{ search_form }}</div>
-            <input class="search-btn" type="submit" value="Search">
+            <input class="search-btn" id="main-view-search" type="submit" value="Search">
         </form>
 
         <div class="ticker-search-container">
