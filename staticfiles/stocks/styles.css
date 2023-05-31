@@ -234,6 +234,13 @@ h1 {
     color: bisque;
     padding: 5px 20px;
 }
+.hist-row:hover {
+    box-shadow: 0 0 15px #fcde30e9;
+}
+.div-title:hover {
+    color: black;
+    background-color: rgba(240, 194, 27, 0.536);
+}
 .big-green-btn {
     background-color: bisque;
     border: 1px solid gray;
