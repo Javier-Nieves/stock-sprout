@@ -24,7 +24,8 @@ def index(request, message=""):  # with default empty value for message
         try:
             portfolio = Portfolio.objects.get(owner=request.user)
         except:
-            Portfolio.objects.create(owner=request.user)
+            number = Portfolio.objects.last().id
+            Portfolio.objects.create(id=number+1, owner=request.user)
             portfolio = Portfolio.objects.get(owner=request.user)
 
         prices = MyPrice.objects.filter(investor=request.user)
@@ -94,7 +95,6 @@ def indexPost(request):
         portfolio = Portfolio.objects.get(owner=request.user)
         amount = buy_form.cleaned_data['buy_amount']
         form_price = buy_form.cleaned_data['buy_price']
-        # ! stock is being bought
         if 'buy_btn' in request.POST:
             # if the stock doesn't exist in the DB
             try:
@@ -103,16 +103,17 @@ def indexPost(request):
                 # get API data for the ticker
                 compData = checkStock(ticker)
                 # ? create Stock db entry
-                Stocks.objects.create(ticker=ticker, company=compData['company'], day=compData['day'], desc=compData['desc'], price=compData['price'],
+                number = Stocks.objects.last().id
+                Stocks.objects.create(id=number+1, ticker=ticker, company=compData['company'], day=compData['day'], desc=compData['desc'], price=compData['price'],
                                       pe=compData['pe'], fpe=compData['fpe'], pb=compData['pb'], debt=compData[
                                           'debt'], roe=compData['roe'], profitMargins=compData['profitMargins'],
                                       divs=compData['dividends'], targetPrice=compData['targetPrice'], recom=compData['recom'])
 
             # does User already have this stock?
             stock = Stocks.objects.get(ticker=ticker)
-
             if not stock in portfolio.stock.all():
                 portfolio.stock.add(stock)
+                portfolio.save()
 
             # * MyPrice update
             if MyPrice.objects.filter(investor=request.user, stock=stock).exists():
@@ -122,8 +123,9 @@ def indexPost(request):
                 MP.quant += amount
                 MP.save()
             else:
+                number = MyPrice.objects.last().id
                 MyPrice.objects.create(
-                    investor=request.user, stock=stock, quant=amount, myPrice=form_price)
+                    id=number+1, investor=request.user, stock=stock, quant=amount, myPrice=form_price)
 
             # * History update on buy
             number = History.objects.last().id
@@ -220,7 +222,6 @@ def histPost(request):
 
     # ? create new dividend entry in DB
     number = History.objects.last().id
-
     History.objects.create(id=number+1, user=request.user, stock=stk, action="Div",
                            SPrice=dividend, BPrice=0, MyPriceHist=0, ammount=0, note=title)
     portfolio.profit += float(dividend)

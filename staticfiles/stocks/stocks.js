@@ -83,7 +83,7 @@ function showingCompany(tar) {
   if (compName) show_company(compName);
 }
 
-function showingHistory(tar) {
+function showingHistory() {
   document.querySelector("#portfolio-view").style.display = "none";
   document.querySelector("#summary-row-top").style.display = "flex";
   document.querySelector("#history-view").style.display = "block";
@@ -313,9 +313,6 @@ function show_company(compName) {
         ShowMessage("bad", `${result.message}`);
         blurAllFields(false);
       }
-      const roe = result.comp.roe * 100;
-      const divYield = (result.comp.dividends / result.comp.price) * 100;
-      const marg = result.comp.profitMargins * 100;
       const potential = (result.comp.targetPrice / result.comp.price - 1) * 100;
 
       document.querySelector(
@@ -353,77 +350,77 @@ function show_company(compName) {
         result.comp.ticker
       }</div>`;
       const fullText = result.comp.desc;
-      let par = true;
+      let collapsed = true;
       document.querySelector("#company-desc").innerHTML = truncate(
         fullText,
         600
       );
       document.querySelector("#company-desc").addEventListener("click", () => {
-        if (par) {
+        if (collapsed) {
           document.querySelector("#company-desc").innerHTML = fullText;
-          par = false;
+          collapsed = false;
         } else {
           document.querySelector("#company-desc").innerHTML = truncate(
             fullText,
             600
           );
-          par = true;
+          collapsed = true;
         }
       });
-      try {
-        const part1 = '<div class="comp-param-text">';
-        const part2 = '</div> <div class="comp-param-value">';
-        document.querySelector(
-          "#company-pe"
-        ).innerHTML = `${part1} PE: ${part2} ${result.comp.pe.toFixed(
-          1
-        )} </div>`;
-        document.querySelector(
-          "#company-fpe"
-        ).innerHTML = `${part1} Forward PE: ${part2} ${result.comp.fpe.toFixed(
-          1
-        )}</div>`;
-        document.querySelector(
-          "#company-pb"
-        ).innerHTML = `${part1} PB: ${part2} ${result.comp.pb.toFixed(
-          1
-        )}</div>`;
-        document.querySelector(
-          "#company-roe"
-        ).innerHTML = `${part1} ROE: ${part2} ${roe.toFixed(1)} %</div>`;
-        document.querySelector(
-          "#company-debt"
-        ).innerHTML = `${part1} Debt to Equity: ${part2} ${result.comp.debt.toFixed(
-          2
-        )}</div>`;
-        document.querySelector(
-          "#company-profitMargins"
-        ).innerHTML = `${part1} Profit Margins: ${part2} ${marg.toFixed(
-          1
-        )} %</div>`;
-        document.querySelector(
-          "#company-dividends"
-        ).innerHTML = `${part1} Dividends: ${part2} $ ${result.comp.dividends.toFixed(
-          2
-        )}</div>`;
-        document.querySelector(
-          "#company-dividends-yield"
-        ).innerHTML = `${part1} Dividends yield: ${part2}  ${divYield.toFixed(
-          1
-        )} %</div>`;
-
-        document
-          .querySelector(".big-green-btn")
-          .addEventListener("click", () => {
-            document.querySelector("#hidden-buy-form").style.display = "block";
-            document.querySelector(".big-green-btn").style.display = "none";
-            document.querySelector(
-              "#hidden-buy-form"
-            ).style.animationPlayState = "running";
-          });
-      } catch {}
+      fillCompData(result);
       blurAllFields(false);
     });
+}
+
+function fillCompData(result) {
+  const roe = result.comp.roe * 100;
+  const divYield = (result.comp.dividends / result.comp.price) * 100;
+  const marg = result.comp.profitMargins * 100;
+  try {
+    const part1 = '<div class="comp-param-text">';
+    const part2 = '</div> <div class="comp-param-value">';
+    document.querySelector(
+      "#company-pe"
+    ).innerHTML = `${part1} PE: ${part2} ${result.comp.pe.toFixed(1)} </div>`;
+    document.querySelector(
+      "#company-fpe"
+    ).innerHTML = `${part1} Forward PE: ${part2} ${result.comp.fpe.toFixed(
+      1
+    )}</div>`;
+    document.querySelector(
+      "#company-pb"
+    ).innerHTML = `${part1} PB: ${part2} ${result.comp.pb.toFixed(1)}</div>`;
+    document.querySelector(
+      "#company-roe"
+    ).innerHTML = `${part1} ROE: ${part2} ${roe.toFixed(1)} %</div>`;
+    document.querySelector(
+      "#company-debt"
+    ).innerHTML = `${part1} Debt to Equity: ${part2} ${result.comp.debt.toFixed(
+      2
+    )}</div>`;
+    document.querySelector(
+      "#company-profitMargins"
+    ).innerHTML = `${part1} Profit Margins: ${part2} ${marg.toFixed(
+      1
+    )} %</div>`;
+    document.querySelector(
+      "#company-dividends"
+    ).innerHTML = `${part1} Dividends: ${part2} $ ${result.comp.dividends.toFixed(
+      2
+    )}</div>`;
+    document.querySelector(
+      "#company-dividends-yield"
+    ).innerHTML = `${part1} Dividends yield: ${part2}  ${divYield.toFixed(
+      1
+    )} %</div>`;
+
+    document.querySelector(".big-green-btn").addEventListener("click", () => {
+      document.querySelector("#hidden-buy-form").style.display = "block";
+      document.querySelector(".big-green-btn").style.display = "none";
+      document.querySelector("#hidden-buy-form").style.animationPlayState =
+        "running";
+    });
+  } catch {}
 }
 
 // ! other helper functions
