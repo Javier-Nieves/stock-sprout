@@ -235,7 +235,7 @@
                 <td id="hist-company-name">{{item.stock.ticker}}</td>
                 {% if item.action == 'Div' %}
                 <td class="div-title">{{item.note}}</td>
-                <td id="change-title-cell" style="display:none">
+                <td id="change-title-cell">
                     <div class="flex-container">
                         <input class='ticker-inp long' type="text" id="change-title" value="{{item.note}}">
                         <input id="div-title-change-btn" class="div-btn" type="submit" value="Change">
