@@ -1,5 +1,6 @@
 "use strict";
 document.addEventListener("DOMContentLoaded", function () {
+  // todo - make standard function for back btn '/' function
   // ? Top 5 columns information
   fillTopInfo();
 
@@ -31,6 +32,7 @@ document.addEventListener("DOMContentLoaded", function () {
   form.addEventListener("submit", getDividend);
 
   capitalizeName();
+  window.history.pushState("unused", "unused", `/`);
 });
 
 // ! --- functions ----
@@ -57,10 +59,13 @@ function showingCompany(tar) {
       compName =
         tar.parentElement.querySelector("#hist-company-name").innerHTML;
     }
+    // window.history.pushState("unused", "unused", `/company`);
   }
   // * from Main Table Index
-  if (clName.includes("table-row"))
+  if (clName.includes("table-row")) {
     compName = tar.parentElement.querySelector("#company-ticker").innerHTML;
+    // window.history.pushState("unused", "unused", `/company`);
+  }
   // * by link on top
   if (tar.className.includes("companies-btn")) {
     compName = "random";
@@ -68,16 +73,20 @@ function showingCompany(tar) {
       document.querySelector("#hidden-buy-form").style.display = "none";
       document.querySelector(".big-green-btn").style.display = "block";
     } catch {}
+    // window.history.pushState("unused", "unused", `/company`);
   }
   // * from search button in Index
-  if (tar.parentElement.parentElement.className.includes("ticker-link"))
+  if (tar.parentElement.parentElement.className.includes("ticker-link")) {
     compName = document.querySelector("#hidden-ticker").value;
+    // window.history.pushState("unused", "unused", `/company`);
+  }
   // * company search button in Company View
   if (tar.className.includes("comp-search-btn")) {
     compName = document.querySelector("#comp-search").value.toUpperCase();
     document.querySelector("#comp-search").value = "";
     document.querySelector("#hidden-buy-form").style.display = "none";
     document.querySelector(".big-green-btn").style.display = "block";
+    // window.history.pushState("unused", "unused", `/company`);
   }
 
   if (compName) show_company(compName);
@@ -123,6 +132,7 @@ function showingHistory() {
       }
     });
   });
+  window.history.pushState("unused", "unused", `/history`);
 }
 
 function transformTitle(Item) {
@@ -297,6 +307,7 @@ setTimeout(function () {
 }, 3000); // in 3 sec
 
 function show_company(compName) {
+  window.history.pushState("unused", "unused", `/company/${compName}`);
   document.querySelector("#portfolio-view").style.display = "none";
   try {
     document.querySelector("#summary-row-top").style.display = "none";
@@ -499,3 +510,20 @@ function blurAllFields(bool) {
     item.style.filter = `${bool ? "blur(4px)" : "blur(0)"}`;
   });
 }
+
+// ! history (back button) action
+window.addEventListener("popstate", function () {
+  console.log(window.location.href);
+  // The popstate event is fired each time when the current history entry changes.
+  if (window.location.href.slice(-7) === "history") {
+    showingHistory();
+  }
+  if (window.location.href.slice(-1) === "/") {
+    window.location.reload();
+  }
+  if (window.location.href.includes("company")) {
+    const location = window.location.href.indexOf("company");
+    const company = window.location.href.slice(location + 8);
+    show_company(company);
+  }
+});
