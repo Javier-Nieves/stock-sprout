@@ -278,13 +278,15 @@ function getDividend(event) {
   HistRow.style.animationPlayState = "running";
 
   // update profit value
-  const profitWindow = document
+  const valuesToChange = document
     .querySelector("#profit-main")
-    .querySelector(".sum-value");
+    .querySelectorAll(".sum-value");
   // get rid of space and $ sign
-  const profitValue = profitWindow.innerHTML.replace(/\s/g, "").match(/\d+/g);
-  let newValue = parseInt(profitValue) + Math.round(Number(amount));
-  profitWindow.innerHTML = `$ ${moneyFormat(newValue)}`;
+  valuesToChange.forEach((value) => {
+    let profitValue = value.innerHTML.replace(/\s/g, "").match(/\d+/g);
+    let newValue = parseInt(profitValue) + Math.round(Number(amount));
+    value.innerHTML = `&nbsp $ ${moneyFormat(newValue)} &nbsp`;
+  });
 
   form.reset();
   ShowMessage("good", "Dividends received");
