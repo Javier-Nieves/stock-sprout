@@ -175,12 +175,16 @@ function fillTopInfo() {
 
   sum1 = parseFloat(sum1).toFixed();
   sum2 = parseFloat(sum2).toFixed();
-  let a = parseFloat((sum2 / sum1 - 1) * 100).toFixed(1);
-  a = +a || 0;
-  let hidProfit = parseFloat(document.querySelector("#hidden-profit").value);
-  let prof = parseFloat(sum2 - sum1 + hidProfit).toFixed();
+  let perChange = parseFloat((sum2 / sum1 - 1) * 100).toFixed(1);
+  perChange = +perChange || 0;
+  let earnings = Number(
+    document.querySelector("#earnings").innerHTML.match(/\d+/)[0]
+  );
+  console.log("profit =", earnings);
+  let prof = parseFloat(sum2 - sum1 + earnings).toFixed();
 
   try {
+    // todo - can be done in HTML
     document.querySelector(
       "#invested-main"
     ).innerHTML = `<div class="sum-text"> Invested: </div> <div class="sum-value">$ ${moneyFormat(
@@ -188,19 +192,22 @@ function fillTopInfo() {
     )} </div>`;
     document.querySelector(
       "#present-main"
-    ).innerHTML = `<div class="sum-text"> Now: </div> <div class="sum-value"> $ ${moneyFormat(
-      sum2
-    )} </div>`;
-    document.querySelector(
-      "#percent-main"
-    ).innerHTML = `<div class="sum-text"> Change: </div> <div class="${
-      a >= 0 ? "green" : "red"
-    }-text sum-value"> ${a} % </div>`;
-    document.querySelector(
-      "#profit-main"
-    ).innerHTML = `<div class="sum-text"> Profit: </div> <div class="${
-      sum2 - sum1 + hidProfit >= 0 ? "green" : "red"
-    }-text sum-value"> $ ${moneyFormat(prof)} </div>`;
+    ).innerHTML = `<div class="sum-text"> &nbsp Now &nbsp / &nbsp Change: </div> <div class="${
+      perChange >= 0 ? "green" : "red"
+    }-text sum-value"> $ ${moneyFormat(sum2)} &nbsp ${perChange} % </div>`;
+    // document.querySelector(
+    //   "#percent-main"
+    // ).innerHTML = `<div class="sum-text"> Change: </div> <div class="${
+    //   a >= 0 ? "green" : "red"
+    // }-text sum-value"> ${a} % </div>`;
+    const earnings = document.querySelector("#profit");
+    earnings.className = `sum-value ${prof >= 0 ? "green" : "red"}-text`;
+    earnings.innerHTML = `&nbsp $ ${prof}`;
+    // earnings.innerHTML = `<div class="sum-text"> &nbsp Earnings &nbsp / &nbsp Profit: </div>
+    // <div class=sum-value> $ ${earnings.toFixed()} /</div>
+    // <div class="${prof >= 0 ? "green" : "red"}-text sum-value"> $ ${moneyFormat(
+    //   prof
+    // )} </div>`;
     document.querySelector(
       "#day-main"
     ).innerHTML = `<div class="sum-text"> Day change: </div> <div class="${
@@ -519,6 +526,7 @@ window.addEventListener("popstate", function () {
     showingHistory();
   }
   if (window.location.href.slice(-1) === "/") {
+    // todo - normal function here, not refresh one
     window.location.reload();
   }
   if (window.location.href.includes("company")) {

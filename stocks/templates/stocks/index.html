@@ -5,12 +5,17 @@
 {% block body %}
 
 {% if user.is_authenticated %}
-    <!-- ! top 5 columns, summary -->
+    <!-- ! top 4 columns, summary -->
     <div id="summary-row-top" class="summary-row">
         <div id="invested-main"></div>
         <div id="present-main"></div>
-        <div id="percent-main"></div>
-        <div id="profit-main"></div>
+        <div id="profit-main">
+            <div class="sum-text"> &nbsp Earnings &nbsp / &nbsp Profit: </div> 
+            <div style="display:flex">
+                <div id="earnings" class=sum-value>&nbsp $ {{ profit|floatformat:"0" }} &nbsp</div>
+                <div id="profit" class="sum-value"></div>
+            </div>
+        </div>
         <div id="day-main"></div>
     </div>
 
@@ -61,7 +66,7 @@
             {% endif %} 
          {% endif %}
 
-        <input type="hidden" id="hidden-profit" value="{{profit}}">
+        <!-- <input type="hidden" id="hidden-profit" value="{{profit}}"> -->
 
     </div>
 
