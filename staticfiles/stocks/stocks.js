@@ -42,12 +42,14 @@ function showActionBtns() {
     "running";
 }
 function beginSearch() {
-  document.querySelector("#main-view-search").value = "Loading..";
-  document.querySelector(".loader").classList.remove("hidden");
-  const innerBoxes = document.querySelectorAll(".ticker-search-box");
-  innerBoxes.forEach((item) => {
-    item.style.filter = "blur(3px)";
-  });
+  if (document.querySelector(".ticker-inp").value != "") {
+    document.querySelector("#main-view-search").value = "Loading..";
+    document.querySelector(".loader").classList.remove("hidden");
+    const innerBoxes = document.querySelectorAll(".ticker-search-box");
+    innerBoxes.forEach((item) => {
+      item.style.filter = "blur(3px)";
+    });
+  }
 }
 
 function showingCompany(tar) {
@@ -59,12 +61,10 @@ function showingCompany(tar) {
       compName =
         tar.parentElement.querySelector("#hist-company-name").innerHTML;
     }
-    // window.history.pushState("unused", "unused", `/company`);
   }
   // * from Main Table Index
   if (clName.includes("table-row")) {
     compName = tar.parentElement.querySelector("#company-ticker").innerHTML;
-    // window.history.pushState("unused", "unused", `/company`);
   }
   // * by link on top
   if (tar.className.includes("companies-btn")) {
@@ -72,13 +72,13 @@ function showingCompany(tar) {
     try {
       document.querySelector("#hidden-buy-form").style.display = "none";
       document.querySelector(".big-green-btn").style.display = "block";
-    } catch {}
-    // window.history.pushState("unused", "unused", `/company`);
+    } catch (error) {
+      console.error("An Error occurred:", error.message);
+    }
   }
   // * from search button in Index
   if (tar.parentElement.parentElement.className.includes("ticker-link")) {
     compName = document.querySelector("#hidden-ticker").value;
-    // window.history.pushState("unused", "unused", `/company`);
   }
   // * company search button in Company View
   if (tar.className.includes("comp-search-btn")) {
@@ -86,7 +86,6 @@ function showingCompany(tar) {
     document.querySelector("#comp-search").value = "";
     document.querySelector("#hidden-buy-form").style.display = "none";
     document.querySelector(".big-green-btn").style.display = "block";
-    // window.history.pushState("unused", "unused", `/company`);
   }
 
   if (compName) show_company(compName);
@@ -180,7 +179,6 @@ function fillTopInfo() {
   let earnings = Number(
     document.querySelector("#earnings").innerHTML.match(/\d+/)[0]
   );
-  console.log("profit =", earnings);
   let prof = parseFloat(sum2 - sum1 + earnings).toFixed();
 
   try {
@@ -195,19 +193,9 @@ function fillTopInfo() {
     ).innerHTML = `<div class="sum-text"> &nbsp Now &nbsp / &nbsp Change: </div> <div class="${
       perChange >= 0 ? "green" : "red"
     }-text sum-value"> $ ${moneyFormat(sum2)} &nbsp ${perChange} % </div>`;
-    // document.querySelector(
-    //   "#percent-main"
-    // ).innerHTML = `<div class="sum-text"> Change: </div> <div class="${
-    //   a >= 0 ? "green" : "red"
-    // }-text sum-value"> ${a} % </div>`;
     const earnings = document.querySelector("#profit");
     earnings.className = `sum-value ${prof >= 0 ? "green" : "red"}-text`;
     earnings.innerHTML = `&nbsp $ ${prof}`;
-    // earnings.innerHTML = `<div class="sum-text"> &nbsp Earnings &nbsp / &nbsp Profit: </div>
-    // <div class=sum-value> $ ${earnings.toFixed()} /</div>
-    // <div class="${prof >= 0 ? "green" : "red"}-text sum-value"> $ ${moneyFormat(
-    //   prof
-    // )} </div>`;
     document.querySelector(
       "#day-main"
     ).innerHTML = `<div class="sum-text"> Day change: </div> <div class="${
