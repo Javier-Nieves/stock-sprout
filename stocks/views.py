@@ -240,9 +240,15 @@ def histChange(request, ident, newText):
     return JsonResponse({'status': 'false'}, status=204)
 
 
+def blank_page(request, name):
+    print(name)
+    return index(request)
+
 # ! ------------------ functions ---------------
 
 # ! get company financial data by ticker (API function)
+
+
 def checkStock(ticker):
     try:
         url = f"https://query1.finance.yahoo.com/v11/finance/quoteSummary/{ticker}?modules=financialData"

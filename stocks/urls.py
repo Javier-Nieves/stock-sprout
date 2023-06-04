@@ -10,6 +10,8 @@ urlpatterns = [
     path("login", views.login_view, name="login"),
     path("logout", views.logout_view, name="logout"),
     path("register", views.register, name="register"),
+    path('history', views.blank_page, name='history page refresh'),
+    path("company/<str:name>", views.blank_page, name='companypage refresh'),
 
     # API Route
     path("companies/<str:name>", views.company_view, name="company"),

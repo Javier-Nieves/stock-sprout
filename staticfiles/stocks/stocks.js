@@ -1,5 +1,12 @@
 "use strict";
 document.addEventListener("DOMContentLoaded", function () {
+  loadCorrectView();
+
+  // ! history (back button) action
+  window.addEventListener("popstate", function () {
+    loadCorrectView();
+  });
+
   // todo - make standard function for back btn '/' function
   // ? Top 5 columns information
   fillTopInfo();
@@ -508,8 +515,7 @@ function blurAllFields(bool) {
   });
 }
 
-// ! history (back button) action
-window.addEventListener("popstate", function () {
+function loadCorrectView() {
   console.log(window.location.href);
   // The popstate event is fired each time when the current history entry changes.
   if (window.location.href.slice(-7) === "history") {
@@ -517,11 +523,11 @@ window.addEventListener("popstate", function () {
   }
   if (window.location.href.slice(-1) === "/") {
     // todo - normal function here, not refresh one
-    window.location.reload();
+    // window.location.reload();
   }
   if (window.location.href.includes("company")) {
     const location = window.location.href.indexOf("company");
     const company = window.location.href.slice(location + 8);
     show_company(company);
   }
-});
+}
