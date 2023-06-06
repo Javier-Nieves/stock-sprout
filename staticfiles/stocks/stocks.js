@@ -1,15 +1,23 @@
 "use strict";
 document.addEventListener("DOMContentLoaded", function () {
+  AuthCheck().then((loggedIn) => {
+    if (loggedIn) {
+      // ? Top 4 columns information
+      fillTopInfo();
+      // ? Dividend form handling
+      const form = document.getElementById("Div-form");
+      form.addEventListener("submit", getDividend);
+    }
+  });
+
   loadCorrectView();
 
-  // ! history (back button) action
+  // ! back button action
   window.addEventListener("popstate", function () {
     loadCorrectView();
   });
 
   // todo - make standard function for back btn '/' function
-  // ? Top 5 columns information
-  fillTopInfo();
 
   document.addEventListener("click", (event) => {
     const tar = event.target;
@@ -33,10 +41,6 @@ document.addEventListener("DOMContentLoaded", function () {
   document.querySelector("#main-view-search").addEventListener("click", () => {
     beginSearch();
   });
-
-  // ? Dividend form handling
-  const form = document.getElementById("Div-form");
-  form.addEventListener("submit", getDividend);
 
   capitalizeName();
   window.history.pushState("unused", "unused", `/`);
@@ -80,7 +84,7 @@ function showingCompany(tar) {
       document.querySelector("#hidden-buy-form").style.display = "none";
       document.querySelector(".big-green-btn").style.display = "block";
     } catch (error) {
-      console.error("An Error occurred:", error.message);
+      // console.error("An Error occurred:", error.message);
     }
   }
   // * from search button in Index
@@ -516,7 +520,6 @@ function blurAllFields(bool) {
 }
 
 function loadCorrectView() {
-  console.log(window.location.href);
   // The popstate event is fired each time when the current history entry changes.
   if (window.location.href.slice(-7) === "history") {
     showingHistory();
@@ -530,4 +533,12 @@ function loadCorrectView() {
     const company = window.location.href.slice(location + 8);
     show_company(company);
   }
+}
+
+async function AuthCheck() {
+  let status;
+  const resp = await fetch(`/authCheck`);
+  const data = await resp.json();
+  status = data.LoggedIn;
+  return status;
 }

@@ -236,13 +236,16 @@ def histChange(request, ident, newText):
     changing = History.objects.get(id=ident)
     changing.note = newText
     changing.save()
-
     return JsonResponse({'status': 'false'}, status=204)
 
 
 def blank_page(request, name):
     print(name)
     return index(request)
+
+
+def auth_check(request):
+    return JsonResponse({'LoggedIn': request.user.is_authenticated})
 
 # ! ------------------ functions ---------------
 

@@ -17,6 +17,7 @@ urlpatterns = [
     path("companies/<str:name>", views.company_view, name="company"),
     path("history/dividend", views.histPost, name="dividends"),
     path("change/<int:ident>/<str:newText>",
-         views.histChange, name="div-title")
+         views.histChange, name="div-title"),
+    path('authCheck', views.auth_check, name='logged in')
 
 ]
