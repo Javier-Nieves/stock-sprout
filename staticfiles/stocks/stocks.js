@@ -352,9 +352,9 @@ function show_company(compName) {
 
       document.querySelector(
         "#company-targetPrice"
-      ).innerHTML = `<div class="comp-param-text"> Target price: </div> <div class="comp-param-value-big">$ ${result.comp.targetPrice.toFixed(
-        2
-      )} <div class='${
+      ).innerHTML = `<div class="comp-param-text"> Target price: </div> <div class="comp-param-value-big">$ ${
+        result.comp.targetPrice?.toFixed(2) || "???"
+      } <div class='${
         potential > 0 ? "green" : "red"
       }-text med-text'>${potential.toFixed(1)} % </div></div>`;
 
@@ -362,7 +362,9 @@ function show_company(compName) {
       document.querySelector("#hidden-ticker-comp").value = result.comp.ticker;
       document.querySelector(
         "#company-recom"
-      ).innerHTML = `<div class="comp-param-text"> Recommendation: </div> <div class="comp-param-value-big">${result.comp.recom} </div>`;
+      ).innerHTML = `<div class="comp-param-text"> Recommendation: </div> <div class="comp-param-value-big">${
+        result.comp.recom || "???"
+      } </div>`;
       document.querySelector("#company-title").innerHTML = `${MakeCapitalized(
         result.comp.company
       )} <div class='comp-param-text' style='text-align:center;'>${
@@ -411,27 +413,27 @@ function fillCompData(result) {
     ).innerHTML = `${part1} PB: ${part2} ${result.comp.pb.toFixed(1)}</div>`;
     document.querySelector(
       "#company-roe"
-    ).innerHTML = `${part1} ROE: ${part2} ${roe.toFixed(1)} %</div>`;
+    ).innerHTML = `${part1} ROE: ${part2} ${roe?.toFixed(1) || "???"} %</div>`;
     document.querySelector(
       "#company-debt"
-    ).innerHTML = `${part1} Debt to Equity: ${part2} ${result.comp.debt.toFixed(
-      2
-    )}</div>`;
+    ).innerHTML = `${part1} Debt to Equity: ${part2} ${
+      result.comp.debt?.toFixed(2) || "???"
+    }</div>`;
     document.querySelector(
       "#company-profitMargins"
-    ).innerHTML = `${part1} Profit Margins: ${part2} ${marg.toFixed(
-      1
-    )} %</div>`;
+    ).innerHTML = `${part1} Profit Margins: ${part2} ${
+      marg?.toFixed(1) || "???"
+    } %</div>`;
     document.querySelector(
       "#company-dividends"
-    ).innerHTML = `${part1} Dividends: ${part2} $ ${result.comp.dividends.toFixed(
-      2
-    )}</div>`;
+    ).innerHTML = `${part1} Dividends: ${part2} $ ${
+      result.comp.dividends?.toFixed(2) || "???"
+    }</div>`;
     document.querySelector(
       "#company-dividends-yield"
-    ).innerHTML = `${part1} Dividends yield: ${part2}  ${divYield.toFixed(
-      1
-    )} %</div>`;
+    ).innerHTML = `${part1} Dividends yield: ${part2}  ${
+      divYield?.toFixed(1) || "???"
+    } %</div>`;
 
     document.querySelector(".big-green-btn").addEventListener("click", () => {
       document.querySelector("#hidden-buy-form").style.display = "block";
