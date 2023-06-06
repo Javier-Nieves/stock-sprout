@@ -334,12 +334,12 @@ function show_company(compName) {
       }
       const potential = (result.comp.targetPrice / result.comp.price - 1) * 100;
 
-      document.querySelector(
-        "#res-comp-price"
-      ).innerHTML = `$ ${result.comp.price.toFixed(2)}`;
-      document.querySelector(
-        "#res-comp-day"
-      ).innerHTML = `${result.comp.day.toFixed(1)} % `;
+      document.querySelector("#res-comp-price").innerHTML = `$ ${
+        result.comp.price?.toFixed(2) || "???"
+      }`;
+      document.querySelector("#res-comp-day").innerHTML = `${
+        result.comp.day?.toFixed(1) || "???"
+      } % `;
 
       if (result.comp.day < 0)
         document
@@ -370,7 +370,7 @@ function show_company(compName) {
       )} <div class='comp-param-text' style='text-align:center;'>${
         result.comp.ticker
       }</div>`;
-      const fullText = result.comp.desc;
+      const fullText = result.comp.desc ? result.comp.desc : "no description";
       let collapsed = true;
       document.querySelector("#company-desc").innerHTML = truncate(
         fullText,
@@ -400,17 +400,17 @@ function fillCompData(result) {
   try {
     const part1 = '<div class="comp-param-text">';
     const part2 = '</div> <div class="comp-param-value">';
-    document.querySelector(
-      "#company-pe"
-    ).innerHTML = `${part1} PE: ${part2} ${result.comp.pe.toFixed(1)} </div>`;
+    document.querySelector("#company-pe").innerHTML = `${part1} PE: ${part2} ${
+      result.comp.pe?.toFixed(1) || "???"
+    } </div>`;
     document.querySelector(
       "#company-fpe"
-    ).innerHTML = `${part1} Forward PE: ${part2} ${result.comp.fpe.toFixed(
-      1
-    )}</div>`;
-    document.querySelector(
-      "#company-pb"
-    ).innerHTML = `${part1} PB: ${part2} ${result.comp.pb.toFixed(1)}</div>`;
+    ).innerHTML = `${part1} Forward PE: ${part2} ${
+      result.comp.fpe?.toFixed(1) || "???"
+    }</div>`;
+    document.querySelector("#company-pb").innerHTML = `${part1} PB: ${part2} ${
+      result.comp.pb?.toFixed(1) || "???"
+    }</div>`;
     document.querySelector(
       "#company-roe"
     ).innerHTML = `${part1} ROE: ${part2} ${roe?.toFixed(1) || "???"} %</div>`;
