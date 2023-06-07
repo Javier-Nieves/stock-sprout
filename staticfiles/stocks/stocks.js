@@ -46,10 +46,7 @@ document.addEventListener("DOMContentLoaded", function () {
   capitalizeName();
   // window.history.pushState("unused", "unused", `/`);
 
-  const updateBtn = document.querySelector(".prices-btn");
-  updateBtn.onclick = () => {
-    updatePrices();
-  };
+  updateBtnFunction();
 });
 
 // ! --- functions ----
@@ -453,6 +450,23 @@ function fillCompData(result) {
 }
 
 // ! other helper functions
+function updateBtnFunction() {
+  const updateBtn = document.querySelector(".prices-btn");
+  updateBtn.addEventListener("mouseover", function () {
+    updateBtn.textContent = "Update";
+  });
+  updateBtn.addEventListener("mouseout", function () {
+    updateBtn.textContent = "Price, $";
+  });
+  updateBtn.addEventListener("mouseup", function () {
+    updateBtn.style.display = "none";
+    document.querySelector(".three-dots").style.display = "flex";
+  });
+  updateBtn.onclick = () => {
+    updatePrices();
+  };
+}
+
 function moneyFormat(string) {
   const changed = string.toString();
   let txt;
@@ -488,7 +502,6 @@ function MakeCapitalized(string) {
 }
 
 function updatePrices() {
-  const updateBtn = document.querySelector(".prices-btn");
   const rows = document.querySelectorAll(".table-row");
   let rowCount = 0;
   rows.forEach((row) => {
@@ -524,6 +537,9 @@ function updatePrices() {
         if (rowCount === rows.length) {
           setTimeout(function () {
             fillTopInfo();
+            const updateBtn = document.querySelector(".prices-btn");
+            updateBtn.style.display = "block";
+            document.querySelector(".three-dots").style.display = "none";
           }, 1000);
         }
       })
