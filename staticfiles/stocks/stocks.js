@@ -1,6 +1,12 @@
 "use strict";
-document.addEventListener("DOMContentLoaded", function () {
-  AuthCheck().then((loggedIn) => {
+let loggedIn;
+AuthCheck()
+  .then((answer) => {
+    loggedIn = answer;
+    console.log(loggedIn);
+  })
+  .then(() => {
+    // document.addEventListener("DOMContentLoaded", function () {
     if (loggedIn) {
       // ? Top 4 columns information
       fillTopInfo();
@@ -8,46 +14,49 @@ document.addEventListener("DOMContentLoaded", function () {
       const form = document.getElementById("Div-form");
       form.addEventListener("submit", getDividend);
     }
-  });
+    console.log(loggedIn);
 
-  loadCorrectView();
-
-  // ! back button action
-  window.addEventListener("popstate", function () {
     loadCorrectView();
-  });
 
-  document.addEventListener("click", (event) => {
-    const tar = event.target;
-    // ? show some view
-    showingCompany(tar);
-    if (tar.className.includes("portfolio-btn")) {
-      showingMain();
+    // ! back button action
+    window.addEventListener("popstate", function () {
+      loadCorrectView();
+    });
+
+    document.addEventListener("click", (event) => {
+      const tar = event.target;
+      // ? show some view
+      showingCompany(tar);
+      if (tar.className.includes("portfolio-btn")) {
+        showingMain();
+      }
+      if (tar.className.includes("history-btn")) {
+        showingHistory();
+      }
+      // ? or sort main table
+      if (tar.className.includes("Up") || tar.className.includes("Down")) {
+        sortTable(tar);
+      }
+    });
+
+    // ? search form mutations
+    // * if company is searched - make Search field clickable and Buy button appear
+    const filledSearchForm = document.querySelector("#check-filled");
+    if (filledSearchForm.innerHTML !== "") {
+      showActionBtns();
     }
-    if (tar.className.includes("history-btn")) {
-      showingHistory();
-    }
-    // ? or sort main table
-    if (tar.className.includes("Up") || tar.className.includes("Down")) {
-      sortTable(tar);
-    }
+    document
+      .querySelector("#main-view-search")
+      .addEventListener("click", () => {
+        beginSearch();
+      });
+
+    capitalizeName();
+    // window.history.pushState("unused", "unused", `/`);
+
+    updateBtnFunction();
+    // });
   });
-
-  // ? search form mutations
-  // * if company is searched - make Search field clickable and Buy button appear
-  const filledSearchForm = document.querySelector("#check-filled");
-  if (filledSearchForm.innerHTML !== "") {
-    showActionBtns();
-  }
-  document.querySelector("#main-view-search").addEventListener("click", () => {
-    beginSearch();
-  });
-
-  capitalizeName();
-  // window.history.pushState("unused", "unused", `/`);
-
-  updateBtnFunction();
-});
 
 // ! --- functions ----
 function showActionBtns() {
@@ -67,11 +76,14 @@ function beginSearch() {
 }
 
 function showingMain() {
+  console.log(loggedIn);
   window.history.pushState("unused", "unused", `/`);
-  document.querySelector("#portfolio-view").style.display = "block";
-  document.querySelector("#summary-row-top").style.display = "flex";
-  document.querySelector("#history-view").style.display = "none";
   document.querySelector("#company-view").style.display = "none";
+  document.querySelector("#portfolio-view").style.display = "block";
+  if (loggedIn) {
+    document.querySelector("#summary-row-top").style.display = "flex";
+    document.querySelector("#history-view").style.display = "none";
+  }
 }
 
 function showingCompany(tar) {
@@ -536,11 +548,13 @@ function updatePrices() {
         rowCount++;
         if (rowCount === rows.length) {
           setTimeout(function () {
-            fillTopInfo();
+            if (loggedIn) {
+              fillTopInfo();
+            }
             const updateBtn = document.querySelector(".prices-btn");
             updateBtn.style.display = "block";
             document.querySelector(".three-dots").style.display = "none";
-          }, 1000);
+          }, 400);
         }
       })
       .catch((error) => {

@@ -4,7 +4,7 @@
 
 {% block body %}
 
-{% if user.is_authenticated %}
+
     <!-- ! top 4 columns, summary -->
     <div id="summary-row-top" class="summary-row">
         <div id="invested-main">
@@ -28,7 +28,7 @@
         </div>
     </div>
 
-{% endif %}
+
 
 <!-- ! portfolio  view -->
 <div id="portfolio-view" style="width: 100vw;">
@@ -74,8 +74,6 @@
             </div>
             {% endif %} 
          {% endif %}
-
-        <!-- <input type="hidden" id="hidden-profit" value="{{profit}}"> -->
 
     </div>
 
