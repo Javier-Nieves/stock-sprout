@@ -470,10 +470,31 @@ table {
     z-index: 5;
   }
 
-  .hidden {
+.hidden {
     display: none;
   }
   #change-title-cell {
     display: none;
     padding: 5px;
+  }
+
+.prices-btn, .market-price {
+    width: 7vw;
+    color: rgb(195, 188, 1);
+  }
+.prices-btn::before {
+    content: 'Price, $';
+    border: 2px solid rgb(248, 218, 23);
+    border-radius: 5px;
+    padding: 7px 13px 7px 13px;
+  }
+.prices-btn:hover::before {
+    content: 'Update';
+    cursor: pointer;
+    color: black;
+    background-color: rgb(216, 209, 5);
+}
+.prices-btn:hover~ .market-price {
+    font-size: 30px;
+    color: red;
   }

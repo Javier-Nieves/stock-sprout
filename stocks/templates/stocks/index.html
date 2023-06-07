@@ -7,8 +7,14 @@
 {% if user.is_authenticated %}
     <!-- ! top 4 columns, summary -->
     <div id="summary-row-top" class="summary-row">
-        <div id="invested-main"></div>
-        <div id="present-main"></div>
+        <div id="invested-main">
+            <div class="sum-text"> Invested: </div> 
+            <div class="sum-value"></div>
+        </div>
+        <div id="present-main">
+            <div class="sum-text"> &nbsp Now &nbsp / &nbsp Change: </div>
+            <div id="nowChange" class="sum-value"></div>
+        </div>
         <div id="profit-main">
             <div class="sum-text"> &nbsp Earnings &nbsp / &nbsp Profit: </div> 
             <div style="display:flex">
@@ -16,7 +22,10 @@
                 <div id="profit" class="sum-value"></div>
             </div>
         </div>
-        <div id="day-main"></div>
+        <div id="day-main">
+            <div class="sum-text">Day change:</div>
+            <div id="dayChange" class="sum-value"></div>
+        </div>
     </div>
 
 {% endif %}
@@ -90,7 +99,7 @@
                 <th class="sortDay Up">Company</th>
                 <th>MyPrice, $</th>
                 <th>Quantity</th>
-                <th>Price, $</th>
+                <th class="prices-btn"></th>
                 <th class="sortSigma Up">&#931, $</th>
                 <th class="sortChange Up">Change, %</th>
             </tr>

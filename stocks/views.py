@@ -208,11 +208,6 @@ def company_view(request, name):
 @csrf_exempt
 def histPost(request):
     portfolio = Portfolio.objects.get(owner=request.user)
-    # ?Django form was used previously, but form submittions reloads the page, so JS is used instead
-    # div_form = DividendForm(request.POST)
-    # if div_form.is_valid():
-    #     title = div_form.cleaned_data['title']
-    #     dividend = div_form.cleaned_data['dividend']
     stk = Stocks.objects.get(ticker="DIV")
 
     if request.method == "PUT":
@@ -228,7 +223,6 @@ def histPost(request):
     portfolio.save()
 
     return JsonResponse({'status': 'false'}, status=204)
-    # return index(request, 'Dividends received', status=204)
 
 
 def histChange(request, ident, newText):
@@ -239,8 +233,7 @@ def histChange(request, ident, newText):
     return JsonResponse({'status': 'false'}, status=204)
 
 
-def blank_page(request, name):
-    print(name)
+def blank_page(request, name=''):
     return index(request)
 
 

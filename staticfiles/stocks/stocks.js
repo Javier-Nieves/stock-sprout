@@ -17,12 +17,13 @@ document.addEventListener("DOMContentLoaded", function () {
     loadCorrectView();
   });
 
-  // todo - make standard function for back btn '/' function
-
   document.addEventListener("click", (event) => {
     const tar = event.target;
     // ? show some view
     showingCompany(tar);
+    if (tar.className.includes("portfolio-btn")) {
+      showingMain();
+    }
     if (tar.className.includes("history-btn")) {
       showingHistory();
     }
@@ -43,7 +44,26 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   capitalizeName();
-  window.history.pushState("unused", "unused", `/`);
+  // window.history.pushState("unused", "unused", `/`);
+
+  const thElement = document.querySelector(".prices-btn");
+  const tdElements = document.querySelectorAll(".market-price");
+  thElement.addEventListener("mouseenter", function () {
+    let delay = 0;
+    tdElements.forEach((td) => {
+      setTimeout(function () {
+        td.style.backgroundColor = "rgba(216, 209, 5, 0.6)";
+        td.style.color = "black";
+      }, delay);
+      delay += 70;
+    });
+  });
+  thElement.addEventListener("mouseleave", function () {
+    tdElements.forEach((td) => {
+      td.style.backgroundColor = "";
+      td.style.color = "";
+    });
+  });
 });
 
 // ! --- functions ----
@@ -61,6 +81,14 @@ function beginSearch() {
       item.style.filter = "blur(3px)";
     });
   }
+}
+
+function showingMain() {
+  window.history.pushState("unused", "unused", `/`);
+  document.querySelector("#portfolio-view").style.display = "block";
+  document.querySelector("#summary-row-top").style.display = "flex";
+  document.querySelector("#history-view").style.display = "none";
+  document.querySelector("#company-view").style.display = "none";
 }
 
 function showingCompany(tar) {
@@ -192,27 +220,21 @@ function fillTopInfo() {
   );
   let prof = parseFloat(sum2 - sum1 + earnings).toFixed();
 
-  try {
-    // todo - can be done in HTML
-    document.querySelector(
-      "#invested-main"
-    ).innerHTML = `<div class="sum-text"> Invested: </div> <div class="sum-value">$ ${moneyFormat(
-      sum1
-    )} </div>`;
-    document.querySelector(
-      "#present-main"
-    ).innerHTML = `<div class="sum-text"> &nbsp Now &nbsp / &nbsp Change: </div> <div class="${
-      perChange >= 0 ? "green" : "red"
-    }-text sum-value"> $ ${moneyFormat(sum2)} &nbsp ${perChange} % </div>`;
-    const earnings = document.querySelector("#profit");
-    earnings.className = `sum-value ${prof >= 0 ? "green" : "red"}-text`;
-    earnings.innerHTML = `&nbsp $ ${prof}`;
-    document.querySelector(
-      "#day-main"
-    ).innerHTML = `<div class="sum-text"> Day change: </div> <div class="${
-      dayChMoney >= 0 ? "green" : "red"
-    }-text sum-value">$ ${dayChMoney} &nbsp ${dayCh} % </div>`;
-  } catch {}
+  document
+    .querySelector("#invested-main")
+    .querySelector(".sum-value").innerHTML = `$ ${moneyFormat(sum1)}`;
+
+  const nowChange = document.querySelector("#nowChange");
+  nowChange.classList.add(`${perChange >= 0 ? "green" : "red"}-text`);
+  nowChange.innerHTML = `$ ${moneyFormat(sum2)} &nbsp ${perChange} % </div>`;
+
+  const profitBox = document.querySelector("#profit");
+  profitBox.className = `sum-value ${prof >= 0 ? "green" : "red"}-text`;
+  profitBox.innerHTML = `&nbsp $ ${prof}`;
+
+  const dayChange = document.querySelector("#dayChange");
+  dayChange.classList.add(`${dayChMoney >= 0 ? "green" : "red"}-text`);
+  dayChange.innerHTML = `$ ${dayChMoney} &nbsp ${dayCh} % </div>`;
 }
 
 function sortTable(tar) {
@@ -527,8 +549,7 @@ function loadCorrectView() {
     showingHistory();
   }
   if (window.location.href.slice(-1) === "/") {
-    // todo - normal function here, not refresh one
-    // window.location.reload();
+    showingMain();
   }
   if (window.location.href.includes("company")) {
     const location = window.location.href.indexOf("company");
