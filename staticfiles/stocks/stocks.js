@@ -46,7 +46,10 @@ document.addEventListener("DOMContentLoaded", function () {
   capitalizeName();
   // window.history.pushState("unused", "unused", `/`);
 
-  updateBtnAction();
+  const updateBtn = document.querySelector(".prices-btn");
+  updateBtn.onclick = () => {
+    updatePrices();
+  };
 });
 
 // ! --- functions ----
@@ -178,12 +181,11 @@ function fillTopInfo() {
   let sum2 = 0;
   let dayCh = 0;
 
-  rows.forEach((Item) => {
-    let myPr = parseFloat(Item.querySelector(".my-price-row").innerHTML);
-    let Qu = parseFloat(Item.querySelector(".quantity-row").innerHTML);
-    let Si = parseFloat(Item.querySelector(".sigma-row").innerHTML);
-    let dayOne = parseFloat(Item.querySelector("#day-one").innerHTML);
-
+  rows.forEach((row) => {
+    let myPr = parseFloat(row.querySelector(".my-price-row").innerHTML);
+    let Qu = parseFloat(row.querySelector(".quantity-row").innerHTML);
+    let Si = parseFloat(row.querySelector(".sigma-row").innerHTML);
+    let dayOne = parseFloat(row.querySelector("#day-one").innerHTML);
     sum1 += myPr * Qu;
     sum2 += Si;
     dayCh += (Si / (100 + dayOne)) * 100;
@@ -485,32 +487,10 @@ function MakeCapitalized(string) {
   return converted;
 }
 
-function updateBtnAction() {
-  const updateBtn = document.querySelector(".prices-btn");
-  const tdElements = document.querySelectorAll(".market-price");
-  updateBtn.addEventListener("mouseenter", function () {
-    let delay = 0;
-    tdElements.forEach((td) => {
-      setTimeout(function () {
-        td.style.backgroundColor = "rgba(216, 209, 5, 0.6)";
-        td.style.color = "black";
-      }, delay);
-      delay += 70;
-    });
-  });
-  updateBtn.addEventListener("mouseleave", function () {
-    tdElements.forEach((td) => {
-      td.style.backgroundColor = "";
-      td.style.color = "";
-    });
-  });
-  updateBtn.onclick = () => {
-    updatePrices();
-  };
-}
-
 function updatePrices() {
+  const updateBtn = document.querySelector(".prices-btn");
   const rows = document.querySelectorAll(".table-row");
+  let rowCount = 0;
   rows.forEach((row) => {
     const day = row.querySelector("#day-one");
     const price = row.querySelector(".market-price");
@@ -519,15 +499,37 @@ function updatePrices() {
     const myPrice = Number(row.querySelector(".my-price-row").innerHTML);
     const quant = Number(row.querySelector(".quantity-row").innerHTML);
     let ticker = row.querySelector("#company-ticker").innerHTML;
-    getData(ticker).then((data) => {
-      day.innerHTML = `${data.comp.day.toFixed(3)} %`;
-      day.className = `${data.comp.day > 0 ? "green" : "red"}-text`;
-      price.innerHTML = `${data.comp.price.toFixed(3)}`;
-      sigma.innerHTML = quant * data.comp.price;
-      let chNum = (data.comp.price / myPrice - 1) * 100;
-      change.innerHTML = `${chNum.toFixed(3)} %`;
-      change.className = `${chNum > 0 ? "green" : "red"}-text`;
-    });
+
+    getData(ticker)
+      .then((data) => {
+        day.innerHTML = `${data.comp.day.toFixed(2)} %`;
+        price.innerHTML = `${data.comp.price.toFixed(2)}`;
+        let sigNum = quant * data.comp.price;
+        sigma.innerHTML = sigNum.toFixed(2);
+        let chNum = (data.comp.price / myPrice - 1) * 100;
+        change.innerHTML = `${chNum.toFixed(2)} %`;
+        price.classList.add("animate");
+        sigma.classList.add("animate");
+        change.classList.add("animate");
+        day.classList.add("animate");
+        setTimeout(function () {
+          price.className = "market-price";
+          change.className = `${chNum > 0 ? "green" : "red"}-text`;
+          day.className = `${data.comp.day > 0 ? "green" : "red"}-text`;
+          sigma.className = "sigma-row";
+        }, 1500);
+      })
+      .then(() => {
+        rowCount++;
+        if (rowCount === rows.length) {
+          setTimeout(function () {
+            fillTopInfo();
+          }, 1000);
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+      });
   });
 }
 

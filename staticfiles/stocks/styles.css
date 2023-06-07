@@ -58,13 +58,11 @@ h1 {
 }
 .brand {
     font-size: 35px;
-    /* font-family: 'Dancing Script', cursive; */
     font-family: 'Tangerine', cursive;
     color: whitesmoke;
     font-size: 6vh;
 }
 .brand:hover {
-    /* text-decoration: underline; */
     animation: flicker 1s infinite alternate;
 }
 @keyframes flicker {
@@ -382,12 +380,9 @@ table {
     color: whitesmoke;
     text-align: center;
     margin-left: 6vw;
-    /* position: absolute;
-    left: 40%; */
 }
 .message-buy {
     background-color: rgba(2, 240, 22, 0.165);
-    /* background-color: rgba(255, 205, 4, 0.165); */
 }
 .message-sell {
     background-color: rgba(255, 104, 3, 0.289);
@@ -494,7 +489,19 @@ table {
     color: black;
     background-color: rgb(216, 209, 5);
 }
-.prices-btn:hover~ .market-price {
-    font-size: 30px;
-    color: red;
+
+ .animate {
+    animation: shimmer 1s infinite alternate;
+}
+@keyframes shimmer {
+    1%, 18%, 22%, 25%, 53%, 57%, 99% {
+      text-shadow:
+        0 0 3px #fff,
+        0 0 13px #fff,
+        0 0 30px rgba(255, 247, 0, 0.862),
+        0 0 50px rgb(193, 207, 0)
+    }
+    0%, 20%, 24%, 55%, 100% {       
+      text-shadow: none;
+    }
   }
