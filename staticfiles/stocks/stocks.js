@@ -46,24 +46,7 @@ document.addEventListener("DOMContentLoaded", function () {
   capitalizeName();
   // window.history.pushState("unused", "unused", `/`);
 
-  const thElement = document.querySelector(".prices-btn");
-  const tdElements = document.querySelectorAll(".market-price");
-  thElement.addEventListener("mouseenter", function () {
-    let delay = 0;
-    tdElements.forEach((td) => {
-      setTimeout(function () {
-        td.style.backgroundColor = "rgba(216, 209, 5, 0.6)";
-        td.style.color = "black";
-      }, delay);
-      delay += 70;
-    });
-  });
-  thElement.addEventListener("mouseleave", function () {
-    tdElements.forEach((td) => {
-      td.style.backgroundColor = "";
-      td.style.color = "";
-    });
-  });
+  updateBtnAction();
 });
 
 // ! --- functions ----
@@ -372,6 +355,7 @@ function show_company(compName) {
           .querySelector("#res-comp-day")
           .classList.replace("red-text", "green-text");
 
+      // todo - html!
       document.querySelector(
         "#company-targetPrice"
       ).innerHTML = `<div class="comp-param-text"> Target price: </div> <div class="comp-param-value-big">$ ${
@@ -499,6 +483,58 @@ function MakeCapitalized(string) {
     }
   }
   return converted;
+}
+
+function updateBtnAction() {
+  const updateBtn = document.querySelector(".prices-btn");
+  const tdElements = document.querySelectorAll(".market-price");
+  updateBtn.addEventListener("mouseenter", function () {
+    let delay = 0;
+    tdElements.forEach((td) => {
+      setTimeout(function () {
+        td.style.backgroundColor = "rgba(216, 209, 5, 0.6)";
+        td.style.color = "black";
+      }, delay);
+      delay += 70;
+    });
+  });
+  updateBtn.addEventListener("mouseleave", function () {
+    tdElements.forEach((td) => {
+      td.style.backgroundColor = "";
+      td.style.color = "";
+    });
+  });
+  updateBtn.onclick = () => {
+    updatePrices();
+  };
+}
+
+function updatePrices() {
+  const rows = document.querySelectorAll(".table-row");
+  rows.forEach((row) => {
+    const day = row.querySelector("#day-one");
+    const price = row.querySelector(".market-price");
+    const sigma = row.querySelector(".sigma-row");
+    const change = row.querySelector("#change-field");
+    const myPrice = Number(row.querySelector(".my-price-row").innerHTML);
+    const quant = Number(row.querySelector(".quantity-row").innerHTML);
+    let ticker = row.querySelector("#company-ticker").innerHTML;
+    getData(ticker).then((data) => {
+      day.innerHTML = `${data.comp.day.toFixed(3)} %`;
+      day.className = `${data.comp.day > 0 ? "green" : "red"}-text`;
+      price.innerHTML = `${data.comp.price.toFixed(3)}`;
+      sigma.innerHTML = quant * data.comp.price;
+      let chNum = (data.comp.price / myPrice - 1) * 100;
+      change.innerHTML = `${chNum.toFixed(3)} %`;
+      change.className = `${chNum > 0 ? "green" : "red"}-text`;
+    });
+  });
+}
+
+async function getData(ticker) {
+  const dbData = await fetch(`companies/${ticker}`);
+  const compData = await dbData.json();
+  return compData;
 }
 
 function truncate(string, length) {
