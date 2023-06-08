@@ -1,64 +1,59 @@
 "use strict";
-let loggedIn;
-AuthCheck()
-  .then((answer) => {
-    loggedIn = answer;
-    console.log(loggedIn);
-  })
-  .then(() => {
-    // document.addEventListener("DOMContentLoaded", function () {
-    if (loggedIn) {
-      // ? Top 4 columns information
-      fillTopInfo();
-      // ? Dividend form handling
-      const form = document.getElementById("Div-form");
-      form.addEventListener("submit", getDividend);
-    }
-    console.log(loggedIn);
+let loggedIn = true;
+document.addEventListener("DOMContentLoaded", () => {
+  // AuthCheck()
+  //   .then((answer) => {
+  //     loggedIn = answer;
+  //   })
+  // .then(() => {
+  if (loggedIn) {
+    // ? Top 4 columns information
+    fillTopInfo();
+    // ? Dividend form handling
+    const form = document.getElementById("Div-form");
+    form.addEventListener("submit", getDividend);
+  }
 
+  loadCorrectView();
+
+  // ! back button action
+  window.addEventListener("popstate", function () {
     loadCorrectView();
-
-    // ! back button action
-    window.addEventListener("popstate", function () {
-      loadCorrectView();
-    });
-
-    document.addEventListener("click", (event) => {
-      const tar = event.target;
-      // ? show some view
-      showingCompany(tar);
-      if (tar.className.includes("portfolio-btn")) {
-        showingMain();
-      }
-      if (tar.className.includes("history-btn")) {
-        showingHistory();
-      }
-      // ? or sort main table
-      if (tar.className.includes("Up") || tar.className.includes("Down")) {
-        sortTable(tar);
-      }
-    });
-
-    // ? search form mutations
-    // * if company is searched - make Search field clickable and Buy button appear
-    const filledSearchForm = document.querySelector("#check-filled");
-    if (filledSearchForm.innerHTML !== "") {
-      showActionBtns();
-    }
-    document
-      .querySelector("#main-view-search")
-      .addEventListener("click", () => {
-        beginSearch();
-      });
-
-    capitalizeName();
-    // window.history.pushState("unused", "unused", `/`);
-
-    updateBtnFunction();
-    // });
   });
 
-// ! --- functions ----
+  document.addEventListener("click", (event) => {
+    const tar = event.target;
+    // ? show some view
+    showingCompany(tar);
+    if (tar.className.includes("portfolio-btn")) {
+      showingMain();
+    }
+    if (tar.className.includes("history-btn")) {
+      showingHistory();
+    }
+    // ? or sort main table
+    if (tar.className.includes("Up") || tar.className.includes("Down")) {
+      sortTable(tar);
+    }
+  });
+
+  // ? search form mutations
+  // * if company is searched - make Search field clickable and Buy button appear
+  const filledSearchForm = document.querySelector("#check-filled");
+  if (filledSearchForm.innerHTML !== "") {
+    showActionBtns();
+  }
+  document.querySelector("#main-view-search").addEventListener("click", () => {
+    beginSearch();
+  });
+
+  capitalizeName();
+
+  updateBtnFunction();
+  // });
+});
+
+// ! ------- functions --------
 function showActionBtns() {
   document.querySelector(".ticker-search-container").className = "ticker-link";
   document.getElementById("action-buttons").style.animationPlayState =
@@ -76,7 +71,6 @@ function beginSearch() {
 }
 
 function showingMain() {
-  console.log(loggedIn);
   window.history.pushState("unused", "unused", `/`);
   document.querySelector("#company-view").style.display = "none";
   document.querySelector("#portfolio-view").style.display = "block";
@@ -281,7 +275,7 @@ function getDividend(event) {
   const form = document.getElementById("Div-form");
   const title = document.querySelector("#Div-title").value;
   const amount = document.querySelector("#Div-amount").value.toString();
-  // make a call to back-end to add this dividend to the DB
+  // make a call to backend to add this dividend to the DB
   fetch(`/history/dividend`, {
     method: "PUT",
     body: JSON.stringify({
@@ -618,6 +612,9 @@ function loadCorrectView() {
   }
   if (window.location.href.slice(-1) === "/") {
     showingMain();
+  }
+  if (window.location.href.slice(-6) === "action") {
+    window.history.pushState("unused", "unused", `/`);
   }
   if (window.location.href.includes("company")) {
     const location = window.location.href.indexOf("company");

@@ -24,8 +24,7 @@ def index(request, message=""):  # with default empty value for message
         try:
             portfolio = Portfolio.objects.get(owner=request.user)
         except:
-            number = Portfolio.objects.last().id
-            Portfolio.objects.create(id=number+1, owner=request.user)
+            Portfolio.objects.create(owner=request.user)
             portfolio = Portfolio.objects.get(owner=request.user)
 
         prices = MyPrice.objects.filter(investor=request.user)
@@ -103,12 +102,10 @@ def indexPost(request):
                 # get API data for the ticker
                 compData = checkStock(ticker)
                 # ? create Stock db entry
-                number = Stocks.objects.last().id
-                Stocks.objects.create(id=number+1, ticker=ticker, company=compData['company'], day=compData['day'], desc=compData['desc'], price=compData['price'],
+                Stocks.objects.create(ticker=ticker, company=compData['company'], day=compData['day'], desc=compData['desc'], price=compData['price'],
                                       pe=compData['pe'], fpe=compData['fpe'], pb=compData['pb'], debt=compData[
                                           'debt'], roe=compData['roe'], profitMargins=compData['profitMargins'],
                                       divs=compData['dividends'], targetPrice=compData['targetPrice'], recom=compData['recom'])
-
             # does User already have this stock?
             stock = Stocks.objects.get(ticker=ticker)
             if not stock in portfolio.stock.all():
@@ -123,14 +120,12 @@ def indexPost(request):
                 MP.quant += amount
                 MP.save()
             else:
-                number = MyPrice.objects.last().id
                 MyPrice.objects.create(
-                    id=number+1, investor=request.user, stock=stock, quant=amount, myPrice=form_price)
+                    investor=request.user, stock=stock, quant=amount, myPrice=form_price)
 
             # * History update on buy
-            number = History.objects.last().id
             MP = MyPrice.objects.get(investor=request.user, stock=stock)
-            History.objects.create(id=number+1, user=request.user, stock=stock, ammount=amount,
+            History.objects.create(user=request.user, stock=stock, ammount=amount,
                                    MyPriceHist=MP.myPrice, BPrice=form_price, action="Buy")
 
             return index(request, 'buy')
@@ -154,7 +149,6 @@ def indexPost(request):
                 else:
                     MP.quant -= amount
                     portfolio.profit += amount * form_price - amount * MP.myPrice
-                    print()
                     portfolio.save()
                     MP.save()
                     # delete stock from portfolio if everything is sold
@@ -163,8 +157,7 @@ def indexPost(request):
                         MP.delete()
 
                      # * History update on sell
-                    number = History.objects.last().id
-                    History.objects.create(id=number+1, user=request.user, stock=stock, ammount=amount,
+                    History.objects.create(user=request.user, stock=stock, ammount=amount,
                                            SPrice=form_price, MyPriceHist=MP.myPrice, action="Sell")
 
                     return index(request, 'sell')
@@ -208,7 +201,11 @@ def company_view(request, name):
 @csrf_exempt
 def histPost(request):
     portfolio = Portfolio.objects.get(owner=request.user)
-    stk = Stocks.objects.get(ticker="DIV")
+    try:
+        Stocks.objects.get(ticker="DIV")
+    except:
+        Stocks.objects.create(ticker='DIV', company='dividends')
+    stock = Stocks.objects.get(ticker="DIV")
 
     if request.method == "PUT":
         data = json.loads(request.body)
@@ -216,8 +213,7 @@ def histPost(request):
         dividend = data["amount"]
 
     # ? create new dividend entry in DB
-    number = History.objects.last().id
-    History.objects.create(id=number+1, user=request.user, stock=stk, action="Div",
+    History.objects.create(user=request.user, action="Div", stock=stock,
                            SPrice=dividend, BPrice=0, MyPriceHist=0, ammount=0, note=title)
     portfolio.profit += float(dividend)
     portfolio.save()
@@ -366,7 +362,7 @@ def logout_view(request):
 def register(request):
     if request.method == "POST":
         username = request.POST["username"].lower()
-        email = request.POST["email"]
+        email = request.POST["email"].lower()
 
         # * Ensure password matches confirmation
         password = request.POST["password"]
@@ -378,7 +374,8 @@ def register(request):
 
         # * Attempt to create new user
         try:
-            user = User.objects.create_user(username, email, password)
+            user = User.objects.create_user(
+                username=username, email=email, password=password)
             user.save()
         except IntegrityError:
             return render(request, "stocks/register.html", {
