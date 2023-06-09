@@ -1,56 +1,58 @@
 "use strict";
-let loggedIn = true;
+let loggedIn;
 document.addEventListener("DOMContentLoaded", () => {
-  // AuthCheck()
-  //   .then((answer) => {
-  //     loggedIn = answer;
-  //   })
-  // .then(() => {
-  if (loggedIn) {
-    // ? Top 4 columns information
-    fillTopInfo();
-    // ? Dividend form handling
-    const form = document.getElementById("Div-form");
-    form.addEventListener("submit", getDividend);
-  }
+  AuthCheck()
+    .then((answer) => {
+      loggedIn = answer;
+    })
+    .then(() => {
+      if (loggedIn) {
+        // ? Top 4 columns information
+        fillTopInfo();
+        // ? Dividend form handling
+        const form = document.getElementById("Div-form");
+        form.addEventListener("submit", getDividend);
+      }
 
-  loadCorrectView();
+      loadCorrectView();
 
-  // ! back button action
-  window.addEventListener("popstate", function () {
-    loadCorrectView();
-  });
+      // ! back button action
+      window.addEventListener("popstate", function () {
+        loadCorrectView();
+      });
 
-  document.addEventListener("click", (event) => {
-    const tar = event.target;
-    // ? show some view
-    showingCompany(tar);
-    if (tar.className.includes("portfolio-btn")) {
-      showingMain();
-    }
-    if (tar.className.includes("history-btn")) {
-      showingHistory();
-    }
-    // ? or sort main table
-    if (tar.className.includes("Up") || tar.className.includes("Down")) {
-      sortTable(tar);
-    }
-  });
+      document.addEventListener("click", (event) => {
+        const tar = event.target;
+        // ? show some view
+        showingCompany(tar);
+        if (tar.className.includes("portfolio-btn")) {
+          showingMain();
+        }
+        if (tar.className.includes("history-btn")) {
+          showingHistory();
+        }
+        // ? or sort main table
+        if (tar.className.includes("Up") || tar.className.includes("Down")) {
+          sortTable(tar);
+        }
+      });
 
-  // ? search form mutations
-  // * if company is searched - make Search field clickable and Buy button appear
-  const filledSearchForm = document.querySelector("#check-filled");
-  if (filledSearchForm.innerHTML !== "") {
-    showActionBtns();
-  }
-  document.querySelector("#main-view-search").addEventListener("click", () => {
-    beginSearch();
-  });
+      // ? search form mutations
+      // * if company is searched - make Search field clickable and Buy button appear
+      const filledSearchForm = document.querySelector("#check-filled");
+      if (filledSearchForm.innerHTML !== "") {
+        showActionBtns();
+      }
+      document
+        .querySelector("#main-view-search")
+        .addEventListener("click", () => {
+          beginSearch();
+        });
 
-  capitalizeName();
+      capitalizeName();
 
-  updateBtnFunction();
-  // });
+      updateBtnFunction();
+    });
 });
 
 // ! ------- functions --------
