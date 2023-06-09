@@ -232,7 +232,7 @@ h1 {
     color: bisque;
     padding: 5px 20px;
 }
-.hist-row:hover, .new-hist-row:hover {
+.hist-row:hover {
     box-shadow: 0 0 15px #fcde30e9;
 }
 .div-title:hover {

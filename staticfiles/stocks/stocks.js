@@ -153,6 +153,7 @@ function showingHistory() {
     }
     // if dividend title is clicked - change div title
     Item.addEventListener("click", (event) => {
+      console.log("history row clicked");
       const tar2 = event.target;
       if (tar2.className.includes("div-title")) {
         transformTitle(Item);
@@ -276,43 +277,75 @@ function getDividend(event) {
   const title = document.querySelector("#Div-title").value;
   const amount = document.querySelector("#Div-amount").value.toString();
   // make a call to backend to add this dividend to the DB
+  let newEntryId;
   fetch(`/history/dividend`, {
     method: "PUT",
     body: JSON.stringify({
       title: title,
       amount: amount,
     }),
-  });
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      newEntryId = data.id;
+      // creatig new row for new dividend entry on the 1st position of the table
+      const HistRow = document.querySelector("#HistTable").insertRow(0);
+      HistRow.className = "hist-row new-hist-row";
+      HistRow.style.backgroundColor = "rgba(255, 205, 4, 0.165)";
 
-  // creatig new row for new dividend entry on the 1st position of the table
-  const HistRow = document.querySelector("#HistTable").insertRow(0);
-  HistRow.className = "hist-row";
-  HistRow.style.backgroundColor = "rgba(255, 205, 4, 0.165)";
+      const cells = [];
+      const content = [
+        "DIV",
+        `${title}`,
+        "Div",
+        "-",
+        "-",
+        "-",
+        "-",
+        `${amount}`,
+      ];
+      for (let k = 0; k < 8; k++) {
+        cells[k] = HistRow.insertCell(k);
+        cells[k].innerHTML = content[k];
+      }
+      cells[7].className = "green-text";
+      makeDivCellChangable(HistRow, newEntryId);
+      HistRow.style.animationPlayState = "running";
 
-  const cells = [];
-  const content = ["DIV", `${title}`, "Div", "-", "-", "-", "-", `${amount}`];
-  for (let k = 0; k < 8; k++) {
-    cells[k] = HistRow.insertCell(k);
-    cells[k].innerHTML = content[k];
-  }
-  cells[7].className = "green-text";
-  HistRow.style.animationPlayState = "running";
+      // update profit value
+      const valuesToChange = document
+        .querySelector("#profit-main")
+        .querySelectorAll(".sum-value");
+      // get rid of space and $ sign
+      valuesToChange.forEach((value) => {
+        let profitValue = parseInt(
+          value.innerHTML.replace(/[^0-9-]+/g, ""),
+          10
+        );
+        let newValue = profitValue + Math.round(Number(amount));
+        value.innerHTML = `&nbsp $ ${moneyFormat(newValue)} &nbsp`;
+      });
 
-  // update profit value
-  const valuesToChange = document
-    .querySelector("#profit-main")
-    .querySelectorAll(".sum-value");
-  // get rid of space and $ sign
-  valuesToChange.forEach((value) => {
-    let profitValue = parseInt(value.innerHTML.replace(/[^0-9-]+/g, ""), 10);
-    let newValue = profitValue + Math.round(Number(amount));
-    value.innerHTML = `&nbsp $ ${moneyFormat(newValue)} &nbsp`;
-  });
-
-  form.reset();
-  ShowMessage("good", "Dividends received");
+      form.reset();
+      ShowMessage("good", "Dividends received");
+    });
 }
 
+function makeDivCellChangable(HistRow, newEntryId) {
+  HistRow.cells[1].className = "div-title";
+  const techCell = HistRow.insertCell(2);
+  techCell.id = "change-title-cell";
+  techCell.innerHTML = `
+        <div class="flex-container">
+            <input class='ticker-inp long' type="text" id="change-title" value="${HistRow.cells[1].innerHTML}">
+            <input id="div-title-change-btn" class="div-btn" type="submit" value="Change">
+            <input id="hidden-hist-id" type="hidden" value="${newEntryId}">
+        </div>
+  `;
+  HistRow.cells[1].addEventListener("click", () => {
+    transformTitle(HistRow);
+  });
+}
 // * for backend alerts to disappear
 setTimeout(function () {
   try {

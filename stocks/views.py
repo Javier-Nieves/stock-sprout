@@ -213,12 +213,12 @@ def histPost(request):
         dividend = data["amount"]
 
     # ? create new dividend entry in DB
-    History.objects.create(user=request.user, action="Div", stock=stock,
-                           SPrice=dividend, BPrice=0, MyPriceHist=0, ammount=0, note=title)
+    newEntry = History.objects.create(user=request.user, action="Div", stock=stock,
+                                      SPrice=dividend, BPrice=0, MyPriceHist=0, ammount=0, note=title)
     portfolio.profit += float(dividend)
     portfolio.save()
-
-    return JsonResponse({'status': 'false'}, status=204)
+    return JsonResponse({'status': 'false',
+                         'id': newEntry.id})
 
 
 def histChange(request, ident, newText):
