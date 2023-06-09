@@ -286,7 +286,7 @@ function getDividend(event) {
 
   // creatig new row for new dividend entry on the 1st position of the table
   const HistRow = document.querySelector("#HistTable").insertRow(0);
-  HistRow.className = "new-hist-row";
+  HistRow.className = "hist-row";
   HistRow.style.backgroundColor = "rgba(255, 205, 4, 0.165)";
 
   const cells = [];
@@ -304,8 +304,8 @@ function getDividend(event) {
     .querySelectorAll(".sum-value");
   // get rid of space and $ sign
   valuesToChange.forEach((value) => {
-    let profitValue = value.innerHTML.replace(/\s/g, "").match(/\d+/g);
-    let newValue = parseInt(profitValue) + Math.round(Number(amount));
+    let profitValue = parseInt(value.innerHTML.replace(/[^0-9-]+/g, ""), 10);
+    let newValue = profitValue + Math.round(Number(amount));
     value.innerHTML = `&nbsp $ ${moneyFormat(newValue)} &nbsp`;
   });
 
@@ -607,18 +607,24 @@ function blurAllFields(bool) {
 
 function loadCorrectView() {
   // The popstate event is fired each time when the current history entry changes.
-  if (window.location.href.slice(-7) === "history") {
+  let url = window.location.href;
+  if (url.slice(-7) === "history") {
     showingHistory();
   }
-  if (window.location.href.slice(-1) === "/") {
+  if (url.slice(-1) === "/") {
     showingMain();
   }
-  if (window.location.href.slice(-6) === "action") {
+  if (
+    url.slice(-6) === "action" ||
+    url.slice(-5) === "login" ||
+    url.slice(-6) === "logout" ||
+    url.slice(-8) === "register"
+  ) {
     window.history.pushState("unused", "unused", `/`);
   }
-  if (window.location.href.includes("company")) {
-    const location = window.location.href.indexOf("company");
-    const company = window.location.href.slice(location + 8);
+  if (url.includes("company")) {
+    const location = url.indexOf("company");
+    const company = url.slice(location + 8);
     show_company(company);
   }
 }
