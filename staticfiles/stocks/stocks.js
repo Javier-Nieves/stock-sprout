@@ -155,22 +155,22 @@ function showingHistory() {
     }
     // if dividend title is clicked - change div title
     Item.addEventListener("click", (event) => {
-      console.log("history row clicked");
       const tar2 = event.target;
       if (tar2.className.includes("div-title")) {
-        transformTitle(Item);
+        changeDivName(Item);
       }
     });
   });
   window.history.pushState("unused", "unused", `/history`);
 }
 
-function transformTitle(Item) {
+function changeDivName(Item) {
   const NormTitle = Item.querySelector(".div-title");
   const ChangedTitle = Item.querySelector("#change-title-cell");
+  const changeBtn = Item.querySelector("#div-title-change-btn");
   NormTitle.style.display = "none";
   ChangedTitle.style.display = "block";
-  Item.querySelector("#div-title-change-btn").addEventListener("click", () => {
+  changeBtn.addEventListener("click", () => {
     const newTitle = Item.querySelector("#change-title").value;
     const ident = Item.querySelector("#hidden-hist-id").value;
     fetch(`/change/${ident}/${newTitle}`);
@@ -179,6 +179,15 @@ function transformTitle(Item) {
     ChangedTitle.style.display = "none";
     ShowMessage("good", "Entry modified");
   });
+  // setTimeout(() => {
+  //   document.addEventListener("click", (event) => {
+  //     if (event.target.id !== "change-title" && event.target !== changeBtn) {
+  //       console.log(event.target, "back to normal");
+  //       NormTitle.style.display = "block";
+  //       ChangedTitle.style.display = "none";
+  //     }
+  //   });
+  // }, 800);
 }
 
 function fillTopInfo() {
@@ -311,6 +320,8 @@ function getDividend(event) {
         cells[k].innerHTML = content[k];
       }
       cells[7].className = "green-text";
+      cells[0].className = "mobile-hide";
+      cells[2].className = "mobile-hide";
       makeDivCellChangable(HistRow, newEntryId);
       HistRow.style.animationPlayState = "running";
 
@@ -345,7 +356,7 @@ function makeDivCellChangable(HistRow, newEntryId) {
         </div>
   `;
   HistRow.cells[1].addEventListener("click", () => {
-    transformTitle(HistRow);
+    changeDivName(HistRow);
   });
 }
 // * for backend alerts to disappear

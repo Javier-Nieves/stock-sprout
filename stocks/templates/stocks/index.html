@@ -14,7 +14,7 @@
             <div id="nowChange" class="sum-value"></div>
         </div>
         <div id="profit-main">
-            <div class="sum-text"> &nbsp Earnings &nbsp / &nbsp Profit: </div> 
+            <div class="sum-text"> Earnings &nbsp / &nbsp Profit: </div> 
             <div style="display:flex">
                 <div id="earnings" class=sum-value>&nbsp $ {{ profit|floatformat:"0" }} &nbsp</div>
                 <div id="profit" class="sum-value"></div>
@@ -29,7 +29,7 @@
 
 
 <!-- ! portfolio  view -->
-<div id="portfolio-view" style="width: 100vw;">
+<div id="portfolio-view">
     {% if user.is_authenticated %}
         {% if not portfolio.exists %}
             <div class="intro-text">1) Search for a company using it's name or ticker</div>
@@ -87,11 +87,11 @@
     {% endif %}
 
     <!-- ? main portfolio table -->
-    <table id="mainTable" style="width: 98vw;">
+    <table id="mainTable">
         <thead>
             <tr>
-                <th>Analysis</th>
-                <th>Ticker</th>
+                <th class="mobile-hide">Analysis</th>
+                <th class="mobile-hide">Ticker</th>
                 <th class="sortDay Up">Company</th>
                 <th>MyPrice, $</th>
                 <th>Quantity</th>
@@ -109,8 +109,8 @@
 
         {% if not user.is_authenticated%}
         <tr class="table-row">
-            <td>2.0 - Buy</td>
-            <td id="company-ticker">AAPL</td>
+            <td class="mobile-hide">2.0 - Buy</td>
+            <td class="mobile-hide" id="company-ticker">AAPL</td>
             <td>Apple Inc. <br> <div id="day-one" class="green-text">+ 0.5 %</div></td>
             <td class="my-price-row">120</td>
             <td class="quantity-row">10</td>
@@ -124,8 +124,8 @@
                 {% for price in prices %}
                     {% if price.stock == item%}
             <tr class="table-row">
-                <td>{{item.recom}}</td>
-                <td id="company-ticker">{{item.ticker}}</td>
+                <td class="mobile-hide">{{item.recom}}</td>
+                <td class="mobile-hide" id="company-ticker">{{item.ticker}}</td>
                 {% if item.day < 0 %}
                     <td>{{item.company}} <br> <div id="day-one" class="red-text">{{item.day|stringformat:".2f"}} %</div></td>
                 {% else %}
@@ -231,12 +231,12 @@
             </form>
     </div>
 
-    <table style="width: 98vw;">
+    <table id="historyId">
         <thead>
             <tr>
-                <th>Ticker</th>
+                <th class="mobile-hide">Ticker</th>
                 <th>Company</th>
-                <th>Action</th>
+                <th class="mobile-hide">Action</th>
                 <th>Quantity</th>
                 <th>Buy Price, $</th>
                 <th>My Price, $</th>
@@ -247,7 +247,7 @@
         <tbody id="HistTable">
             {% for item in history reversed%}
             <tr class="hist-row" id="rest" style="background-color: rgba(114, 115, 115, 0.3)">
-                <td id="hist-company-name">{{item.stock.ticker}}</td>
+                <td class="mobile-hide" id="hist-company-name">{{item.stock.ticker}}</td>
                 {% if item.action == 'Div' %}
                 <td class="div-title">{{item.note}}</td>
                 <td id="change-title-cell">
@@ -260,7 +260,7 @@
                 {% else %}
                 <td>{{item.stock.company}}</td>
                 {% endif %}
-                <td class="hist-action">{{item.action}}</td>
+                <td class="hist-action mobile-hide">{{item.action}}</td>
                 <td class="hist-amount">{{item.ammount}}</td>
                 <td class="hist-buy">{{item.BPrice}}</td>
                 <td class="hist-price">{{item.MyPriceHist|stringformat:".2f"}}</td>

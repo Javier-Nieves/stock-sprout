@@ -91,12 +91,21 @@ h1 {
     color: blanchedalmond;
 }
 
+/* views */
+#portfolio-view {
+    width: 100vw;
+}
+#mainTable, #historyId {
+    width: 98vw;
+}
+
 
 /* Summary row */
 .summary-row, .company-price-row {
     display: flex;
+    justify-content: center;
     width: 98vw;
-    gap: 8px;
+    gap: 1vw;
     margin-bottom: 15px;
     margin-top: 7px;
 }
@@ -184,8 +193,8 @@ h1 {
 }
 
 .ticker-inp, .ticker-buy {
-    width: 120px;
-    font-size: 20px;
+    width: 10vw;
+    font-size: 2vw;
     font-weight: 400;
     font-family: Didot, serif;
     border: 1px solid gray;
@@ -209,6 +218,9 @@ h1 {
     width: 20vw;
 }
 .type-field {
+    display: flex;
+    justify-content: center;
+    gap: 1vw;
     margin-bottom: 5px;
 }
 .search-btn, .buy-btn, .sell-btn, .div-btn, .login-btn {
@@ -537,5 +549,34 @@ table {
     100% {
       transform: scale(1);
       opacity: 1;
+    }
+  }
+  @media screen and (max-width: 800px) {
+    body {
+        margin: 0;
+        width: 98vw;
+    }
+    .navbar {
+        width: 98vw;
+        margin: 0;
+    }
+    .body {
+        margin: 0;
+        width: 98vw;
+    }
+    .mobile-hide {
+        display: none;
+    }
+    .summary-row {
+        flex-wrap: wrap;
+    }
+    .summary-row > * {
+        flex-basis: 42vw;
+    }
+    .ticker-search-box > * {
+        font-size: 2vw;
+    }
+    .search-btn, .buy-btn, .sell-btn {
+        font-size: 2vw;
     }
   }
