@@ -194,7 +194,7 @@ h1 {
 
 .ticker-inp, .ticker-buy {
     width: 10vw;
-    font-size: 2vw;
+    font-size: 20px;
     font-weight: 400;
     font-family: Didot, serif;
     border: 1px solid gray;
@@ -576,7 +576,10 @@ table {
     .ticker-search-box > * {
         font-size: 2vw;
     }
-    .search-btn, .buy-btn, .sell-btn {
+    .search-btn, .buy-btn, .sell-btn, .ticker-inp, .ticker-buy {
         font-size: 2vw;
+    }
+    .ticker-inp {
+        min-width: 10vw;
     }
   }
