@@ -197,15 +197,18 @@ function fillTopInfo() {
   let dayCh = 0;
 
   rows.forEach((row) => {
+    let dayOne;
+    let myPr = parseFloat(row.querySelector(".my-price-row").innerHTML);
+    let Qu = parseFloat(row.querySelector(".quantity-row").innerHTML);
+    let Si = parseFloat(row.querySelector(".sigma-row").innerHTML);
+    sum1 += myPr * Qu;
+    sum2 += Si;
     if (row.querySelector("#day-one").innerHTML != "") {
-      let myPr = parseFloat(row.querySelector(".my-price-row").innerHTML);
-      let Qu = parseFloat(row.querySelector(".quantity-row").innerHTML);
-      let Si = parseFloat(row.querySelector(".sigma-row").innerHTML);
-      let dayOne = parseFloat(row.querySelector("#day-one").innerHTML);
-      sum1 += myPr * Qu;
-      sum2 += Si;
-      dayCh += (Si / (100 + dayOne)) * 100;
+      dayOne = parseFloat(row.querySelector("#day-one").innerHTML);
+    } else {
+      dayOne = 1;
     }
+    dayCh += (Si / (100 + dayOne)) * 100;
   });
 
   let dayChMoney = parseFloat(sum2 - dayCh).toFixed(1);
