@@ -58,11 +58,9 @@ def indexPost(request):
     # check whether form is valid:
     if search_form.is_valid():
         # process the data in form.cleaned_data as required
-        # geting ticker name
         ticker = search_form.cleaned_data['stock_ticker']
-        # compData = all info about that ticker
+        # if user entered ticker:
         compData = checkStock(ticker)
-
         # if company name is entered - find it's ticker
         if compData == None:
             compData = checkStock(getTicker(ticker))
@@ -238,9 +236,8 @@ def auth_check(request):
 
 # ! ------------------ functions ---------------
 
+
 # ! get company financial data by ticker (API function)
-
-
 def checkStock(ticker):
     try:
         url = f"https://query1.finance.yahoo.com/v11/finance/quoteSummary/{ticker}?modules=financialData"
@@ -255,7 +252,7 @@ def checkStock(ticker):
         responseComp.raise_for_status()
         responseDesc.raise_for_status()
     except requests.RequestException:
-        return None
+        return checkStockRus(ticker)
 
     # Parse responses
     try:
@@ -284,6 +281,71 @@ def checkStock(ticker):
             "recom": Comp.get("averageAnalystRating")
         }
     except (KeyError, TypeError, ValueError):
+        return None
+
+
+def checkStockRus(ticker):
+    try:
+        url = f"https://iss.moex.com/iss/engines/stock/markets/shares/securities/{ticker}.json"
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'}
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()
+    except requests.RequestException:
+        # this API always return some JSON. It just might be full of empty forms
+        return None
+
+    quote = response.json()
+    if len(quote['marketdata']['data']) == 0:
+        print('no price data')
+        return None
+
+    i = 0
+    while quote['marketdata']['data'][i][1] != 'TQBR':
+        i += 1
+    data = quote['marketdata']['data'][i]
+
+    for item in data:
+        if isinstance(item, (int, float)) and item != 0:
+            price = item
+            break
+    if not price:
+        print('all is none or 0')
+        return None  # If no non-null number is found
+    Desc = quote['securities']['data'][0]
+    rate = GiveExchangeFor('rub')
+    try:
+        return {
+            "ticker": data[0],
+            "company": Desc[20],
+            "day": None,
+            "desc":  None,
+            "price": price*rate,
+            "pe":  None,
+            "fpe":  None,
+            "pb":   None,
+            "debt":   None,
+            "roe":   None,
+            "profitMargins":  None,
+            "dividends":  None,
+            "targetPrice":  None,
+            "recom":  None,
+        }
+
+    except KeyError as error:
+        print(str(error))
+
+
+def GiveExchangeFor(currency):
+    # this API can do much more than this
+    try:
+        url = f'https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/latest/currencies/{currency}/usd.json'
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'}
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()
+        return response.json()['usd']
+    except requests.RequestException:
         return None
 
 
@@ -331,9 +393,8 @@ scheduler = BackgroundScheduler({'apscheduler.job_defaults.max_instances': 4})
 scheduler.add_job(ActualizeMini, 'interval', seconds=120)
 scheduler.start()
 
+
 # ? ------------------- login & co ------------------------
-
-
 def login_view(request):
     if request.method == "POST":
 

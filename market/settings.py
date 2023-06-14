@@ -68,14 +68,6 @@ DATABASES = {
     # }
 
     # ! Postgres Neon
-    # 'default': {
-    #     'ENGINE': 'django.db.backends.postgresql_psycopg2',
-    #     'NAME': 'stock-sprout',
-    #     'USER': os.environ['DB_USER'],
-    #     'PASSWORD': os.environ['DB_PASSWORD'],
-    #     'HOST': os.environ['DB_HOST'],
-    #     'PORT': '5432',
-    # }
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'Stocks',

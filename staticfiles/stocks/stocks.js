@@ -197,13 +197,15 @@ function fillTopInfo() {
   let dayCh = 0;
 
   rows.forEach((row) => {
-    let myPr = parseFloat(row.querySelector(".my-price-row").innerHTML);
-    let Qu = parseFloat(row.querySelector(".quantity-row").innerHTML);
-    let Si = parseFloat(row.querySelector(".sigma-row").innerHTML);
-    let dayOne = parseFloat(row.querySelector("#day-one").innerHTML);
-    sum1 += myPr * Qu;
-    sum2 += Si;
-    dayCh += (Si / (100 + dayOne)) * 100;
+    if (row.querySelector("#day-one").innerHTML != "") {
+      let myPr = parseFloat(row.querySelector(".my-price-row").innerHTML);
+      let Qu = parseFloat(row.querySelector(".quantity-row").innerHTML);
+      let Si = parseFloat(row.querySelector(".sigma-row").innerHTML);
+      let dayOne = parseFloat(row.querySelector("#day-one").innerHTML);
+      sum1 += myPr * Qu;
+      sum2 += Si;
+      dayCh += (Si / (100 + dayOne)) * 100;
+    }
   });
 
   let dayChMoney = parseFloat(sum2 - dayCh).toFixed(1);
@@ -567,8 +569,14 @@ function updatePrices() {
 
     getData(ticker)
       .then((data) => {
-        day.innerHTML = `${data.comp.day.toFixed(2)} %`;
-        price.innerHTML = `${data.comp.price.toFixed(2)}`;
+        day.innerHTML = `${
+          data.comp.day?.toFixed(2) ? data.comp.day.toFixed(2) + "%" : ""
+        }`;
+        if (data.comp.price < 0.01) {
+          price.innerHTML = `${data.comp.price.toExponential(2)}`;
+        } else {
+          price.innerHTML = `${data.comp.price.toFixed(2)}`;
+        }
         let sigNum = quant * data.comp.price;
         sigma.innerHTML = sigNum.toFixed(2);
         let chNum = (data.comp.price / myPrice - 1) * 100;

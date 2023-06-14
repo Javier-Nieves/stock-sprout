@@ -128,12 +128,26 @@
                 <td class="mobile-hide" id="company-ticker">{{item.ticker}}</td>
                 {% if item.day < 0 %}
                     <td>{{item.company}} <br> <div id="day-one" class="red-text">{{item.day|stringformat:".2f"}} %</div></td>
+                {% elif item.day == None %}
+                    <td>{{item.company}} <br> <div id="day-one"></div></td>
                 {% else %}
                     <td>{{item.company}} <br> <div id="day-one" class="green-text">{{item.day|stringformat:".2f"}} %</div></td>
                 {% endif %}
+
+                {% if price.myPrice < 0.01 %}
+                <td class="my-price-row">{{price.myPrice|stringformat:".2e"}}</td>
+                {% else %}
                 <td class="my-price-row">{{price.myPrice|stringformat:".2f"}}</td>
+                {% endif %}
+
                 <td class="quantity-row">{{price.quant}}</td>
-                <td class="market-price">{{item.price}}</td>
+                
+                {% if item.price < 0.01 %}
+                <td class="market-price">{{item.price|stringformat:".2e"}}</td>
+                {% else %}
+                <td class="market-price">{{item.price|stringformat:".2f"}}</td>
+                {% endif %}
+
                 <td class="sigma-row">{{price.quant|mul:item.price|stringformat:".2f"}}</td>
                 {% if item.price|div:price.myPrice|mul:100|sub:100 < 0 %}
                     <td id="change-field" class="red-text">{{ item.price|div:price.myPrice|mul:100|sub:100|stringformat:".2f"}} %</td>
