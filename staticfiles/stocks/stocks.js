@@ -260,7 +260,8 @@ function sortTable(tar) {
         x = rows[i].querySelector("#change-field").innerHTML;
         y = rows[i + 1].querySelector("#change-field").innerHTML;
       } else if (whichSort.includes("sortDay")) {
-        x = rows[i].querySelector("#day-one").innerHTML;
+        let value = rows[i].querySelector("#day-one").innerHTML;
+        x = value == "" ? -100 : value;
         y = rows[i + 1].querySelector("#day-one").innerHTML;
       }
 
