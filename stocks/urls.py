@@ -24,6 +24,6 @@ urlpatterns = [
     path('github/authorize/', views.github_authorize, name='github-authorize'),
     path('callback/', views.github_callback, name='github-callback'),
 
-    # path('fast/', views.fast_account, name='fast-account'),
+    path('fast/', views.fast_account, name='fast-account'),
 
 ]

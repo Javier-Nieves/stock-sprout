@@ -1,10 +1,13 @@
 import os
 import requests
 from requests_oauthlib import OAuth2Session
-import datetime
+from datetime import datetime, timedelta
+# import time
+from faker import Faker
 import random
 import json
 from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.triggers.interval import IntervalTrigger
 
 from django.shortcuts import redirect, render
 from django.contrib.auth import authenticate, login, logout
@@ -386,17 +389,19 @@ def ActualizeMini():
             paper.targetPrice = actual['targetPrice']
             paper.recom = actual['recom']
             paper.save()
-    print('actualized at ', datetime.datetime.now())
+    print('actualized at ', datetime.now())
     return HttpResponse(status=204)
 
 
 # ! this module runs in background and periodically summons Actualize function
 scheduler = BackgroundScheduler({'apscheduler.job_defaults.max_instances': 4})
-scheduler.add_job(ActualizeMini, 'interval', seconds=120)
+trigger = IntervalTrigger(minutes=2)
+scheduler.add_job(ActualizeMini, trigger)
 scheduler.start()
 
-
 # ? ------------------- login & co ------------------------
+
+
 def login_view(request):
     if request.method == "POST":
 
@@ -483,7 +488,6 @@ def github_callback(request):
         User.objects.get(social_id=user_info[3])
     except:
         password = User.objects.make_random_password()
-        print(password)
         User.objects.create(
             social_id=user_info[3], username=user_info[0], first_name=user_info[1], password=password)
     user = User.objects.get(social_id=user_info[3])
@@ -513,8 +517,27 @@ def get_user_info(access_token):
         response.raise_for_status()
 
 
-# def fast_account():
-#     print('20 minute!')
-#     return render(request, "stocks/login.html", {
-#         "message": "You have 20 minutes!"
-#     })
+# 20 minute account creation
+def fast_account(request):
+    faker = Faker(['en', 'es', 'vi', 'sk'])
+    name = faker.name()
+    password = User.objects.make_random_password()
+    random_id = faker.random_number(digits=6)
+    print(name, random_id)
+    user = User.objects.create(
+        social_id=random_id, username=name, password=password)
+    login(request, user)
+
+    deleter = BackgroundScheduler()
+    future_time = datetime.now() + timedelta(minutes=20)
+    deleter.add_job(deleteTempUser, 'date',
+                    run_date=future_time, args=[request, random_id])
+    deleter.start()
+
+    return index(request, f"{name}, you have 20 minutes!")
+
+
+def deleteTempUser(request, id):
+    logout(request)
+    User.objects.get(social_id=id).delete()
+    return index(request, "Logged out")
