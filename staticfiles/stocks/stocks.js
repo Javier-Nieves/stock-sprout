@@ -39,19 +39,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // ? search form mutations
       // * if company is searched - make Search field clickable and Buy button appear
-      const filledSearchForm = document.querySelector("#check-filled");
-      if (filledSearchForm.innerHTML !== "") {
-        showActionBtns();
-      }
-      document
-        .querySelector("#main-view-search")
-        .addEventListener("click", () => {
-          beginSearch();
-        });
+      try {
+        const filledSearchForm = document.querySelector("#check-filled");
+        if (filledSearchForm.innerHTML !== "") {
+          showActionBtns();
+        }
+        document
+          .querySelector("#main-view-search")
+          .addEventListener("click", () => {
+            beginSearch();
+          });
+
+        updateBtnFunction();
+      } catch {}
 
       capitalizeName();
-
-      updateBtnFunction();
     });
 });
 

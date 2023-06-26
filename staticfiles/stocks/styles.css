@@ -34,6 +34,11 @@ form {
     flex-direction: column;
     justify-content: center;
 }
+.flex-column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
 .left-group {
     margin-right: 20px;
     margin-bottom: 8px;
@@ -582,4 +587,34 @@ table {
     .ticker-inp {
         min-width: 10vw;
     }
+  }
+
+.git-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1vw;
+    background-color: whitesmoke;
+    color: black;
+    width: 17vw;
+    border: 1px solid bisque;
+    border-radius: 5px;
+    font-size: 20px;
+    font-weight: 600;
+    font-family: Didot, serif;
+    padding: 5px;
+    margin-bottom: 10px;
+}
+.git-btn:hover {
+    cursor: pointer;
+    background-color: rgb(224, 224, 224);
+}
+.svg-git {
+    fill: black;
+    width: 2.5vw;
+    height: 2.5vw;
+}
+.vertical-line {
+    border-left: 1px solid whitesmoke;
+    height: 15vh;
   }

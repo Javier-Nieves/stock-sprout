@@ -14,6 +14,7 @@ ALLOWED_HOSTS = ["*"]
 AUTH_USER_MODEL = 'stocks.user'
 
 INSTALLED_APPS = [
+    'oauthlib',
     "whitenoise.runserver_nostatic",
     'stocks',
     'mathfilters',

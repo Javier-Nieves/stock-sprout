@@ -4,6 +4,7 @@ from django.contrib.auth.models import AbstractUser
 
 class User(AbstractUser):
     pass
+    social_id = models.IntegerField(null=True, blank=True)
 
 
 class Stocks(models.Model):

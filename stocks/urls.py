@@ -18,6 +18,12 @@ urlpatterns = [
     path("history/dividend", views.histPost, name="dividends"),
     path("change/<int:ident>/<str:newText>",
          views.histChange, name="div-title"),
-    path('authCheck', views.auth_check, name='logged in')
+    path('authCheck', views.auth_check, name='logged in'),
+
+    # OAuth 2
+    path('github/authorize/', views.github_authorize, name='github-authorize'),
+    path('callback/', views.github_callback, name='github-callback'),
+
+    # path('fast/', views.fast_account, name='fast-account'),
 
 ]

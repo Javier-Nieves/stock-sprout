@@ -1,10 +1,12 @@
+import os
 import requests
+from requests_oauthlib import OAuth2Session
 import datetime
 import random
 import json
 from apscheduler.schedulers.background import BackgroundScheduler
 
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.contrib.auth import authenticate, login, logout
 from django.views.decorators.http import require_POST
 from django.db import IntegrityError
@@ -423,7 +425,7 @@ def logout_view(request):
 def register(request):
     if request.method == "POST":
         username = request.POST["username"].lower()
-        email = request.POST["email"].lower()
+        # email = request.POST["email"].lower()
 
         # * Ensure password matches confirmation
         password = request.POST["password"]
@@ -436,7 +438,7 @@ def register(request):
         # * Attempt to create new user
         try:
             user = User.objects.create_user(
-                username=username, email=email, password=password)
+                username=username, password=password)
             user.save()
         except IntegrityError:
             return render(request, "stocks/register.html", {
@@ -446,3 +448,73 @@ def register(request):
         return index(request, "You are registered")
     else:
         return render(request, "stocks/register.html")
+
+
+# Social login:
+
+def github_authorize(request):
+    # sending request to Github to receive Code
+    client_id = os.environ['client_id']
+    authorization_base_url = 'https://github.com/login/oauth/authorize'
+    redirect_uri = 'https://stock-sprout.onrender.com/callback'
+    oauth = OAuth2Session(client_id, redirect_uri=redirect_uri)
+    authorization_url, state = oauth.authorization_url(authorization_base_url)
+    return redirect(authorization_url)
+
+
+def github_callback(request):
+    # callback from Github returns Code
+    client_id = os.environ['client_id']
+    client_secret = os.environ['client_secret']
+    token_url = 'https://github.com/login/oauth/access_token'
+    redirect_uri = 'https://stock-sprout.onrender.com/callback'
+    # sending id, secret and code to receive Token
+    oauth = OAuth2Session(client_id, redirect_uri=redirect_uri)
+    token = oauth.fetch_token(
+        token_url,
+        client_secret=client_secret,
+        authorization_response=request.build_absolute_uri()
+    )
+    # Using the token to make authenticated request to GitHub API
+    user_info = get_user_info(token['access_token'])
+
+    # login user or create new account
+    try:
+        User.objects.get(social_id=user_info[3])
+    except:
+        password = User.objects.make_random_password()
+        print(password)
+        User.objects.create(
+            social_id=user_info[3], username=user_info[0], first_name=user_info[1], password=password)
+    user = User.objects.get(social_id=user_info[3])
+    if user is not None:
+        login(request, user)
+        return index(request, "You are logged in")
+    else:
+        return render(request, "stocks/login.html", {
+            "message": "Invalid username and/or password."
+        })
+
+
+def get_user_info(access_token):
+    headers = {
+        'Authorization': f'token {access_token}'
+    }
+    response = requests.get('https://api.github.com/user', headers=headers)
+
+    if response.status_code == 200:
+        user_data = response.json()
+        login = user_data['login']
+        name = user_data['name']
+        id = user_data['id']
+        avatar = user_data['avatar_url']
+        return login, name, avatar, id
+    else:
+        response.raise_for_status()
+
+
+# def fast_account():
+#     print('20 minute!')
+#     return render(request, "stocks/login.html", {
+#         "message": "You have 20 minutes!"
+#     })
