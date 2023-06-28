@@ -458,7 +458,7 @@ def register(request):
 # Social login:
 
 def social_authorize(request):
-    redirect_uri = 'http://localhost:8000/callback'
+    redirect_uri = 'https://stock-sprout.onrender.com/callback'
     if 'git_btn' in request.POST:
         os.environ['source'] = 'github'
         client_id = os.environ['client_id_github']
@@ -504,7 +504,7 @@ def social_callback(request):
         token_url = 'https://github.com/login/oauth/access_token'
         apiUrl = 'https://api.github.com/user'
 
-    redirect_uri = 'http://localhost:8000/callback'
+    redirect_uri = 'https://stock-sprout.onrender.com/callback'
     oauth = OAuth2Session(client_id, redirect_uri=redirect_uri)
     token = oauth.fetch_token(
         token_url,
