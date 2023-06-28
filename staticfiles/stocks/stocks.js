@@ -252,7 +252,8 @@ function sortTable(tar) {
   while (switching) {
     switching = false;
     rows = table.rows;
-    for (i = 1; i < rows.length - 1; i++) {
+    let rowLen = rows.length;
+    for (i = 1; i < rowLen - 1; i++) {
       shouldSwitch = false;
       // * parameter determination
       if (whichSort.includes("sortSigma")) {
@@ -546,7 +547,8 @@ function capitalizeName() {
 function MakeCapitalized(string) {
   const low = string.toLowerCase();
   let converted = low.charAt(0).toUpperCase() + low.slice(1);
-  for (let i = 0; i < string.length; i++) {
+  let strLen = string.length;
+  for (let i = 0; i < strLen; i++) {
     if (
       converted.charAt(i) === " " ||
       converted.charAt(i) === "&" ||
@@ -654,7 +656,8 @@ function blurAllFields(bool) {
     ".company-price-row",
     "#hidden-buy-form",
   ];
-  for (let b = 0; b < blurList.length; b++) {
+  let listLen = blurList.length;
+  for (let b = 0; b < listLen; b++) {
     document.querySelector(`${blurList[b]}`).style.filter = `${
       bool ? "blur(4px)" : "blur(0)"
     }`;

@@ -457,40 +457,87 @@ def register(request):
 
 # Social login:
 
-def github_authorize(request):
-    # sending request to Github to receive Code
-    client_id = os.environ['client_id']
-    authorization_base_url = 'https://github.com/login/oauth/authorize'
+def social_authorize(request):
     redirect_uri = 'https://stock-sprout.onrender.com/callback'
-    oauth = OAuth2Session(client_id, redirect_uri=redirect_uri)
-    authorization_url, state = oauth.authorization_url(authorization_base_url)
+    if 'git_btn' in request.POST:
+        client_id = os.environ['client_id_github']
+        authorization_base_url = 'https://github.com/login/oauth/authorize'
+        oauth = OAuth2Session(client_id, redirect_uri=redirect_uri)
+    elif 'google_btn' in request.POST:
+        client_id = os.environ['client_id_google']
+        authorization_base_url = 'https://accounts.google.com/o/oauth2/auth'
+        scope = ['profile']
+        oauth = OAuth2Session(
+            client_id, redirect_uri=redirect_uri, scope=scope)
+    elif 'facebook_btn' in request.POST:
+        client_id = os.environ['client_id_facebook']
+        authorization_base_url = 'https://www.facebook.com/dialog/oauth'
+        oauth = OAuth2Session(client_id, redirect_uri=redirect_uri)
+
+    authorization_url, state = oauth.authorization_url(
+        authorization_base_url)
     return redirect(authorization_url)
 
 
-def github_callback(request):
-    # callback from Github returns Code
-    client_id = os.environ['client_id']
-    client_secret = os.environ['client_secret']
-    token_url = 'https://github.com/login/oauth/access_token'
+def social_callback(request):
+    # todo - add check and error message
+    if 'scope' in request.GET:
+        if 'google' in request.GET['scope']:
+            source = 'google'
+            client_id = os.environ['client_id_google']
+            client_secret = os.environ['client_secret_google']
+            token_url = 'https://accounts.google.com/o/oauth2/token'
+            apiUrl = 'https://www.googleapis.com/oauth2/v1/userinfo'
+    elif 'state' in request.GET:
+        # not good, but how to determine if callback is from Facebook?
+        source = 'facebook'
+        client_id = os.environ['client_id_facebook']
+        client_secret = os.environ['client_secret_facebook']
+        token_url = 'https://graph.facebook.com/v12.0/oauth/access_token'
+        apiUrl = 'https://graph.facebook.com/v12.0/me'
+    else:  # not good, but how to determine if callback is from Github?
+        source = 'github'
+        client_id = os.environ['client_id_github']
+        client_secret = os.environ['client_secret_github']
+        token_url = 'https://github.com/login/oauth/access_token'
+        apiUrl = 'https://api.github.com/user'
+
     redirect_uri = 'https://stock-sprout.onrender.com/callback'
-    # sending id, secret and code to receive Token
     oauth = OAuth2Session(client_id, redirect_uri=redirect_uri)
     token = oauth.fetch_token(
         token_url,
         client_secret=client_secret,
         authorization_response=request.build_absolute_uri()
     )
-    # Using the token to make authenticated request to GitHub API
-    user_info = get_user_info(token['access_token'])
+    # Using the token to make authenticated request to API
+    oauth_session = OAuth2Session(client_id, token=token)
+    user_info = oauth_session.get(apiUrl).json()
+    return loginSocialUser(request, source, user_info)
 
-    # login user or create new account
+
+def loginSocialUser(request, source, user_info):
+    # cut user id because it can be too long
+    social_id = str(user_info['id'])[-8:]
+    social_id = int(social_id)
+    print(social_id)
     try:
-        User.objects.get(social_id=user_info[3])
+        User.objects.get(social_id=social_id)
     except:
         password = User.objects.make_random_password()
-        User.objects.create(
-            social_id=user_info[3], username=user_info[0], first_name=user_info[1], password=password)
-    user = User.objects.get(social_id=user_info[3])
+        if source == 'github':
+            User.objects.create(
+                social_id=social_id, username=user_info['login'],
+                first_name=user_info['name'], password=password)
+        elif source == 'google':
+            User.objects.create(
+                social_id=social_id, username=user_info['name'],
+                first_name=user_info['given_name'], last_name=user_info['family_name'],
+                password=password)
+        elif source == 'facebook':
+            User.objects.create(
+                social_id=social_id, username=user_info['name'],
+                password=password)
+    user = User.objects.get(social_id=social_id)
     if user is not None:
         login(request, user)
         return index(request, "You are logged in")
@@ -500,25 +547,8 @@ def github_callback(request):
         })
 
 
-def get_user_info(access_token):
-    headers = {
-        'Authorization': f'token {access_token}'
-    }
-    response = requests.get('https://api.github.com/user', headers=headers)
-
-    if response.status_code == 200:
-        user_data = response.json()
-        login = user_data['login']
-        name = user_data['name']
-        id = user_data['id']
-        avatar = user_data['avatar_url']
-        return login, name, avatar, id
-    else:
-        response.raise_for_status()
-
-
-# 20 minute account creation
-def fast_account(request):
+def fast_account(request):  # 20 minute account creation
+    # todo - add 20 min timer
     faker = Faker(['en', 'es', 'vi', 'sk'])
     name = faker.name()
     password = User.objects.make_random_password()

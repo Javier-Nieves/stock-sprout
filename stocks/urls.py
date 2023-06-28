@@ -13,7 +13,7 @@ urlpatterns = [
     path('history', views.blank_page, name='history page refresh'),
     path("company/<str:name>", views.blank_page, name='companypage refresh'),
 
-    # API Route
+    # API Routes
     path("companies/<str:name>", views.company_view, name="company"),
     path("history/dividend", views.histPost, name="dividends"),
     path("change/<int:ident>/<str:newText>",
@@ -21,8 +21,8 @@ urlpatterns = [
     path('authCheck', views.auth_check, name='logged in'),
 
     # OAuth 2
-    path('github/authorize/', views.github_authorize, name='github-authorize'),
-    path('callback/', views.github_callback, name='github-callback'),
+    path('social/authorize/', views.social_authorize, name='social-authorize'),
+    path('callback/', views.social_callback, name='social-callback'),
 
     path('fast/', views.fast_account, name='fast-account'),
 

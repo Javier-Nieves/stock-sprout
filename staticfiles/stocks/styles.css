@@ -589,32 +589,63 @@ table {
     }
   }
 
-.git-btn {
+.git-btn, .google-btn, .facebook-btn, .fast-account-btn {
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 1vw;
     background-color: whitesmoke;
     color: black;
-    width: 17vw;
+    width: 20vw;
     border: 1px solid bisque;
     border-radius: 5px;
     font-size: 20px;
     font-weight: 600;
     font-family: Didot, serif;
+    margin-bottom: 3vh;
     padding: 5px;
-    margin-bottom: 10px;
 }
 .git-btn:hover {
     cursor: pointer;
-    background-color: rgb(224, 224, 224);
+    background-color: rgb(199, 198, 198);
 }
-.svg-git {
+.google-btn {
+    color: whitesmoke;
+    background-color: rgb(200, 65, 48);
+    border: 1px solid grey;
+}
+.google-btn:hover {
+    cursor: pointer;
+    background-color: rgb(168, 53, 38);
+}
+.facebook-btn {
+    color: whitesmoke;
+    background-color: rgb(64, 100, 173);
+    border: 1px solid grey;
+}
+.facebook-btn:hover {
+    cursor: pointer;
+    background-color: rgb(47, 74, 129);
+}
+.fast-account-btn {
+    color: whitesmoke;
+    background-color: transparent;
+    border: 1px solid grey;
+}
+.fast-account-btn:hover {
+    cursor: pointer;
+    background-color: rgba(156, 155, 155, 0.291);
+}
+.svg-git, .svg-google, .svg-facebook, .svg-fast {
     fill: black;
     width: 2.5vw;
     height: 2.5vw;
 }
+.svg-google, .svg-facebook, .svg-fast {
+    fill: whitesmoke;
+}
+
 .vertical-line {
     border-left: 1px solid whitesmoke;
-    height: 15vh;
+    height: 35vh;
   }
