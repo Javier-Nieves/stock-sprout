@@ -23,7 +23,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       document.addEventListener("click", (event) => {
         const tar = event.target;
-        // ? show some view
+        //? show a view
         showingCompany(tar);
         if (tar.className.includes("portfolio-btn")) {
           showingMain();
@@ -31,13 +31,13 @@ document.addEventListener("DOMContentLoaded", () => {
         if (tar.className.includes("history-btn")) {
           showingHistory();
         }
-        // ? or sort main table
+        //? or sort main table
         if (tar.className.includes("Up") || tar.className.includes("Down")) {
           sortTable(tar);
         }
       });
 
-      // ? search form mutations
+      //? search form mutations
       // * if company is searched - make Search field clickable and Buy button appear
       try {
         const filledSearchForm = document.querySelector("#check-filled");
@@ -51,7 +51,9 @@ document.addEventListener("DOMContentLoaded", () => {
           });
 
         updateBtnFunction();
-      } catch {}
+      } catch (error) {
+        console.error(error);
+      }
 
       capitalizeName();
     });
@@ -105,7 +107,7 @@ function showingCompany(tar) {
       document.querySelector("#hidden-buy-form").style.display = "none";
       document.querySelector(".big-green-btn").style.display = "block";
     } catch (error) {
-      // console.error("An Error occurred:", error.message);
+      console.error(error);
     }
   }
   // * from search button in Index
@@ -117,7 +119,8 @@ function showingCompany(tar) {
     compName = document.querySelector("#comp-search").value.toUpperCase();
     document.querySelector("#comp-search").value = "";
     document.querySelector("#hidden-buy-form").style.display = "none";
-    document.querySelector(".big-green-btn").style.display = "block";
+    if (loggedIn)
+      document.querySelector(".big-green-btn").style.display = "block";
   }
 
   if (compName) show_company(compName);
@@ -368,6 +371,7 @@ function makeDivCellChangable(HistRow, newEntryId) {
     changeDivName(HistRow);
   });
 }
+
 // * for backend alerts to disappear
 setTimeout(function () {
   try {
@@ -376,16 +380,22 @@ setTimeout(function () {
     setTimeout(function () {
       mes.remove();
     }, 2000);
-  } catch {}
+  } catch (error) {
+    console.error("no message to remove", error);
+  }
 }, 3000); // in 3 sec
 
 function show_company(compName) {
   window.history.pushState("unused", "unused", `/company/${compName}`);
   document.querySelector("#portfolio-view").style.display = "none";
-  try {
+  // try {
+  if (loggedIn) {
     document.querySelector("#summary-row-top").style.display = "none";
     document.querySelector("#history-view").style.display = "none";
-  } catch {}
+  }
+  // } catch (error) {
+  //   console.error(error);
+  // }
   document.querySelector("#company-view").style.display = "block";
 
   blurAllFields(true);
@@ -500,17 +510,21 @@ function fillCompData(result) {
     ).innerHTML = `${part1} Dividends yield: ${part2}  ${
       divYield?.toFixed(1) || "???"
     } %</div>`;
-
-    document.querySelector(".big-green-btn").addEventListener("click", () => {
-      document.querySelector("#hidden-buy-form").style.display = "block";
-      document.querySelector(".big-green-btn").style.display = "none";
-      document.querySelector("#hidden-buy-form").style.animationPlayState =
-        "running";
-    });
-  } catch {}
+    if (loggedIn) {
+      document.querySelector(".big-green-btn").addEventListener("click", () => {
+        document.querySelector("#hidden-buy-form").style.display = "block";
+        document.querySelector(".big-green-btn").style.display = "none";
+        document.querySelector("#hidden-buy-form").style.animationPlayState =
+          "running";
+      });
+    }
+  } catch (error) {
+    console.error(error);
+  }
 }
 
-// ! other helper functions
+//!  Updating the prices
+
 function updateBtnFunction() {
   const updateBtn = document.querySelector(".prices-btn");
   updateBtn.addEventListener("mouseover", function () {
@@ -528,6 +542,80 @@ function updateBtnFunction() {
   };
 }
 
+function updatePrices() {
+  const rows = document.querySelectorAll(".table-row");
+  let rowCount = 0;
+  rows.forEach((row) => {
+    let ticker = row.querySelector("#company-ticker").innerHTML;
+    getData(ticker)
+      .then((data) => {
+        changeRowValues(row, data);
+      })
+      .then(() => {
+        rowCount++;
+        if (rowCount === rows.length) {
+          setTimeout(function () {
+            if (loggedIn) {
+              fillTopInfo();
+            }
+            removeThreeDots();
+          }, 400);
+        }
+      })
+      .catch((error) => {
+        removeThreeDots();
+        console.error(error);
+      });
+  });
+}
+
+async function getData(ticker) {
+  const dbData = await fetch(`companies/${ticker}`);
+  const compData = await dbData.json();
+  return compData;
+}
+
+function changeRowValues(row, data) {
+  const day = row.querySelector("#day-one");
+  const price = row.querySelector(".market-price");
+  const sigma = row.querySelector(".sigma-row");
+  const change = row.querySelector("#change-field");
+  const myPrice = Number(row.querySelector(".my-price-row").innerHTML);
+  const quant = Number(row.querySelector(".quantity-row").innerHTML);
+
+  if (day !== null)
+    day.innerHTML = `${
+      data.comp.day?.toFixed(2) ? data.comp.day.toFixed(2) + "%" : ""
+    }`;
+  if (data.comp.price < 0.01) {
+    price.innerHTML = `${data.comp.price.toExponential(2)}`;
+  } else {
+    price.innerHTML = `${data.comp.price.toFixed(2)}`;
+  }
+  let sigNum = quant * data.comp.price;
+  sigma.innerHTML = sigNum.toFixed(2);
+  let chNum = (data.comp.price / myPrice - 1) * 100;
+  change.innerHTML = `${chNum.toFixed(2)} %`;
+  price.classList.add("animate");
+  sigma.classList.add("animate");
+  change.classList.add("animate");
+  day.classList.add("animate");
+  setTimeout(function () {
+    price.className = "market-price";
+    change.className = `${chNum > 0 ? "green" : "red"}-text`;
+    day.className = `${data.comp.day > 0 ? "green" : "red"}-text`;
+    sigma.className = "sigma-row";
+  }, 1500);
+  return true;
+}
+
+function removeThreeDots() {
+  const updateBtn = document.querySelector(".prices-btn");
+  updateBtn.style.display = "block";
+  document.querySelector(".three-dots").style.display = "none";
+}
+
+// ! other helper functions
 function moneyFormat(string) {
   const changed = string.toString();
   let txt;
@@ -537,11 +625,11 @@ function moneyFormat(string) {
 }
 
 function capitalizeName() {
-  try {
+  if (loggedIn) {
     const name = document.querySelector(".username");
     let myName = name.innerHTML;
     name.innerHTML = MakeCapitalized(myName);
-  } catch {}
+  }
 }
 
 function MakeCapitalized(string) {
@@ -563,70 +651,7 @@ function MakeCapitalized(string) {
   return converted;
 }
 
-function updatePrices() {
-  const rows = document.querySelectorAll(".table-row");
-  let rowCount = 0;
-  rows.forEach((row) => {
-    const day = row.querySelector("#day-one");
-    const price = row.querySelector(".market-price");
-    const sigma = row.querySelector(".sigma-row");
-    const change = row.querySelector("#change-field");
-    const myPrice = Number(row.querySelector(".my-price-row").innerHTML);
-    const quant = Number(row.querySelector(".quantity-row").innerHTML);
-    let ticker = row.querySelector("#company-ticker").innerHTML;
-
-    getData(ticker)
-      .then((data) => {
-        day.innerHTML = `${
-          data.comp.day?.toFixed(2) ? data.comp.day.toFixed(2) + "%" : ""
-        }`;
-        if (data.comp.price < 0.01) {
-          price.innerHTML = `${data.comp.price.toExponential(2)}`;
-        } else {
-          price.innerHTML = `${data.comp.price.toFixed(2)}`;
-        }
-        let sigNum = quant * data.comp.price;
-        sigma.innerHTML = sigNum.toFixed(2);
-        let chNum = (data.comp.price / myPrice - 1) * 100;
-        change.innerHTML = `${chNum.toFixed(2)} %`;
-        price.classList.add("animate");
-        sigma.classList.add("animate");
-        change.classList.add("animate");
-        day.classList.add("animate");
-        setTimeout(function () {
-          price.className = "market-price";
-          change.className = `${chNum > 0 ? "green" : "red"}-text`;
-          day.className = `${data.comp.day > 0 ? "green" : "red"}-text`;
-          sigma.className = "sigma-row";
-        }, 1500);
-      })
-      .then(() => {
-        rowCount++;
-        if (rowCount === rows.length) {
-          setTimeout(function () {
-            if (loggedIn) {
-              fillTopInfo();
-            }
-            const updateBtn = document.querySelector(".prices-btn");
-            updateBtn.style.display = "block";
-            document.querySelector(".three-dots").style.display = "none";
-          }, 400);
-        }
-      })
-      .catch((error) => {
-        console.error(error);
-      });
-  });
-}
-
-async function getData(ticker) {
-  const dbData = await fetch(`companies/${ticker}`);
-  const compData = await dbData.json();
-  return compData;
-}
-
 function truncate(string, length) {
-  // conditional (ternary) operator is like If-Else statement. [condition ? (ifTrue); : (else);]
   return string.length > length ? `${string.substr(0, length)}...` : string;
 }
 

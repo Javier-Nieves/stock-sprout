@@ -244,6 +244,7 @@ def auth_check(request):
 
 # ! get company financial data by ticker (API function)
 def checkStock(ticker):
+    # we try international stocks first
     try:
         url = f"https://query1.finance.yahoo.com/v11/finance/quoteSummary/{ticker}?modules=financialData"
         urlComp = f"https://query1.finance.yahoo.com/v7/finance/options/{ticker}"
@@ -257,6 +258,7 @@ def checkStock(ticker):
         responseComp.raise_for_status()
         responseDesc.raise_for_status()
     except requests.RequestException:
+        # If unsuccessful - try for russian ticker
         return checkStockRus(ticker)
 
     # Parse responses
@@ -302,7 +304,7 @@ def checkStockRus(ticker):
 
     quote = response.json()
     if len(quote['marketdata']['data']) == 0:
-        print('no price data')
+        print('no price data for', ticker)
         return None
 
     i = 0
@@ -316,7 +318,7 @@ def checkStockRus(ticker):
             break
     if not price:
         print('all is none or 0')
-        return None  # If no non-null number is found
+        return None  # If no non-null numbers are found
     Desc = quote['securities']['data'][0]
     rate = GiveExchangeFor('rub')
     try:
@@ -365,7 +367,7 @@ def getTicker(company_name):
     try:
         company_code = data['quotes'][0]['symbol']
     except:
-        company_code = 'nothing'
+        company_code = 'DIV'
 
     return company_code
 
@@ -375,20 +377,21 @@ def ActualizeMini():
     for paper in Stocks.objects.all():
         if paper.ticker != 'DIV':
             actual = checkStock(paper.ticker)
-            paper.price = actual['price']
-            paper.desc = actual['desc']
-            paper.company = actual['company']
-            paper.day = actual['day']
-            paper.pe = actual['pe']
-            paper.fpe = actual['fpe']
-            paper.pb = actual['pb']
-            paper.profitMargins = actual['profitMargins']
-            paper.roe = actual['roe']
-            paper.debt = actual['debt']
-            paper.divs = actual['dividends']
-            paper.targetPrice = actual['targetPrice']
-            paper.recom = actual['recom']
-            paper.save()
+            if actual is not None:
+                paper.price = actual.get('price')
+                paper.desc = actual.get('desc')
+                paper.company = actual.get('company')
+                paper.day = actual.get('day')
+                paper.pe = actual.get('pe')
+                paper.fpe = actual.get('fpe')
+                paper.pb = actual.get('pb')
+                paper.profitMargins = actual.get('profitMargins')
+                paper.roe = actual.get('roe')
+                paper.debt = actual.get('debt')
+                paper.divs = actual.get('dividends')
+                paper.targetPrice = actual.get('targetPrice')
+                paper.recom = actual.get('recom')
+                paper.save()
     print('actualized at ', datetime.now())
     return HttpResponse(status=204)
 
@@ -553,7 +556,6 @@ def fast_account(request):  # 20 minute account creation
     name = faker.name()
     password = User.objects.make_random_password()
     random_id = faker.random_number(digits=6)
-    print(name, random_id)
     user = User.objects.create(
         social_id=random_id, username=name, password=password)
     login(request, user)
