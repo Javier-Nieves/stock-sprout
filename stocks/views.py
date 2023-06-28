@@ -458,22 +458,25 @@ def register(request):
 # Social login:
 
 def social_authorize(request):
-    redirect_uri = 'https://stock-sprout.onrender.com/callback'
+    redirect_uri = 'http://localhost:8000/callback'
     if 'git_btn' in request.POST:
+        os.environ['source'] = 'github'
         client_id = os.environ['client_id_github']
         authorization_base_url = 'https://github.com/login/oauth/authorize'
         oauth = OAuth2Session(client_id, redirect_uri=redirect_uri)
     elif 'google_btn' in request.POST:
+        os.environ['source'] = 'google'
         client_id = os.environ['client_id_google']
         authorization_base_url = 'https://accounts.google.com/o/oauth2/auth'
         scope = ['profile']
         oauth = OAuth2Session(
             client_id, redirect_uri=redirect_uri, scope=scope)
     elif 'facebook_btn' in request.POST:
+        os.environ['source'] = 'facebook'
         client_id = os.environ['client_id_facebook']
         authorization_base_url = 'https://www.facebook.com/dialog/oauth'
         oauth = OAuth2Session(client_id, redirect_uri=redirect_uri)
-
+    print(os.environ['source'])
     authorization_url, state = oauth.authorization_url(
         authorization_base_url)
     return redirect(authorization_url)
@@ -481,28 +484,27 @@ def social_authorize(request):
 
 def social_callback(request):
     # todo - add check and error message
-    if 'scope' in request.GET:
-        if 'google' in request.GET['scope']:
-            source = 'google'
-            client_id = os.environ['client_id_google']
-            client_secret = os.environ['client_secret_google']
-            token_url = 'https://accounts.google.com/o/oauth2/token'
-            apiUrl = 'https://www.googleapis.com/oauth2/v1/userinfo'
-    elif 'state' in request.GET:
-        # not good, but how to determine if callback is from Facebook?
+    if os.environ['source'] == 'google':
+        # if 'google' in request.GET['scope']:
+        source = 'google'
+        client_id = os.environ['client_id_google']
+        client_secret = os.environ['client_secret_google']
+        token_url = 'https://accounts.google.com/o/oauth2/token'
+        apiUrl = 'https://www.googleapis.com/oauth2/v1/userinfo'
+    elif os.environ['source'] == 'facebook':
         source = 'facebook'
         client_id = os.environ['client_id_facebook']
         client_secret = os.environ['client_secret_facebook']
         token_url = 'https://graph.facebook.com/v12.0/oauth/access_token'
         apiUrl = 'https://graph.facebook.com/v12.0/me'
-    else:  # not good, but how to determine if callback is from Github?
+    elif os.environ['source'] == 'github':
         source = 'github'
         client_id = os.environ['client_id_github']
         client_secret = os.environ['client_secret_github']
         token_url = 'https://github.com/login/oauth/access_token'
         apiUrl = 'https://api.github.com/user'
 
-    redirect_uri = 'https://stock-sprout.onrender.com/callback'
+    redirect_uri = 'http://localhost:8000/callback'
     oauth = OAuth2Session(client_id, redirect_uri=redirect_uri)
     token = oauth.fetch_token(
         token_url,
