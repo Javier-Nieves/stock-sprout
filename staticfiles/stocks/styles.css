@@ -620,13 +620,28 @@ table {
 }
 .facebook-btn {
     color: whitesmoke;
-    background-color: rgb(64, 100, 173);
+    background-color: rgb(124, 124, 124);
     border: 1px solid grey;
 }
 .facebook-btn:hover {
     cursor: pointer;
-    background-color: rgb(47, 74, 129);
+    background-color: rgb(55, 55, 55);
 }
+.facebook-btn .tooltiptext {
+    visibility: hidden;
+    width: 20vw;
+    background-color: black;
+    color: whitesmoke;
+    text-align: center;
+    padding: 5px 0;
+    border-radius: 6px;
+    position: absolute;
+    z-index: 1;
+  }
+  
+  .facebook-btn:hover .tooltiptext {
+    visibility: visible;
+  }
 .fast-account-btn {
     color: whitesmoke;
     background-color: transparent;

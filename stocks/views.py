@@ -471,12 +471,11 @@ def social_authorize(request):
         scope = ['profile']
         oauth = OAuth2Session(
             client_id, redirect_uri=redirect_uri, scope=scope)
-    elif 'facebook_btn' in request.POST:
-        os.environ['source'] = 'facebook'
-        client_id = os.environ['client_id_facebook']
-        authorization_base_url = 'https://www.facebook.com/dialog/oauth'
-        oauth = OAuth2Session(client_id, redirect_uri=redirect_uri)
-    print(os.environ['source'])
+    # elif 'facebook_btn' in request.POST:
+    #     os.environ['source'] = 'facebook'
+    #     client_id = os.environ['client_id_facebook']
+    #     authorization_base_url = 'https://www.facebook.com/dialog/oauth'
+    #     oauth = OAuth2Session(client_id, redirect_uri=redirect_uri)
     authorization_url, state = oauth.authorization_url(
         authorization_base_url)
     return redirect(authorization_url)
@@ -485,18 +484,17 @@ def social_authorize(request):
 def social_callback(request):
     # todo - add check and error message
     if os.environ['source'] == 'google':
-        # if 'google' in request.GET['scope']:
         source = 'google'
         client_id = os.environ['client_id_google']
         client_secret = os.environ['client_secret_google']
         token_url = 'https://accounts.google.com/o/oauth2/token'
         apiUrl = 'https://www.googleapis.com/oauth2/v1/userinfo'
-    elif os.environ['source'] == 'facebook':
-        source = 'facebook'
-        client_id = os.environ['client_id_facebook']
-        client_secret = os.environ['client_secret_facebook']
-        token_url = 'https://graph.facebook.com/v12.0/oauth/access_token'
-        apiUrl = 'https://graph.facebook.com/v12.0/me'
+    # elif os.environ['source'] == 'facebook':
+    #     source = 'facebook'
+    #     client_id = os.environ['client_id_facebook']
+    #     client_secret = os.environ['client_secret_facebook']
+    #     token_url = 'https://graph.facebook.com/v12.0/oauth/access_token'
+    #     apiUrl = 'https://graph.facebook.com/v12.0/me'
     elif os.environ['source'] == 'github':
         source = 'github'
         client_id = os.environ['client_id_github']
@@ -535,10 +533,10 @@ def loginSocialUser(request, source, user_info):
                 social_id=social_id, username=user_info['name'],
                 first_name=user_info['given_name'], last_name=user_info['family_name'],
                 password=password)
-        elif source == 'facebook':
-            User.objects.create(
-                social_id=social_id, username=user_info['name'],
-                password=password)
+        # elif source == 'facebook':
+        #     User.objects.create(
+        #         social_id=social_id, username=user_info['name'],
+        #         password=password)
     user = User.objects.get(social_id=social_id)
     if user is not None:
         login(request, user)
