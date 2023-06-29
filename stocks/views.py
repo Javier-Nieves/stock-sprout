@@ -426,6 +426,10 @@ def login_view(request):
 
 
 def logout_view(request):
+    if 'temp_id' in os.environ:
+        delete_id = int(os.environ['temp_id'])
+        User.objects.get(social_id=delete_id).delete()
+        del os.environ['temp_id']
     logout(request)
     return index(request, "Logged out")
 
@@ -551,25 +555,13 @@ def loginSocialUser(request, source, user_info):
 
 
 def fast_account(request):  # 20 minute account creation
-    # todo - add 20 min timer
     faker = Faker(['en', 'es', 'vi', 'sk'])
-    name = faker.name() + ' (temp)'
+    name = faker.name()
     password = User.objects.make_random_password()
     random_id = faker.random_number(digits=6)
     user = User.objects.create(
         social_id=random_id, username=name, password=password)
+    os.environ['temp_id'] = str(random_id)
     login(request, user)
 
-    deleter = BackgroundScheduler()
-    future_time = datetime.now() + timedelta(minutes=20)
-    deleter.add_job(deleteTempUser, 'date',
-                    run_date=future_time, args=[request, random_id])
-    deleter.start()
-
     return index(request, "You have 20 minutes!")
-
-
-def deleteTempUser(request, id):
-    logout(request)
-    User.objects.get(social_id=id).delete()
-    return index(request, "Logged out")

@@ -301,4 +301,14 @@
     <div id="modal-message"></div>
 </dialog>
 
+{% if message == 'You have 20 minutes!' %}
+<script> localStorage.setItem("countdown", 1200); </script>
+{% endif %}
+{% if message == 'Logged out' %}
+<script> Timer('stop'); </script>
+{% endif %}
+{% if message %}
+<div id='message' class="hidden">{{message}}</div>
+{% endif %}
+
 {% endblock %}

@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // is there a message from backend?
   const message = document.querySelector("#message");
   if (message !== null) {
-    ShowMessage("good", message.innerHTML);
+    ShowMessage(message.innerHTML);
   }
 
   AuthCheck()
@@ -43,24 +43,8 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       });
 
-      //? search form mutations
-      // * if company is searched - make Search field clickable and Buy button appear
-      try {
-        const filledSearchForm = document.querySelector("#check-filled");
-        if (filledSearchForm.innerHTML !== "") {
-          showActionBtns();
-        }
-        document
-          .querySelector("#main-view-search")
-          .addEventListener("click", () => {
-            beginSearch();
-          });
-
-        updateBtnFunction();
-      } catch (error) {
-        console.error(error);
-      }
-
+      searchFormFunction();
+      updateBtnFunction();
       capitalizeName();
     });
 });
@@ -68,9 +52,26 @@ document.addEventListener("DOMContentLoaded", () => {
 // ! ------- functions --------
 function showActionBtns() {
   document.querySelector(".ticker-search-container").className = "ticker-link";
-  document.getElementById("action-buttons").style.animationPlayState =
-    "running";
+  if (loggedIn)
+    document.getElementById("action-buttons").style.animationPlayState =
+      "running";
 }
+
+function searchFormFunction() {
+  // * if company is searched - make Search field clickable and Buy button appear
+  const filledSearchForm = document.querySelector("#check-filled");
+  if (filledSearchForm !== null) {
+    if (filledSearchForm.innerHTML !== "") {
+      showActionBtns();
+    }
+    document
+      .querySelector("#main-view-search")
+      .addEventListener("click", () => {
+        beginSearch();
+      });
+  }
+}
+
 function beginSearch() {
   if (document.querySelector(".ticker-inp").value != "") {
     document.querySelector("#main-view-search").value = "Loading..";
@@ -186,7 +187,7 @@ function changeDivName(Item) {
     NormTitle.style.display = "block";
     NormTitle.innerHTML = newTitle;
     ChangedTitle.style.display = "none";
-    ShowMessage("good", "Entry modified");
+    ShowMessage("Entry modified");
   });
 }
 
@@ -346,7 +347,7 @@ function getDividend(event) {
       });
 
       form.reset();
-      ShowMessage("good", "Dividends received");
+      ShowMessage("Dividends received");
     });
 }
 
@@ -381,10 +382,11 @@ function show_company(compName) {
     .then((response) => response.json())
     .then((result) => {
       if (result.message) {
-        ShowMessage("bad", `${result.message}`);
+        ShowMessage(`${result.message}`);
         blurAllFields(false);
       }
-      const potential = (result.comp.targetPrice / result.comp.price - 1) * 100;
+      // todo - when result.comp.targetPrice is null
+      let potential = (result.comp.targetPrice / result.comp.price - 1) * 100;
 
       document.querySelector("#res-comp-price").innerHTML = `$ ${
         result.comp.price?.toFixed(2) || "???"
@@ -504,19 +506,21 @@ function fillCompData(result) {
 
 function updateBtnFunction() {
   const updateBtn = document.querySelector(".prices-btn");
-  updateBtn.addEventListener("mouseover", function () {
-    updateBtn.textContent = "Update";
-  });
-  updateBtn.addEventListener("mouseout", function () {
-    updateBtn.textContent = "Price, $";
-  });
-  updateBtn.addEventListener("mouseup", function () {
-    updateBtn.style.display = "none";
-    document.querySelector(".three-dots").style.display = "flex";
-  });
-  updateBtn.onclick = () => {
-    updatePrices();
-  };
+  if (updateBtn !== null) {
+    updateBtn.addEventListener("mouseover", function () {
+      updateBtn.textContent = "Update";
+    });
+    updateBtn.addEventListener("mouseout", function () {
+      updateBtn.textContent = "Price, $";
+    });
+    updateBtn.addEventListener("mouseup", function () {
+      updateBtn.style.display = "none";
+      document.querySelector(".three-dots").style.display = "flex";
+    });
+    updateBtn.onclick = () => {
+      updatePrices();
+    };
+  }
 }
 
 function updatePrices() {
@@ -632,7 +636,7 @@ function truncate(string, length) {
   return string.length > length ? `${string.substr(0, length)}...` : string;
 }
 
-function ShowMessage(color, text) {
+function ShowMessage(text) {
   let url = window.location.href;
   if (url.includes("company") || url.includes("history")) {
     const dialog = document.querySelector("#modal-messenger");
@@ -659,7 +663,7 @@ function ShowMessage(color, text) {
     setTimeout(() => {
       messenger.classList.toggle("hidden");
       box.classList.toggle("box-shimmer");
-    }, 3000);
+    }, 2000);
   }
 }
 
@@ -687,6 +691,7 @@ function blurAllFields(bool) {
 
 function loadCorrectView() {
   // The popstate event is fired each time when the current history entry changes.
+  Timer("check");
   let url = window.location.href;
   if (url.slice(-7) === "history") {
     showingHistory();
@@ -715,4 +720,37 @@ async function AuthCheck() {
   const data = await resp.json();
   status = data.LoggedIn;
   return status;
+}
+
+function Timer(action) {
+  if (action == "stop") {
+    localStorage.removeItem("countdown");
+    return true;
+  }
+  let countdown;
+  if (localStorage.getItem("countdown") !== 0) {
+    // localStorage is set in index.html
+    countdown = localStorage.getItem("countdown");
+  }
+  const timer = document.getElementById("time");
+  if (timer !== null) {
+    const update = setInterval(function () {
+      let minutes = String(Math.trunc(countdown / 60));
+      let seconds = String(countdown - minutes * 60);
+      minutes = minutes < 10 ? `0${minutes}` : minutes;
+      seconds = seconds < 10 ? `0${seconds}` : seconds;
+      timer.innerHTML = `${minutes}:${seconds}`;
+      countdown--;
+      localStorage.setItem("countdown", countdown);
+      if (countdown < 0) {
+        clearInterval(update);
+        localStorage.removeItem("countdown");
+        fetch("/logout");
+        ShowMessage("Logged out");
+        setTimeout(() => {
+          location.reload();
+        }, 1500);
+      }
+    }, 1000);
+  }
 }

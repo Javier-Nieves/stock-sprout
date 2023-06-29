@@ -22,12 +22,22 @@ html {
     height: 100vh;
     width: 100vw;
 }
-a {
+a, .username, .nav-link {
+    font-family: Didot, serif;
+    background-color: transparent;
+    border: none;
     text-decoration: none;
-    color: black;
     padding: 0 7px 0 7px;
     font-size: 20px;
     color: whitesmoke;
+}
+.nav-link:hover {
+    cursor: pointer;
+    text-shadow:
+    0 0 3px #fff,
+    0 0 13px #fff,
+    0 0 30px rgba(255, 247, 0, 0.862),
+    0 0 50px rgb(193, 207, 0);
 }
 form {
     display: flex;
@@ -43,7 +53,9 @@ form {
     margin-right: 20px;
     margin-bottom: 8px;
 }
-
+.right-group {
+    display: flex;
+}
 .red-text {
     color: rgb(250, 147, 36);
     font-size: 17px;
@@ -704,4 +716,8 @@ dialog[open] {
 dialog::backdrop {
     /* background-color: #30210a6f; */
     backdrop-filter: blur(5px);
+}
+
+#time {
+    color: bisque;
 }
