@@ -1,6 +1,12 @@
 "use strict";
 let loggedIn;
 document.addEventListener("DOMContentLoaded", () => {
+  // is there a message from backend?
+  const message = document.querySelector("#message");
+  if (message !== null) {
+    ShowMessage("good", message.innerHTML);
+  }
+
   AuthCheck()
     .then((answer) => {
       loggedIn = answer;
@@ -103,11 +109,9 @@ function showingCompany(tar) {
   // * by link on top
   if (tar.className.includes("companies-btn")) {
     compName = "random";
-    try {
+    if (loggedIn) {
       document.querySelector("#hidden-buy-form").style.display = "none";
       document.querySelector(".big-green-btn").style.display = "block";
-    } catch (error) {
-      console.error(error);
     }
   }
   // * from search button in Index
@@ -184,15 +188,6 @@ function changeDivName(Item) {
     ChangedTitle.style.display = "none";
     ShowMessage("good", "Entry modified");
   });
-  // setTimeout(() => {
-  //   document.addEventListener("click", (event) => {
-  //     if (event.target.id !== "change-title" && event.target !== changeBtn) {
-  //       console.log(event.target, "back to normal");
-  //       NormTitle.style.display = "block";
-  //       ChangedTitle.style.display = "none";
-  //     }
-  //   });
-  // }, 800);
 }
 
 function fillTopInfo() {
@@ -218,7 +213,6 @@ function fillTopInfo() {
 
   let dayChMoney = parseFloat(sum2 - dayCh).toFixed(1);
   dayCh = parseFloat((sum2 / dayCh - 1) * 100).toFixed(2);
-  // ? next line will do a toNumber conversion and provide a default value if dayCh = NaN
   dayCh = +dayCh || 0;
 
   sum1 = parseFloat(sum1).toFixed();
@@ -372,30 +366,13 @@ function makeDivCellChangable(HistRow, newEntryId) {
   });
 }
 
-// * for backend alerts to disappear
-setTimeout(function () {
-  try {
-    const mes = document.getElementById("message");
-    mes.style.animationPlayState = "running";
-    setTimeout(function () {
-      mes.remove();
-    }, 2000);
-  } catch (error) {
-    console.error("no message to remove", error);
-  }
-}, 3000); // in 3 sec
-
 function show_company(compName) {
   window.history.pushState("unused", "unused", `/company/${compName}`);
   document.querySelector("#portfolio-view").style.display = "none";
-  // try {
+  document.querySelector("#summary-row-top").style.display = "none";
   if (loggedIn) {
-    document.querySelector("#summary-row-top").style.display = "none";
     document.querySelector("#history-view").style.display = "none";
   }
-  // } catch (error) {
-  //   console.error(error);
-  // }
   document.querySelector("#company-view").style.display = "block";
 
   blurAllFields(true);
@@ -656,19 +633,34 @@ function truncate(string, length) {
 }
 
 function ShowMessage(color, text) {
-  const success_msg = document.createElement("a");
-  success_msg.className = `${
-    color === "good" ? "message-buy" : "message-sell"
-  }`;
-  success_msg.id = "message";
-  success_msg.innerHTML = `-= ${text} =-`;
-  document.querySelector(".left-group").append(success_msg);
-  setTimeout(function () {
-    success_msg.style.animationPlayState = "running";
-  }, 3000);
-  setTimeout(function () {
-    success_msg.remove();
-  }, 4800);
+  let url = window.location.href;
+  if (url.includes("company") || url.includes("history")) {
+    const dialog = document.querySelector("#modal-messenger");
+    dialog.showModal();
+    const message = document.querySelector("#modal-message");
+    message.innerHTML = text;
+    setTimeout(() => {
+      dialog.close();
+    }, 1000);
+  } else {
+    const box = document.querySelector(".ticker-search-container");
+    const messenger = document.querySelector(".messenger");
+    messenger.innerHTML = text;
+    messenger.classList.toggle("hidden");
+    box.classList.toggle("box-shimmer");
+    const innerBoxes = document.querySelectorAll(".ticker-search-box");
+    innerBoxes.forEach((box) => {
+      box.style.filter = "blur(8px)";
+      setTimeout(() => {
+        box.style.filter = "blur(0)";
+      }, 2000);
+    });
+
+    setTimeout(() => {
+      messenger.classList.toggle("hidden");
+      box.classList.toggle("box-shimmer");
+    }, 3000);
+  }
 }
 
 function blurAllFields(bool) {
@@ -684,12 +676,12 @@ function blurAllFields(bool) {
   let listLen = blurList.length;
   for (let b = 0; b < listLen; b++) {
     document.querySelector(`${blurList[b]}`).style.filter = `${
-      bool ? "blur(4px)" : "blur(0)"
+      bool ? "blur(5px)" : "blur(0)"
     }`;
   }
   const sumRows = document.querySelectorAll(".summary-row");
   sumRows.forEach((item) => {
-    item.style.filter = `${bool ? "blur(4px)" : "blur(0)"}`;
+    item.style.filter = `${bool ? "blur(5px)" : "blur(0)"}`;
   });
 }
 

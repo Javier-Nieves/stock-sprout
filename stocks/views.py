@@ -34,7 +34,7 @@ def index(request, message=""):  # with default empty value for message
 
         prices = MyPrice.objects.filter(investor=request.user)
         history = History.objects.filter(user=request.user).order_by('id')
-        return render(request, 'stocks/index.html', {  # return HttpResponseRedirect(reverse('view_recipe', kwargs={'pk': recipe.pk, 'share': share}))
+        return render(request, 'stocks/index.html', {
             'search_form': search_form,
             'buyForm': buy_form,
             'portfolio': portfolio.stock.all(),
@@ -131,7 +131,7 @@ def indexPost(request):
             History.objects.create(user=request.user, stock=stock, ammount=amount,
                                    MyPriceHist=MP.myPrice, BPrice=form_price, action="Buy")
 
-            return index(request, 'buy')
+            return index(request, 'Stock bought')
 
         # ! SELL
         elif 'sell_btn' in request.POST:
@@ -163,7 +163,7 @@ def indexPost(request):
                     History.objects.create(user=request.user, stock=stock, ammount=amount,
                                            SPrice=form_price, MyPriceHist=MP.myPrice, action="Sell")
 
-                    return index(request, 'sell')
+                    return index(request, 'Stock sold')
 
             else:
                 return index(request, "You don't have this stock")
@@ -450,7 +450,7 @@ def register(request):
             user.save()
         except IntegrityError:
             return render(request, "stocks/register.html", {
-                "message": "User already exists."
+                "message": "User already exists"
             })
         login(request, user)
         return index(request, "You are registered")
@@ -546,14 +546,14 @@ def loginSocialUser(request, source, user_info):
         return index(request, "You are logged in")
     else:
         return render(request, "stocks/login.html", {
-            "message": "Invalid username and/or password."
+            "message": "Invalid username/password"
         })
 
 
 def fast_account(request):  # 20 minute account creation
     # todo - add 20 min timer
     faker = Faker(['en', 'es', 'vi', 'sk'])
-    name = faker.name()
+    name = faker.name() + ' (temp)'
     password = User.objects.make_random_password()
     random_id = faker.random_number(digits=6)
     user = User.objects.create(
@@ -566,7 +566,7 @@ def fast_account(request):  # 20 minute account creation
                     run_date=future_time, args=[request, random_id])
     deleter.start()
 
-    return index(request, f"{name}, you have 20 minutes!")
+    return index(request, "You have 20 minutes!")
 
 
 def deleteTempUser(request, id):

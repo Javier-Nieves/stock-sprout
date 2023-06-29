@@ -21,13 +21,7 @@
                     <a class="brand history-btn" href="javascript:;">History</a>
                 {% endif %}
                 {% if message %}
-                    {% if message == 'buy' %}
-                    <a id='message' class="message-buy"> -= Stock bought =- </a>
-                    {% elif message == 'sell' %}
-                    <a id='message' class="message-sell"> -= Stock sold =- </a>
-                    {% else %}
-                    <a id='message' class="message-tell"> {{ message }} </a>
-                    {% endif %}
+                    <div id='message' class="hidden">{{message}}</div>
                 {% endif %}
             </div>
             

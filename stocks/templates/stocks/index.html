@@ -49,6 +49,7 @@
                 <div><strong>Analysis: </strong>{{compData.recom}}</div>
             </ul>
             <div class="loader hidden"></div>
+            <div class="messenger hidden"></div>
             <ul class="ticker-search-box">
                 <div><strong>Price: </strong>$ {{compData.price}}</div>
                 <div><strong>TargetPrice: </strong>$ {{compData.targetPrice}}</div>
@@ -172,7 +173,7 @@
 <!-- ! Company view -->
 <div id="company-view" style="display:none;">
 
-        <div class="loader-comp hidden"></div>
+        <!-- <div class="loader-comp hidden"></div> -->
 
         <div class="title-bar">
             <button class="search-btn companies-btn">Random</button>
@@ -292,7 +293,12 @@
             {% endfor %}
         </tbody>
     </table>
+
 </div>
 {% endif %}
+
+<dialog id="modal-messenger">
+    <div id="modal-message"></div>
+</dialog>
 
 {% endblock %}

@@ -382,6 +382,15 @@ table {
         opacity: 0;
     }
 }
+/* messages */
+.messenger, #modal-message {
+    color: whitesmoke;
+    font-size: 5vh;
+    animation: shimmer 1s infinite alternate;
+}
+.box-shimmer {
+    animation: box-shimmer 1s infinite alternate;
+}
 
 .message-buy, .message-sell, .message-tell {
     animation-name: disappear;
@@ -448,8 +457,8 @@ table {
 }
 
 .loader, .big-loader {
-    border: 10px solid #cbcbcb52; /* Light grey */
-    border-top: 10px solid bisque; /* Blue */
+    border: 10px solid #cbcbcb52;
+    border-top: 10px solid bisque;
     border-radius: 80%;
     width: 50px;
     height: 50px;
@@ -458,8 +467,8 @@ table {
     left: 44%;
   }
   .big-loader {
-    border: 13px solid #cbcbcb52; /* Light grey */
-    border-top: 13px solid bisque; /* Blue */
+    border: 13px solid #cbcbcb52;
+    border-top: 13px solid bisque;
     width: 110px;
     height: 110px;
     top: 40%;
@@ -520,6 +529,16 @@ table {
       text-shadow: none;
     }
   }
+@keyframes box-shimmer {
+    1%, 18%, 22%, 25%, 53%, 57%, 99% {
+        box-shadow:
+        0 0 10px rgba(255, 255, 255, 0.3),
+        0 0 35px rgba(242, 255, 0, 0.2)
+      }
+      0%, 20%, 24%, 55%, 100% {       
+        box-shadow: none;
+      }
+}
 
   /* flashing dots */
   .three-dots {
@@ -664,3 +683,25 @@ table {
     border-left: 1px solid whitesmoke;
     height: 35vh;
   }
+
+#modal-message {
+    font-size: 10vh;
+}
+dialog {
+    padding: 10vh;
+    position: fixed;
+    opacity: 0;
+    scale: 0;
+    transition: all 0.5s;
+    background-color: transparent;
+    outline: none;
+    border: none;
+}
+dialog[open] {
+    opacity: 1;
+    scale: 1;
+}
+dialog::backdrop {
+    /* background-color: #30210a6f; */
+    backdrop-filter: blur(5px);
+}
