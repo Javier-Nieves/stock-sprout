@@ -16,6 +16,7 @@ strong {
 html {
     display: flex;
     flex-direction: column;
+    background-color: #1D1D1F;
     background-image: url("coffee2.jpg");
     background-size: cover;
     padding: 10px;
@@ -23,12 +24,12 @@ html {
     width: 100vw;
 }
 a, .username, .nav-link {
+    font-size: 2.5vh;
     font-family: Didot, serif;
     background-color: transparent;
     border: none;
     text-decoration: none;
     padding: 0 7px 0 7px;
-    font-size: 20px;
     color: whitesmoke;
 }
 .nav-link:hover {
@@ -74,7 +75,6 @@ h1 {
     color: bisque;
 }
 .brand {
-    font-size: 35px;
     font-family: 'Tangerine', cursive;
     color: whitesmoke;
     font-size: 6vh;
@@ -587,38 +587,6 @@ table {
       opacity: 1;
     }
   }
-  @media screen and (max-width: 800px) {
-    body {
-        margin: 0;
-        width: 98vw;
-    }
-    .navbar {
-        width: 98vw;
-        margin: 0;
-    }
-    .body {
-        margin: 0;
-        width: 98vw;
-    }
-    .mobile-hide {
-        display: none;
-    }
-    .summary-row {
-        flex-wrap: wrap;
-    }
-    .summary-row > * {
-        flex-basis: 42vw;
-    }
-    .ticker-search-box > * {
-        font-size: 2vw;
-    }
-    .search-btn, .buy-btn, .sell-btn, .ticker-inp, .ticker-buy {
-        font-size: 2vw;
-    }
-    .ticker-inp {
-        min-width: 10vw;
-    }
-  }
 
 .git-btn, .google-btn, .facebook-btn, .fast-account-btn {
     display: flex;
@@ -721,3 +689,73 @@ dialog::backdrop {
 #time {
     color: bisque;
 }
+
+@media screen and (max-width: 800px) {
+    body {
+        margin: 0;
+        width: 98vw;
+    }
+    .navbar {
+        width: 98vw;
+        margin: 0;
+    }
+    .body {
+        margin: 0;
+        width: 98vw;
+    }
+    .mobile-hide {
+        display: none;
+    }
+    .summary-row {
+        flex-wrap: wrap;
+    }
+    .summary-row > * {
+        flex-basis: 42vw;
+    }
+    .ticker-search-box > * {
+        font-size: 2vw;
+    }
+    .search-btn, .buy-btn, .sell-btn, .ticker-inp, .ticker-buy {
+        font-size: 2vw;
+    }
+    .ticker-inp {
+        min-width: 10vw;
+    }
+  }
+
+  @media screen and (min-width: 2500px) {
+    body {
+        max-width: 2500px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    .navbar {
+        max-width: 2500px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    .body, #summary-row-top, #portfolio-view, #mainTable, 
+    #company-view,  #company-view > *, #history-view > * {
+        max-width: 2500px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    /* .mobile-hide {
+        display: none;
+    }
+    .summary-row {
+        flex-wrap: wrap;
+    }
+    .summary-row > * {
+        flex-basis: 42vw;
+    }
+    .ticker-search-box > * {
+        font-size: 2vw;
+    }
+    .search-btn, .buy-btn, .sell-btn, .ticker-inp, .ticker-buy {
+        font-size: 2vw;
+    }
+    .ticker-inp {
+        min-width: 10vw;
+    } */
+  }
