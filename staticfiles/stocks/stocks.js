@@ -645,7 +645,7 @@ function ShowMessage(text) {
     message.innerHTML = text;
     setTimeout(() => {
       dialog.close();
-    }, 1000);
+    }, 2000);
   } else {
     const box = document.querySelector(".ticker-search-container");
     const messenger = document.querySelector(".messenger");
@@ -728,12 +728,12 @@ function Timer(action) {
     return true;
   }
   let countdown;
-  if (localStorage.getItem("countdown") !== 0) {
+  if (localStorage.getItem("countdown") !== null) {
     // localStorage is set in index.html
     countdown = localStorage.getItem("countdown");
   }
   const timer = document.getElementById("time");
-  if (timer !== null) {
+  if (timer !== null && localStorage.getItem("countdown") !== null) {
     const update = setInterval(function () {
       let minutes = String(Math.trunc(countdown / 60));
       let seconds = String(countdown - minutes * 60);
