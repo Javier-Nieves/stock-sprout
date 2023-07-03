@@ -204,16 +204,13 @@ function fillTopInfo() {
     let Si = parseFloat(row.querySelector(".sigma-row").innerHTML);
     sum1 += myPr * Qu;
     sum2 += Si;
-    if (row.querySelector("#day-one").innerHTML != "") {
-      dayOne = parseFloat(row.querySelector("#day-one").innerHTML);
-    } else {
-      dayOne = 1;
-    }
+    dayOne = parseFloat(row.querySelector("#day-one").innerHTML) || 1;
     dayCh += (Si / (100 + dayOne)) * 100;
   });
 
   let dayChMoney = parseFloat(sum2 - dayCh).toFixed(1);
   dayCh = parseFloat((sum2 / dayCh - 1) * 100).toFixed(2);
+  // todo - try ||=
   dayCh = +dayCh || 0;
 
   sum1 = parseFloat(sum1).toFixed();
@@ -284,7 +281,7 @@ function sortTable(tar) {
       switching = true;
     }
   }
-  // * switch classes after sorting in main table
+  // * switch classes after sorting in the main table
   if (whichSort.includes("Up")) tar.classList.replace("Up", "Down");
   else tar.classList.replace("Down", "Up");
 }
@@ -369,12 +366,13 @@ function makeDivCellChangable(HistRow, newEntryId) {
 
 function show_company(compName) {
   window.history.pushState("unused", "unused", `/company/${compName}`);
+
   document.querySelector("#portfolio-view").style.display = "none";
   document.querySelector("#summary-row-top").style.display = "none";
+  document.querySelector("#company-view").style.display = "block";
   if (loggedIn) {
     document.querySelector("#history-view").style.display = "none";
   }
-  document.querySelector("#company-view").style.display = "block";
 
   blurAllFields(true);
 
@@ -382,20 +380,21 @@ function show_company(compName) {
     .then((response) => response.json())
     .then((result) => {
       if (result.message) {
-        ShowMessage(`${result.message}`);
+        ShowMessage(result.message);
         blurAllFields(false);
       }
       // todo - when result.comp.targetPrice is null
-      let potential = (result.comp.targetPrice / result.comp.price - 1) * 100;
+      let potential =
+        (result.comp?.targetPrice / result.comp?.price - 1) * 100 ?? 0;
 
       document.querySelector("#res-comp-price").innerHTML = `$ ${
-        result.comp.price?.toFixed(2) || "???"
+        result.comp?.price?.toFixed(2) || "???"
       }`;
       document.querySelector("#res-comp-day").innerHTML = `${
-        result.comp.day?.toFixed(1) || "???"
+        result.comp?.day?.toFixed(1) || "???"
       } % `;
 
-      if (result.comp.day < 0)
+      if (result.comp?.day < 0)
         document
           .querySelector("#res-comp-day")
           .classList.replace("green-text", "red-text");
@@ -408,24 +407,24 @@ function show_company(compName) {
       document.querySelector(
         "#company-targetPrice"
       ).innerHTML = `<div class="comp-param-text"> Target price: </div> <div class="comp-param-value-big">$ ${
-        result.comp.targetPrice?.toFixed(2) || "???"
+        result.comp?.targetPrice?.toFixed(2) || "???"
       } <div class='${
         potential > 0 ? "green" : "red"
       }-text med-text'>${potential.toFixed(1)} % </div></div>`;
 
       // populate forms with company's data
-      document.querySelector("#hidden-ticker-comp").value = result.comp.ticker;
+      document.querySelector("#hidden-ticker-comp").value = result.comp?.ticker;
       document.querySelector(
         "#company-recom"
       ).innerHTML = `<div class="comp-param-text"> Recommendation: </div> <div class="comp-param-value-big">${
-        result.comp.recom || "???"
+        result.comp?.recom || "???"
       } </div>`;
       document.querySelector("#company-title").innerHTML = `${MakeCapitalized(
-        result.comp.company
+        result.comp?.company
       )} <div class='comp-param-text' style='text-align:center;'>${
-        result.comp.ticker
+        result.comp?.ticker
       }</div>`;
-      const fullText = result.comp.desc ? result.comp.desc : "no description";
+      const fullText = result.comp?.desc || "no description";
       let collapsed = true;
       document.querySelector("#company-desc").innerHTML = truncate(
         fullText,
@@ -449,22 +448,22 @@ function show_company(compName) {
 }
 
 function fillCompData(result) {
-  const roe = result.comp.roe * 100;
-  const divYield = (result.comp.dividends / result.comp.price) * 100;
-  const marg = result.comp.profitMargins * 100;
+  const roe = result.comp?.roe * 100;
+  const divYield = (result.comp?.dividends / result.comp?.price) * 100;
+  const marg = result.comp?.profitMargins * 100;
   try {
     const part1 = '<div class="comp-param-text">';
     const part2 = '</div> <div class="comp-param-value">';
     document.querySelector("#company-pe").innerHTML = `${part1} PE: ${part2} ${
-      result.comp.pe?.toFixed(1) || "???"
+      result.comp?.pe?.toFixed(1) || "???"
     } </div>`;
     document.querySelector(
       "#company-fpe"
     ).innerHTML = `${part1} Forward PE: ${part2} ${
-      result.comp.fpe?.toFixed(1) || "???"
+      result.comp?.fpe?.toFixed(1) || "???"
     }</div>`;
     document.querySelector("#company-pb").innerHTML = `${part1} PB: ${part2} ${
-      result.comp.pb?.toFixed(1) || "???"
+      result.comp?.pb?.toFixed(1) || "???"
     }</div>`;
     document.querySelector(
       "#company-roe"
@@ -472,7 +471,7 @@ function fillCompData(result) {
     document.querySelector(
       "#company-debt"
     ).innerHTML = `${part1} Debt to Equity: ${part2} ${
-      result.comp.debt?.toFixed(2) || "???"
+      result.comp?.debt?.toFixed(2) || "???"
     }</div>`;
     document.querySelector(
       "#company-profitMargins"
@@ -482,7 +481,7 @@ function fillCompData(result) {
     document.querySelector(
       "#company-dividends"
     ).innerHTML = `${part1} Dividends: ${part2} $ ${
-      result.comp.dividends?.toFixed(2) || "???"
+      result.comp?.dividends?.toFixed(2) || "???"
     }</div>`;
     document.querySelector(
       "#company-dividends-yield"
@@ -506,21 +505,19 @@ function fillCompData(result) {
 
 function updateBtnFunction() {
   const updateBtn = document.querySelector(".prices-btn");
-  if (updateBtn !== null) {
-    updateBtn.addEventListener("mouseover", function () {
-      updateBtn.textContent = "Update";
-    });
-    updateBtn.addEventListener("mouseout", function () {
-      updateBtn.textContent = "Price, $";
-    });
-    updateBtn.addEventListener("mouseup", function () {
-      updateBtn.style.display = "none";
-      document.querySelector(".three-dots").style.display = "flex";
-    });
-    updateBtn.onclick = () => {
-      updatePrices();
-    };
-  }
+  updateBtn.addEventListener("mouseover", function () {
+    updateBtn.textContent = "Update";
+  });
+  updateBtn.addEventListener("mouseout", function () {
+    updateBtn.textContent = "Price, $";
+  });
+  updateBtn.addEventListener("mouseup", function () {
+    updateBtn.style.display = "none";
+    document.querySelector(".three-dots").style.display = "flex";
+  });
+  updateBtn.onclick = () => {
+    updatePrices();
+  };
 }
 
 function updatePrices() {
@@ -564,18 +561,16 @@ function changeRowValues(row, data) {
   const myPrice = Number(row.querySelector(".my-price-row").innerHTML);
   const quant = Number(row.querySelector(".quantity-row").innerHTML);
 
-  if (day !== null)
-    day.innerHTML = `${
-      data.comp.day?.toFixed(2) ? data.comp.day.toFixed(2) + "%" : ""
-    }`;
-  if (data.comp.price < 0.01) {
-    price.innerHTML = `${data.comp.price.toExponential(2)}`;
-  } else {
-    price.innerHTML = `${data.comp.price.toFixed(2)}`;
-  }
-  let sigNum = quant * data.comp.price;
+  day.innerHTML = data.comp?.day?.toFixed(2) || "";
+  day.innerHTML = day.innerHTML && day.innerHTML + " %";
+
+  const stockPrice = data.comp?.price;
+  price.innerHTML =
+    stockPrice < 0.01 ? stockPrice.toExponential(2) : stockPrice.toFixed(2);
+
+  let sigNum = quant * stockPrice;
   sigma.innerHTML = sigNum.toFixed(2);
-  let chNum = (data.comp.price / myPrice - 1) * 100;
+  let chNum = (stockPrice / myPrice - 1) * 100;
   change.innerHTML = `${chNum.toFixed(2)} %`;
   price.classList.add("animate");
   sigma.classList.add("animate");
@@ -677,15 +672,14 @@ function blurAllFields(bool) {
     ".company-price-row",
     "#hidden-buy-form",
   ];
-  let listLen = blurList.length;
-  for (let b = 0; b < listLen; b++) {
-    document.querySelector(`${blurList[b]}`).style.filter = `${
-      bool ? "blur(5px)" : "blur(0)"
-    }`;
+  for (const element of blurList) {
+    document.querySelector(`${element}`).style.filter = bool
+      ? "blur(5px)"
+      : "blur(0)";
   }
   const sumRows = document.querySelectorAll(".summary-row");
   sumRows.forEach((item) => {
-    item.style.filter = `${bool ? "blur(5px)" : "blur(0)"}`;
+    item.style.filter = bool ? "blur(5px)" : "blur(0)";
   });
 }
 
