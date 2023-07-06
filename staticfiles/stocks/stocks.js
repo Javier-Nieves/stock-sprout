@@ -22,25 +22,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
       loadCorrectView();
 
-      // ! back button action
-      window.addEventListener("popstate", function () {
-        loadCorrectView();
-      });
+      // back button action
+      window.addEventListener("popstate", loadCorrectView);
 
       document.addEventListener("click", (event) => {
         const tar = event.target;
         //? show a view
         showingCompany(tar);
-        if (tar.className.includes("portfolio-btn")) {
-          showingMain();
-        }
-        if (tar.className.includes("history-btn")) {
-          showingHistory();
-        }
+        if (tar.className.includes("portfolio-btn")) showingMain();
+        if (tar.className.includes("history-btn")) showingHistory();
         //? or sort main table
-        if (tar.className.includes("Up") || tar.className.includes("Down")) {
+        if (tar.className.includes("Up") || tar.className.includes("Down"))
           sortTable(tar);
-        }
       });
 
       searchFormFunction();
@@ -61,14 +54,10 @@ function searchFormFunction() {
   // * if company is searched - make Search field clickable and Buy button appear
   const filledSearchForm = document.querySelector("#check-filled");
   if (filledSearchForm !== null) {
-    if (filledSearchForm.innerHTML !== "") {
-      showActionBtns();
-    }
+    if (filledSearchForm.innerHTML !== "") showActionBtns();
     document
       .querySelector("#main-view-search")
-      .addEventListener("click", () => {
-        beginSearch();
-      });
+      .addEventListener("click", beginSearch);
   }
 }
 
@@ -127,7 +116,6 @@ function showingCompany(tar) {
     if (loggedIn)
       document.querySelector(".big-green-btn").style.display = "block";
   }
-
   if (compName) show_company(compName);
 }
 
@@ -166,9 +154,7 @@ function showingHistory() {
     // if dividend title is clicked - change div title
     Item.addEventListener("click", (event) => {
       const tar2 = event.target;
-      if (tar2.className.includes("div-title")) {
-        changeDivName(Item);
-      }
+      if (tar2.className.includes("div-title")) changeDivName(Item);
     });
   });
   window.history.pushState("unused", "unused", `/history`);
@@ -217,22 +203,22 @@ function fillTopInfo() {
   sum2 = parseFloat(sum2).toFixed();
   let perChange = parseFloat((sum2 / sum1 - 1) * 100).toFixed(1);
   perChange = +perChange || 0;
-  let earnings = Number(
-    document.querySelector("#earnings").innerHTML.match(/\d+/)[0]
-  );
+  const earnElem = document.querySelector("#earnings");
+  let earnings = Number(earnElem.innerHTML.match(/\d+/)[0]);
   let prof = parseFloat(sum2 - sum1 + earnings).toFixed();
 
+  earnElem.innerHTML = moneyFormat(parseInt(earnElem.innerHTML.match(/\d+/)));
   document
     .querySelector("#invested-main")
-    .querySelector(".sum-value").innerHTML = `$ ${moneyFormat(sum1)}`;
+    .querySelector(".sum-value").innerHTML = moneyFormat(sum1);
 
   const nowChange = document.querySelector("#nowChange");
   nowChange.classList.add(`${perChange >= 0 ? "green" : "red"}-text`);
-  nowChange.innerHTML = `$ ${moneyFormat(sum2)} &nbsp ${perChange} % </div>`;
+  nowChange.innerHTML = `${moneyFormat(sum2)} &nbsp ${perChange} % </div>`;
 
   const profitBox = document.querySelector("#profit");
   profitBox.className = `sum-value ${prof >= 0 ? "green" : "red"}-text`;
-  profitBox.innerHTML = `&nbsp $ ${prof}`;
+  profitBox.innerHTML = `&nbsp ${moneyFormat(prof)}`;
 
   const dayChange = document.querySelector("#dayChange");
   dayChange.classList.add(`${dayChMoney >= 0 ? "green" : "red"}-text`);
@@ -323,6 +309,7 @@ function getDividend(event) {
         cells[k] = HistRow.insertCell(k);
         cells[k].innerHTML = content[k];
       }
+      // todo - stop hardcoding
       cells[7].className = "green-text";
       cells[0].className = "mobile-hide";
       cells[2].className = "mobile-hide";
@@ -340,7 +327,7 @@ function getDividend(event) {
           10
         );
         let newValue = profitValue + Math.round(Number(amount));
-        value.innerHTML = `&nbsp $ ${moneyFormat(newValue)} &nbsp`;
+        value.innerHTML = `&nbsp ${moneyFormat(newValue)} &nbsp`;
       });
 
       form.reset();
@@ -370,9 +357,7 @@ function show_company(compName) {
   document.querySelector("#portfolio-view").style.display = "none";
   document.querySelector("#summary-row-top").style.display = "none";
   document.querySelector("#company-view").style.display = "block";
-  if (loggedIn) {
-    document.querySelector("#history-view").style.display = "none";
-  }
+  if (loggedIn) document.querySelector("#history-view").style.display = "none";
 
   blurAllFields(true);
 
@@ -390,18 +375,11 @@ function show_company(compName) {
       document.querySelector("#res-comp-price").innerHTML = `$ ${
         result.comp?.price?.toFixed(2) || "???"
       }`;
-      document.querySelector("#res-comp-day").innerHTML = `${
-        result.comp?.day?.toFixed(1) || "???"
-      } % `;
-
-      if (result.comp?.day < 0)
-        document
-          .querySelector("#res-comp-day")
-          .classList.replace("green-text", "red-text");
-      else
-        document
-          .querySelector("#res-comp-day")
-          .classList.replace("red-text", "green-text");
+      const resComDay = document.querySelector("#res-comp-day");
+      resComDay.innerHTML = `${result.comp?.day?.toFixed(1) || "???"} % `;
+      resComDay.className = `med-text ${
+        result.comp?.day < 0 ? "red-text" : "green-text"
+      }`;
 
       // todo - html!
       document.querySelector(
@@ -515,9 +493,7 @@ function updateBtnFunction() {
     updateBtn.style.display = "none";
     document.querySelector(".three-dots").style.display = "flex";
   });
-  updateBtn.onclick = () => {
-    updatePrices();
-  };
+  updateBtn.onclick = updatePrices();
 }
 
 function updatePrices() {
@@ -533,9 +509,7 @@ function updatePrices() {
         rowCount++;
         if (rowCount === rows.length) {
           setTimeout(function () {
-            if (loggedIn) {
-              fillTopInfo();
-            }
+            if (loggedIn) fillTopInfo();
             removeThreeDots();
           }, 400);
         }
@@ -593,11 +567,11 @@ function removeThreeDots() {
 
 // ! other helper functions
 function moneyFormat(string) {
-  const changed = string.toString();
+  const changed = string + "";
   let txt;
   if (3 < changed.length < 7)
     txt = changed.slice(0, -3) + " " + changed.slice(-3);
-  return txt;
+  return "$ " + txt;
 }
 
 function capitalizeName() {
