@@ -194,35 +194,46 @@ function fillTopInfo() {
     dayCh += (Si / (100 + dayOne)) * 100;
   });
 
-  let dayChMoney = parseFloat(sum2 - dayCh).toFixed(1);
+  let dayChMoney = parseFloat(sum2 - dayCh).toFixed();
   dayCh = parseFloat((sum2 / dayCh - 1) * 100).toFixed(2);
   // todo - try ||=
   dayCh = +dayCh || 0;
 
-  sum1 = parseFloat(sum1).toFixed();
-  sum2 = parseFloat(sum2).toFixed();
+  sum1 = Number(parseFloat(sum1).toFixed());
+  sum2 = Number(parseFloat(sum2).toFixed());
   let perChange = parseFloat((sum2 / sum1 - 1) * 100).toFixed(1);
   perChange = +perChange || 0;
   const earnElem = document.querySelector("#earnings");
-  let earnings = Number(earnElem.innerHTML.match(/\d+/)[0]);
+  let earnings = Number(
+    earnElem.innerHTML.replaceAll(" ", "").replace("$", "")
+  );
   let prof = parseFloat(sum2 - sum1 + earnings).toFixed();
-
-  earnElem.innerHTML = moneyFormat(parseInt(earnElem.innerHTML.match(/\d+/)));
+  earnElem.innerHTML = moneyFormat(
+    earnElem.innerHTML.replaceAll(" ", "").replace("$", "")
+  );
   document
     .querySelector("#invested-main")
     .querySelector(".sum-value").innerHTML = moneyFormat(sum1);
 
-  const nowChange = document.querySelector("#nowChange");
-  nowChange.classList.add(`${perChange >= 0 ? "green" : "red"}-text`);
-  nowChange.innerHTML = `${moneyFormat(sum2)} &nbsp ${perChange} % </div>`;
+  const nowChangeDol = document.querySelector("#nowChangeDol");
+  const nowChangePer = document.querySelector("#nowChangePer");
+  const dayColor = perChange >= 0 ? "green-text" : "red-text";
+  nowChangeDol.classList.add(dayColor);
+  nowChangePer.classList.add(dayColor);
+  nowChangeDol.innerHTML = moneyFormat(sum2);
+  nowChangePer.innerHTML = `${perChange} %`;
 
   const profitBox = document.querySelector("#profit");
   profitBox.className = `sum-value ${prof >= 0 ? "green" : "red"}-text`;
-  profitBox.innerHTML = `&nbsp ${moneyFormat(prof)}`;
+  profitBox.innerHTML = moneyFormat(prof);
 
-  const dayChange = document.querySelector("#dayChange");
-  dayChange.classList.add(`${dayChMoney >= 0 ? "green" : "red"}-text`);
-  dayChange.innerHTML = `$ ${dayChMoney} &nbsp ${dayCh} % </div>`;
+  const dayChangeDol = document.querySelector("#dayChangeDol");
+  const dayChangePer = document.querySelector("#dayChangePer");
+  const dayClass = dayChMoney >= 0 ? "green-text" : "red-text";
+  dayChangeDol.classList.add(dayClass);
+  dayChangePer.classList.add(`${dayChMoney >= 0 ? "green" : "red"}-text`);
+  dayChangeDol.innerHTML = moneyFormat(dayChMoney);
+  dayChangePer.innerHTML = `${dayCh} %`;
 }
 
 function sortTable(tar) {
@@ -493,7 +504,7 @@ function updateBtnFunction() {
     updateBtn.style.display = "none";
     document.querySelector(".three-dots").style.display = "flex";
   });
-  updateBtn.onclick = updatePrices();
+  updateBtn.onclick = () => updatePrices();
 }
 
 function updatePrices() {
@@ -571,7 +582,7 @@ function moneyFormat(string) {
   let txt;
   if (3 < changed.length < 7)
     txt = changed.slice(0, -3) + " " + changed.slice(-3);
-  return "$ " + txt;
+  return ("$ " + txt).padEnd(9);
 }
 
 function capitalizeName() {

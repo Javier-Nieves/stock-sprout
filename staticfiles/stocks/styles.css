@@ -45,6 +45,13 @@ form {
     flex-direction: column;
     justify-content: center;
 }
+.around {
+    display: flex;
+    justify-content: space-around;
+}
+#invested-main > *, #day-main > * {
+    text-align: center;
+}
 .flex-column {
     display: flex;
     flex-direction: column;

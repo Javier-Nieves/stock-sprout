@@ -10,19 +10,29 @@
             <div class="sum-value"></div>
         </div>
         <div id="present-main">
-            <div class="sum-text"> &nbsp Now &nbsp / &nbsp Change: </div>
-            <div id="nowChange" class="sum-value"></div>
+            <div class="sum-text around">
+                <div>Now</div>  <div>/</div> <div>Change:</div>
+            </div>
+            <div id="nowChange" class="around">
+                <div id="nowChangeDol" class=sum-value></div>
+                <div id="nowChangePer" class="sum-value"></div>
+            </div>
         </div>
         <div id="profit-main">
-            <div class="sum-text"> Earnings &nbsp / &nbsp Profit: </div> 
-            <div style="display:flex">
-                <div id="earnings" class=sum-value>&nbsp $ {{ profit|floatformat:"0" }} &nbsp</div>
+            <div class="sum-text around">
+                <div>Earnings</div>  <div>/</div> <div>Profit:</div>
+            </div> 
+            <div class="around">
+                <div id="earnings" class=sum-value>{{ profit|floatformat:"0" }}</div>
                 <div id="profit" class="sum-value"></div>
             </div>
         </div>
         <div id="day-main">
             <div class="sum-text">Day change:</div>
-            <div id="dayChange" class="sum-value"></div>
+            <div id="dayChange" class="around">
+                <div id="dayChangeDol" class=sum-value></div>
+                <div id="dayChangePer" class="sum-value"></div>
+            </div>
         </div>
     </div>
 
