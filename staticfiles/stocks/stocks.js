@@ -179,62 +179,71 @@ function changeDivName(Item) {
 
 function fillTopInfo() {
   const rows = document.querySelectorAll(".table-row");
+
+  let [sum1, sum2, dayCh] = calculateMainParameters(rows);
+  let [nowChange, perChange] = calculateSecParameters(sum1, sum2, dayCh);
+
+  fillMainBlock(sum1);
+  fillChangeBlock("#nowChange", sum2, nowChange);
+  fillChangeBlock("#dayChange", dayCh, perChange);
+  fillEarnProfit(sum1, sum2);
+}
+
+function calculateMainParameters(rows) {
   let sum1 = 0;
   let sum2 = 0;
   let dayCh = 0;
-
   rows.forEach((row) => {
     let dayOne;
     let myPr = parseFloat(row.querySelector(".my-price-row").innerHTML);
     let Qu = parseFloat(row.querySelector(".quantity-row").innerHTML);
     let Si = parseFloat(row.querySelector(".sigma-row").innerHTML);
-    sum1 += myPr * Qu;
-    sum2 += Si;
-    dayOne = parseFloat(row.querySelector("#day-one").innerHTML) || 1;
-    dayCh += (Si / (100 + dayOne)) * 100;
+    sum1 += myPr * Qu; // money originally paid for all stocks
+    sum2 += Si; // actual money in stocks now
+    dayOne = parseFloat(row.querySelector("#day-one").innerHTML) || 0;
+    dayCh += (Si * dayOne) / 100; // day change in dollars for every stock combined
   });
-
-  let dayChMoney = parseFloat(sum2 - dayCh).toFixed();
-  dayCh = parseFloat((sum2 / dayCh - 1) * 100).toFixed(2);
-  // todo - try ||=
-  dayCh = +dayCh || 0;
-
+  dayCh = Number(dayCh.toFixed());
   sum1 = Number(parseFloat(sum1).toFixed());
   sum2 = Number(parseFloat(sum2).toFixed());
-  let perChange = parseFloat((sum2 / sum1 - 1) * 100).toFixed(1);
-  perChange = +perChange || 0;
+  console.log(sum1, sum2, dayCh);
+  return [sum1, sum2, dayCh];
+}
+
+function calculateSecParameters(sum1, sum2, dayCh) {
+  let nowChange = Number(((sum2 / sum1 - 1) * 100).toFixed(2));
+  let perChange = Number(((dayCh / sum2) * 100).toFixed(2));
+  return [nowChange, perChange];
+}
+
+function fillChangeBlock(where, value1, value2) {
+  console.log(value1, value2);
+  const moneyBlock = document.querySelector(`${where}Dol`);
+  const percentBlock = document.querySelector(`${where}Per`);
+  const colorClass = value2 >= 0 ? "green-text" : "red-text";
+  moneyBlock.classList.add(colorClass);
+  percentBlock.classList.add(colorClass);
+  moneyBlock.innerHTML = moneyFormat(value1);
+  percentBlock.innerHTML = `${value2} %`;
+}
+
+function fillEarnProfit(sum1, sum2) {
   const earnElem = document.querySelector("#earnings");
   let earnings = Number(
     earnElem.innerHTML.replaceAll(" ", "").replace("$", "")
   );
-  let prof = parseFloat(sum2 - sum1 + earnings).toFixed();
-  earnElem.innerHTML = moneyFormat(
-    earnElem.innerHTML.replaceAll(" ", "").replace("$", "")
-  );
-  document
-    .querySelector("#invested-main")
-    .querySelector(".sum-value").innerHTML = moneyFormat(sum1);
+  earnElem.innerHTML = moneyFormat(earnings);
 
-  const nowChangeDol = document.querySelector("#nowChangeDol");
-  const nowChangePer = document.querySelector("#nowChangePer");
-  const dayColor = perChange >= 0 ? "green-text" : "red-text";
-  nowChangeDol.classList.add(dayColor);
-  nowChangePer.classList.add(dayColor);
-  nowChangeDol.innerHTML = moneyFormat(sum2);
-  nowChangePer.innerHTML = `${perChange} %`;
-
+  let prof = sum2 - sum1 + earnings;
   const profitBox = document.querySelector("#profit");
   profitBox.className = `sum-value ${prof >= 0 ? "green" : "red"}-text`;
   profitBox.innerHTML = moneyFormat(prof);
-
-  const dayChangeDol = document.querySelector("#dayChangeDol");
-  const dayChangePer = document.querySelector("#dayChangePer");
-  const dayClass = dayChMoney >= 0 ? "green-text" : "red-text";
-  dayChangeDol.classList.add(dayClass);
-  dayChangePer.classList.add(`${dayChMoney >= 0 ? "green" : "red"}-text`);
-  dayChangeDol.innerHTML = moneyFormat(dayChMoney);
-  dayChangePer.innerHTML = `${dayCh} %`;
 }
+
+const fillMainBlock = (sum1) =>
+  (document
+    .querySelector("#invested-main")
+    .querySelector(".sum-value").innerHTML = moneyFormat(sum1));
 
 function sortTable(tar) {
   let table, rows, switching, i, x, y, shouldSwitch;
