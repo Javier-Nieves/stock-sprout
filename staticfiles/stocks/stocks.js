@@ -20,11 +20,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
 function handleClicks(event) {
   const tar = event.target;
-  //? show a view
+  // show a view
   showingCompany(tar);
   if (tar.className.includes("portfolio-btn")) showingMain();
   if (tar.className.includes("history-btn")) showingHistory();
-  //? or sort main table
+  // or sort main table
   if (tar.className.includes("Up") || tar.className.includes("Down"))
     sortTable(tar);
 }
@@ -41,7 +41,11 @@ function searchFormFunction() {
 }
 
 function showActionBtns() {
-  document.querySelector(".ticker-search-container").className = "ticker-link";
+  const seBox = document.querySelectorAll(".ticker-search-box");
+  seBox.forEach((box) => box.classList.add("ticker-link"));
+  document
+    .querySelector(".ticker-search-container")
+    .classList.add("ticker-link");
   if (userLoggedIn())
     document.getElementById("action-buttons").style.animationPlayState =
       "running";
@@ -68,45 +72,41 @@ function showingMain() {
 }
 
 function showingCompany(tar) {
-  let clName;
-  try {
-    clName = tar.parentElement.className;
-  } catch {
-    return 1;
-  }
+  let clName = tar.parentElement?.className;
   let compName;
-  // * from History
-  if (clName.includes("hist-row")) {
-    if (tar.parentElement.querySelector(".hist-action").innerHTML != "Div") {
-      compName =
-        tar.parentElement.querySelector("#hist-company-name").innerHTML;
-    }
-  }
-  // * from Main Table Index
-  if (clName.includes("table-row")) {
-    compName = tar.parentElement.querySelector("#company-ticker").innerHTML;
-  }
-  // * by link on top
-  if (tar.className.includes("companies-btn")) {
-    compName = "random";
-    if (userLoggedIn()) {
-      document.querySelector("#hidden-buy-form").style.display = "none";
-      document.querySelector(".big-green-btn").style.display = "block";
-    }
-  }
-  // * from search button in Index
-  if (tar.parentElement.parentElement.className.includes("ticker-link")) {
+  if (clName.includes("hist-row")) compName = showComp_history(tar);
+  if (clName.includes("table-row")) compName = showComp_main(tar);
+  if (tar.className.includes("companies-btn")) compName = showComp_link();
+  if (tar.parentElement.parentElement.className.includes("ticker-link"))
     compName = document.querySelector("#hidden-ticker").value;
-  }
-  // * company search button in Company View
-  if (tar.className.includes("comp-search-btn")) {
-    compName = document.querySelector("#comp-search").value.toUpperCase();
-    document.querySelector("#comp-search").value = "";
+  if (tar.className.includes("comp-search-btn"))
+    compName = showComp_CompSearch();
+
+  compName && show_company(compName);
+}
+
+function showComp_history(tar) {
+  if (tar.parentElement.querySelector(".hist-action").innerHTML != "Div")
+    return tar.parentElement.querySelector("#hist-company-name").innerHTML;
+}
+const showComp_main = (tar) =>
+  tar.parentElement.querySelector("#company-ticker").innerHTML;
+
+function showComp_link() {
+  if (userLoggedIn()) {
     document.querySelector("#hidden-buy-form").style.display = "none";
-    if (userLoggedIn())
-      document.querySelector(".big-green-btn").style.display = "block";
+    document.querySelector(".big-green-btn").style.display = "block";
   }
-  if (compName) show_company(compName);
+  return "random";
+}
+
+function showComp_CompSearch() {
+  const compName = document.querySelector("#comp-search").value.toUpperCase();
+  document.querySelector("#comp-search").value = "";
+  document.querySelector("#hidden-buy-form").style.display = "none";
+  if (userLoggedIn())
+    document.querySelector(".big-green-btn").style.display = "block";
+  return compName;
 }
 
 function show_company(compName) {
@@ -585,7 +585,6 @@ function removeThreeDots() {
 }
 // ----------------------------------------------------------------------
 
-// ! other helper functions
 function moneyFormat(string) {
   const changed = string + "";
   let txt;
@@ -621,6 +620,13 @@ function MakeCapitalized(string) {
 
 function truncate(string, length) {
   return string.length > length ? `${string.substr(0, length)}...` : string;
+}
+
+function checkMessages() {
+  const message = document.querySelector("#message");
+  if (message !== null) {
+    ShowMessage(message.innerHTML);
+  }
 }
 
 function ShowMessage(text) {
@@ -743,10 +749,3 @@ function Timer(action) {
 }
 
 const updateBrowserHistory = (str) => window.history.pushState("_", "_", str);
-
-function checkMessages() {
-  const message = document.querySelector("#message");
-  if (message !== null) {
-    ShowMessage(message.innerHTML);
-  }
-}

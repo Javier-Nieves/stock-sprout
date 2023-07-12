@@ -189,7 +189,7 @@ h1 {
 
 
 /* ? search for company*/
-.ticker-search-container, .ticker-link {
+.ticker-search-container {
     position: relative;
     background-color: rgba(114, 115, 115, 0.3);
     border: 1px solid gray;
@@ -198,7 +198,7 @@ h1 {
     flex-direction: row;
     align-items: center;
 }
-.ticker-link:hover, #company-desc:hover {
+.ticker-search-container.ticker-link:hover, #company-desc:hover {
     background-color: rgba(255, 246, 196, 0.31);
     box-shadow: 0 0 5px #a1b1c3;
     cursor: pointer;
