@@ -1,52 +1,36 @@
 "use strict";
-// todo - use localstorrage
-let loggedIn;
-
 document.addEventListener("DOMContentLoaded", () => {
-  // is there a message from backend?
-  const message = document.querySelector("#message");
-  if (message !== null) {
-    ShowMessage(message.innerHTML);
-  }
-
+  checkMessages();
   AuthCheck()
-    .then((answer) => {
-      loggedIn = answer;
-    })
+    .then((answer) => localStorage.setItem("loggedIn", answer))
     .then(() => {
-      if (loggedIn) {
-        // ? Top 4 columns information
+      if (userLoggedIn()) {
         fillTopInfo();
-        // ? Dividend form handling
-        const form = document.getElementById("Div-form");
-        form.addEventListener("submit", getDividend);
+        activateDivForm();
       }
-
       loadCorrectView();
-
-      document.addEventListener("click", (event) => {
-        const tar = event.target;
-        //? show a view
-        showingCompany(tar);
-        if (tar.className.includes("portfolio-btn")) showingMain();
-        if (tar.className.includes("history-btn")) showingHistory();
-        //? or sort main table
-        if (tar.className.includes("Up") || tar.className.includes("Down"))
-          sortTable(tar);
-      });
-
       searchFormFunction();
       updateBtnFunction();
       capitalizeName();
-
+      document.addEventListener("click", (event) => handleClicks(event));
       // back button action
       window.addEventListener("popstate", loadCorrectView);
     });
 });
 
-// ! ------- functions --------
+function handleClicks(event) {
+  const tar = event.target;
+  //? show a view
+  showingCompany(tar);
+  if (tar.className.includes("portfolio-btn")) showingMain();
+  if (tar.className.includes("history-btn")) showingHistory();
+  //? or sort main table
+  if (tar.className.includes("Up") || tar.className.includes("Down"))
+    sortTable(tar);
+}
+
 function searchFormFunction() {
-  // * if company is searched - make Search field clickable and Buy button appear
+  // if company is searched - make Search field clickable and Buy button appear
   const filledSearchForm = document.querySelector("#check-filled");
   if (filledSearchForm !== null) {
     if (filledSearchForm.innerHTML !== "") showActionBtns();
@@ -55,36 +39,41 @@ function searchFormFunction() {
       .addEventListener("click", beginSearch);
   }
 }
+
 function showActionBtns() {
   document.querySelector(".ticker-search-container").className = "ticker-link";
-  if (loggedIn)
+  if (userLoggedIn())
     document.getElementById("action-buttons").style.animationPlayState =
       "running";
 }
+
 function beginSearch() {
   if (document.querySelector(".ticker-inp").value != "") {
     document.querySelector("#main-view-search").value = "Loading..";
     document.querySelector(".loader").classList.remove("hidden");
     const innerBoxes = document.querySelectorAll(".ticker-search-box");
-    innerBoxes.forEach((item) => {
-      item.style.filter = "blur(3px)";
-    });
+    innerBoxes.forEach((item) => (item.style.filter = "blur(3px)"));
   }
 }
 // ----------------------------------------------------------------------
 
 function showingMain() {
-  window.history.pushState("unused", "unused", `/`);
+  updateBrowserHistory("/");
   document.querySelector("#company-view").style.display = "none";
   document.querySelector("#portfolio-view").style.display = "block";
-  if (loggedIn) {
-    document.querySelector("#summary-row-top").style.display = "flex";
+  document.querySelector("#summary-row-top").style.display = "flex";
+  if (userLoggedIn()) {
     document.querySelector("#history-view").style.display = "none";
   }
 }
 
 function showingCompany(tar) {
-  const clName = tar.parentElement.className;
+  let clName;
+  try {
+    clName = tar.parentElement.className;
+  } catch {
+    return 1;
+  }
   let compName;
   // * from History
   if (clName.includes("hist-row")) {
@@ -100,7 +89,7 @@ function showingCompany(tar) {
   // * by link on top
   if (tar.className.includes("companies-btn")) {
     compName = "random";
-    if (loggedIn) {
+    if (userLoggedIn()) {
       document.querySelector("#hidden-buy-form").style.display = "none";
       document.querySelector(".big-green-btn").style.display = "block";
     }
@@ -114,18 +103,19 @@ function showingCompany(tar) {
     compName = document.querySelector("#comp-search").value.toUpperCase();
     document.querySelector("#comp-search").value = "";
     document.querySelector("#hidden-buy-form").style.display = "none";
-    if (loggedIn)
+    if (userLoggedIn())
       document.querySelector(".big-green-btn").style.display = "block";
   }
   if (compName) show_company(compName);
 }
 
 function show_company(compName) {
-  window.history.pushState("unused", "unused", `/company/${compName}`);
+  updateBrowserHistory(`/company/${compName}`);
   document.querySelector("#portfolio-view").style.display = "none";
   document.querySelector("#summary-row-top").style.display = "none";
   document.querySelector("#company-view").style.display = "block";
-  if (loggedIn) document.querySelector("#history-view").style.display = "none";
+  if (userLoggedIn())
+    document.querySelector("#history-view").style.display = "none";
 
   blurAllFields(true);
 
@@ -233,7 +223,7 @@ function fillCompData(result) {
     ).innerHTML = `${part1} Dividends yield: ${part2}  ${
       divYield?.toFixed(1) || "???"
     } %</div>`;
-    if (loggedIn) {
+    if (userLoggedIn()) {
       document.querySelector(".big-green-btn").addEventListener("click", () => {
         document.querySelector("#hidden-buy-form").style.display = "block";
         document.querySelector(".big-green-btn").style.display = "none";
@@ -285,7 +275,7 @@ function showingHistory() {
       if (tar2.className.includes("div-title")) changeDivName(Row);
     });
   });
-  window.history.pushState("unused", "unused", `/history`);
+  updateBrowserHistory("/history");
 }
 
 function changeDivName(Row) {
@@ -305,6 +295,8 @@ function changeDivName(Row) {
     ShowMessage("Entry modified");
   });
 }
+const activateDivForm = () =>
+  document.getElementById("Div-form").addEventListener("submit", getDividend);
 
 function getDividend(event) {
   event.preventDefault();
@@ -536,7 +528,7 @@ function updatePrices() {
         rowCount++;
         if (rowCount === rows.length) {
           setTimeout(function () {
-            if (loggedIn) fillTopInfo();
+            if (userLoggedIn()) fillTopInfo();
             removeThreeDots();
           }, 400);
         }
@@ -603,7 +595,7 @@ function moneyFormat(string) {
 }
 
 function capitalizeName() {
-  if (loggedIn) {
+  if (userLoggedIn()) {
     const name = document.querySelector(".username");
     let myName = name.innerHTML;
     name.innerHTML = MakeCapitalized(myName);
@@ -699,7 +691,7 @@ function loadCorrectView() {
     url.slice(-6) === "logout" ||
     url.slice(-8) === "register"
   ) {
-    window.history.pushState("unused", "unused", `/`);
+    updateBrowserHistory("/");
   }
   if (url.includes("company")) {
     const location = url.indexOf("company");
@@ -715,6 +707,7 @@ async function AuthCheck() {
   status = data.LoggedIn;
   return status;
 }
+const userLoggedIn = () => localStorage.getItem("loggedIn") === "true";
 
 function Timer(action) {
   if (action == "stop") {
@@ -746,5 +739,14 @@ function Timer(action) {
         }, 1500);
       }
     }, 1000);
+  }
+}
+
+const updateBrowserHistory = (str) => window.history.pushState("_", "_", str);
+
+function checkMessages() {
+  const message = document.querySelector("#message");
+  if (message !== null) {
+    ShowMessage(message.innerHTML);
   }
 }
