@@ -1,5 +1,7 @@
 "use strict";
+// todo - use localstorrage
 let loggedIn;
+
 document.addEventListener("DOMContentLoaded", () => {
   // is there a message from backend?
   const message = document.querySelector("#message");
@@ -445,10 +447,11 @@ function fillEarnProfit(sum1, sum2) {
   profitBox.innerHTML = moneyFormat(prof);
 }
 
-const fillMainBlock = (sum1) =>
-  (document
+function fillMainBlock(sum1) {
+  document
     .querySelector("#invested-main")
-    .querySelector(".sum-value").innerHTML = moneyFormat(sum1));
+    .querySelector(".sum-value").innerHTML = moneyFormat(sum1);
+}
 
 // ----------------------------------------------------------------------
 function sortTable(tar) {
@@ -609,21 +612,19 @@ function capitalizeName() {
 
 function MakeCapitalized(string) {
   const low = string.toLowerCase();
+  // uppercase first letter
   let converted = low.charAt(0).toUpperCase() + low.slice(1);
-  let strLen = string.length;
-  for (let i = 0; i < strLen; i++) {
-    if (
-      converted.charAt(i) === " " ||
-      converted.charAt(i) === "&" ||
-      converted.charAt(i) === "-"
-    ) {
-      converted =
-        converted.slice(0, i + 1) +
-        converted.charAt(i + 1).toUpperCase() +
-        converted.slice(i + 2);
-    }
+  const separators = [" ", "&", "-"];
+  let capitalized = "";
+  let next;
+  for (const char of converted) {
+    if (next) {
+      capitalized += char.toUpperCase();
+      next = false;
+    } else capitalized += char;
+    if (separators.includes(char)) next = true;
   }
-  return converted;
+  return capitalized;
 }
 
 function truncate(string, length) {
