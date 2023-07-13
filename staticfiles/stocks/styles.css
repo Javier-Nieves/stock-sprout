@@ -162,7 +162,8 @@ h1 {
     width: 96.5vw;
 }
 .comp-param-text {
-    font-size: 20px;
+    font-size: 17px;
+    color: bisque;
 }
 .comp-param-value {
     color: bisque;

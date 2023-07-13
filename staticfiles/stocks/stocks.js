@@ -89,6 +89,7 @@ function showComp_history(tar) {
   if (tar.parentElement.querySelector(".hist-action").innerHTML != "Div")
     return tar.parentElement.querySelector("#hist-company-name").innerHTML;
 }
+
 const showComp_main = (tar) =>
   tar.parentElement.querySelector("#company-ticker").innerHTML;
 
@@ -118,71 +119,72 @@ function show_company(compName) {
     document.querySelector("#history-view").style.display = "none";
 
   blurAllFields(true);
-
   fetch(`/companies/${compName}`)
     .then((response) => response.json())
     .then((result) => {
       if (result.message) {
         ShowMessage(result.message);
         blurAllFields(false);
+        return false;
       }
-      let potential =
-        (result.comp?.targetPrice / result.comp?.price - 1) * 100 ?? 0;
-
-      document.querySelector("#res-comp-price").innerHTML = `$ ${
-        result.comp?.price?.toFixed(2) || "???"
-      }`;
-      const resComDay = document.querySelector("#res-comp-day");
-      resComDay.innerHTML = `${result.comp?.day?.toFixed(1) || "???"} % `;
-      resComDay.className = `med-text ${
-        result.comp?.day < 0 ? "red-text" : "green-text"
-      }`;
-
-      // todo - html!
-      document.querySelector(
-        "#company-targetPrice"
-      ).innerHTML = `<div class="comp-param-text"> Target price: </div> <div class="comp-param-value-big">$ ${
-        result.comp?.targetPrice?.toFixed(2) || "???"
-      } <div class='${
-        potential > 0 ? "green" : "red"
-      }-text med-text'>${potential.toFixed(1)} % </div></div>`;
-
-      // populate forms with company's data
-      document.querySelector("#hidden-ticker-comp").value = result.comp?.ticker;
-      document.querySelector(
-        "#company-recom"
-      ).innerHTML = `<div class="comp-param-text"> Recommendation: </div> <div class="comp-param-value-big">${
-        result.comp?.recom || "???"
-      } </div>`;
-      document.querySelector("#company-title").innerHTML = `${MakeCapitalized(
-        result.comp?.company
-      )} <div class='comp-param-text' style='text-align:center;'>${
-        result.comp?.ticker
-      }</div>`;
-      const fullText = result.comp?.desc || "no description";
-      let collapsed = true;
-      document.querySelector("#company-desc").innerHTML = truncate(
-        fullText,
-        600
-      );
-      document.querySelector("#company-desc").addEventListener("click", () => {
-        if (collapsed) {
-          document.querySelector("#company-desc").innerHTML = fullText;
-          collapsed = false;
-        } else {
-          document.querySelector("#company-desc").innerHTML = truncate(
-            fullText,
-            600
-          );
-          collapsed = true;
-        }
-      });
-      fillCompData(result);
+      comp_fillName(result);
+      comp_fillPrice(result);
+      comp_fillTarget(result);
+      comp_fillDesc(result);
+      comp_fillRecom(result);
+      fillFinParams(result);
       blurAllFields(false);
     });
 }
 
-function fillCompData(result) {
+function comp_fillPrice(result) {
+  document.querySelector("#res-comp-price").innerHTML = `$ ${
+    result.comp?.price?.toFixed(2) || "???"
+  }`;
+  const resComDay = document.querySelector("#res-comp-day");
+  const valuePer = result.comp?.day?.toFixed(1);
+  resComDay.innerHTML = `${valuePer || "???"} % `;
+  resComDay.className = `med-text ${valuePer < 0 ? "red-text" : "green-text"}`;
+}
+function comp_fillTarget(result) {
+  let potential =
+    (result.comp?.targetPrice / result.comp?.price - 1) * 100 ?? 0;
+  document.querySelector("#comp-target-dol").innerHTML = `$ ${
+    result.comp?.targetPrice?.toFixed(2) || "???"
+  }`;
+  const targPer = document.querySelector("#comp-target-per");
+  targPer.innerHTML = `${potential.toFixed(1)} %`;
+  targPer.classList.add(`${potential > 0 ? "green" : "red"}-text`);
+}
+function comp_fillName(result) {
+  document.querySelector("#company-title").innerHTML = `${MakeCapitalized(
+    result.comp?.company
+  )}`;
+  document.querySelector("#comp-ticker").innerHTML = result.comp?.ticker;
+  document.querySelector("#hidden-ticker-comp").value = result.comp?.ticker;
+}
+const comp_fillRecom = (result) =>
+  (document.querySelector("#company-recom").innerHTML =
+    result.comp?.recom || "???");
+
+function comp_fillDesc(result) {
+  const fullText = result.comp?.desc || "no description";
+  const desc = document.querySelector("#company-desc");
+  desc.innerHTML = truncate(fullText, 600);
+  let collapsed = true;
+  desc.addEventListener("click", () => {
+    if (collapsed) {
+      desc.innerHTML = fullText;
+      collapsed = false;
+    } else {
+      desc.innerHTML = truncate(fullText, 600);
+      collapsed = true;
+    }
+  });
+}
+
+// todo - html
+function fillFinParams(result) {
   const roe = result.comp?.roe * 100;
   const divYield = (result.comp?.dividends / result.comp?.price) * 100;
   const marg = result.comp?.profitMargins * 100;
@@ -586,11 +588,10 @@ function removeThreeDots() {
 // ----------------------------------------------------------------------
 
 function moneyFormat(string) {
-  const changed = string + "";
-  let txt;
-  if (3 < changed.length < 7)
-    txt = changed.slice(0, -3) + " " + changed.slice(-3);
-  return ("$ " + txt).padEnd(9);
+  let changed = string + "";
+  if (3 < changed.length && changed.length < 7)
+    changed = `${changed.slice(0, -3)} ${changed.slice(-3)}`;
+  return `$ ${changed}`.padEnd(9);
 }
 
 function capitalizeName() {
@@ -600,11 +601,10 @@ function capitalizeName() {
     name.innerHTML = MakeCapitalized(myName);
   }
 }
-
 function MakeCapitalized(string) {
   const low = string.toLowerCase();
   // uppercase first letter
-  let converted = low.charAt(0).toUpperCase() + low.slice(1);
+  let converted = low.at(0).toUpperCase() + low.slice(1);
   const separators = [" ", "&", "-"];
   let capitalized = "";
   let next;
@@ -628,7 +628,6 @@ function checkMessages() {
     ShowMessage(message.innerHTML);
   }
 }
-
 function ShowMessage(text) {
   let url = window.location.href;
   if (url.includes("company") || url.includes("history")) {
@@ -652,7 +651,6 @@ function ShowMessage(text) {
         box.style.filter = "blur(0)";
       }, 2000);
     });
-
     setTimeout(() => {
       messenger.classList.toggle("hidden");
       box.classList.toggle("box-shimmer");
@@ -663,12 +661,12 @@ function ShowMessage(text) {
 function blurAllFields(bool) {
   if (bool) document.querySelector(".big-loader").classList.remove("hidden");
   else document.querySelector(".big-loader").classList.add("hidden");
-
   const blurList = [
     "#company-title",
     "#company-desc",
     ".company-price-row",
     "#hidden-buy-form",
+    "#comp-ticker",
   ];
   for (const element of blurList) {
     document.querySelector(`${element}`).style.filter = bool
