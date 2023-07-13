@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", () => {
       updateBtnFunction();
       capitalizeName();
       document.addEventListener("click", (event) => handleClicks(event));
-      // back button action
+      // browser back button action
       window.addEventListener("popstate", loadCorrectView);
     });
 });
@@ -144,7 +144,7 @@ function comp_fillPrice(result) {
   const resComDay = document.querySelector("#res-comp-day");
   const valuePer = result.comp?.day?.toFixed(1);
   resComDay.innerHTML = `${valuePer || "???"} % `;
-  resComDay.className = `med-text ${valuePer < 0 ? "red-text" : "green-text"}`;
+  resComDay.className = `med-text ${RedGreenText(valuePer)}`;
 }
 function comp_fillTarget(result) {
   let potential =
@@ -154,7 +154,7 @@ function comp_fillTarget(result) {
   }`;
   const targPer = document.querySelector("#comp-target-per");
   targPer.innerHTML = `${potential.toFixed(1)} %`;
-  targPer.classList.add(`${potential > 0 ? "green" : "red"}-text`);
+  targPer.classList.add(RedGreenText(potential));
 }
 function comp_fillName(result) {
   document.querySelector("#company-title").innerHTML = `${MakeCapitalized(
@@ -248,7 +248,7 @@ function showingHistory() {
   let HistRows = document.querySelectorAll(".hist-row");
   HistRows.forEach((Row) => {
     let action = Row.querySelector(".hist-action").innerHTML;
-    // switch statement is an if-else alternative
+    // switch statement as an if-else alternative
     switch (action) {
       case "Buy":
         Row.querySelector(".hist-sell").innerHTML = "-";
@@ -421,7 +421,7 @@ function calculateSecParameters(sum1, sum2, dayCh) {
 function fillChangeBlock(where, value1, value2) {
   const moneyBlock = document.querySelector(`${where}Dol`);
   const percentBlock = document.querySelector(`${where}Per`);
-  const colorClass = value2 >= 0 ? "green-text" : "red-text";
+  const colorClass = RedGreenText(value2);
   moneyBlock.classList.add(colorClass);
   percentBlock.classList.add(colorClass);
   moneyBlock.innerHTML = moneyFormat(value1);
@@ -437,7 +437,7 @@ function fillEarnProfit(sum1, sum2) {
 
   let prof = sum2 - sum1 + earnings;
   const profitBox = document.querySelector("#profit");
-  profitBox.className = `sum-value ${prof >= 0 ? "green" : "red"}-text`;
+  profitBox.className = `sum-value ${RedGreenText(prof)}`;
   profitBox.innerHTML = moneyFormat(prof);
 }
 
@@ -573,8 +573,8 @@ function changeRowValues(row, data) {
   day.classList.add("animate");
   setTimeout(function () {
     price.className = "market-price";
-    change.className = `${chNum > 0 ? "green" : "red"}-text`;
-    day.className = `${data.comp.day > 0 ? "green" : "red"}-text`;
+    change.className = RedGreenText(chNum);
+    day.className = RedGreenText(data.comp.day);
     sigma.className = "sigma-row";
   }, 1500);
   return true;
@@ -747,3 +747,5 @@ function Timer(action) {
 }
 
 const updateBrowserHistory = (str) => window.history.pushState("_", "_", str);
+
+const RedGreenText = (param) => (param < 0 ? "red-text" : "green-text");

@@ -2,7 +2,6 @@ import os
 import requests
 from requests_oauthlib import OAuth2Session
 from datetime import datetime, timedelta
-# import time
 from faker import Faker
 import random
 import json
@@ -20,34 +19,33 @@ from .forms import SearchForm, BuyForm
 from .models import User, Stocks, MyPrice, Portfolio, History
 
 
-def index(request, message=""):  # with default empty value for message
+def index(request, message=""):
     search_form = SearchForm()
     buy_form = BuyForm()
 
     # ? does user have a portfolio?
     if request.user.is_authenticated:
+        user = request.user
         try:
-            portfolio = Portfolio.objects.get(owner=request.user)
+            portfolio = Portfolio.objects.get(owner=user)
         except:
-            Portfolio.objects.create(owner=request.user)
-            portfolio = Portfolio.objects.get(owner=request.user)
-
-        prices = MyPrice.objects.filter(investor=request.user)
-        history = History.objects.filter(user=request.user).order_by('id')
-        return render(request, 'stocks/index.html', {
-            'search_form': search_form,
-            'buyForm': buy_form,
-            'portfolio': portfolio.stock.all(),
-            'prices': prices,
-            'history': history,
-            'profit': portfolio.profit,
-            'message': message
-        })
+            Portfolio.objects.create(owner=user)
+            portfolio = Portfolio.objects.get(owner=user)
     else:
-        return render(request, 'stocks/index.html', {
-            'search_form': search_form,
-            'message': message
-        })
+        user = User.objects.get(username='tester')
+        portfolio = Portfolio.objects.get(owner=user)
+
+    prices = MyPrice.objects.filter(investor=user)
+    history = History.objects.filter(user=user).order_by('id')
+    return render(request, 'stocks/index.html', {
+        'search_form': search_form,
+        'buyForm': buy_form,
+        'portfolio': portfolio.stock.all(),
+        'prices': prices,
+        'history': history,
+        'profit': portfolio.profit,
+        'message': message
+    })
 
 
 @require_POST
@@ -55,9 +53,12 @@ def indexPost(request):
     search_form = SearchForm(request.POST)
     buy_form = BuyForm(request.POST)
     if request.user.is_authenticated:
-        portfolio = Portfolio.objects.get(owner=request.user)
-        prices = MyPrice.objects.filter(investor=request.user)
-        history = History.objects.filter(user=request.user)
+        user = request.user
+    else:
+        user = User.objects.get(username='tester')
+    portfolio = Portfolio.objects.get(owner=user)
+    prices = MyPrice.objects.filter(investor=user)
+    history = History.objects.filter(user=user)
 
     # ! if ticker is being searched
     # check whether form is valid:
@@ -73,22 +74,15 @@ def indexPost(request):
                 return index(request, "Stock doesn't exist")
 
         buy_form = BuyForm()
-        if request.user.is_authenticated:
-            return render(request, 'stocks/index.html', {
-                'search_form': search_form,
-                'buyForm': buy_form,
-                'compData': compData,
-                'portfolio': portfolio.stock.all(),
-                'prices': prices,
-                'history': history,
-                'profit': portfolio.profit
-            })
-        else:
-            return render(request, 'stocks/index.html', {
-                'search_form': search_form,
-                'buyForm': buy_form,
-                'compData': compData
-            })
+        return render(request, 'stocks/index.html', {
+            'search_form': search_form,
+            'buyForm': buy_form,
+            'compData': compData,
+            'portfolio': portfolio.stock.all(),
+            'prices': prices,
+            'history': history,
+            'profit': portfolio.profit
+        })
 
     # ! BUY
     ticker = request.POST.get('hidden-ticker').upper()

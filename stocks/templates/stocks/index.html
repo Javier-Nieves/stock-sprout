@@ -118,19 +118,6 @@
         </thead>
         <tbody>
 
-        {% if not user.is_authenticated%}
-        <tr class="table-row">
-            <td class="mobile-hide">2.0 - Buy</td>
-            <td class="mobile-hide" id="company-ticker">AAPL</td>
-            <td>Apple Inc. <br> <div id="day-one" class="green-text">+ 0.5 %</div></td>
-            <td class="my-price-row">120</td>
-            <td class="quantity-row">10</td>
-            <td class="market-price">132</td>
-            <td class="sigma-row">1320</td>
-            <td id="change-field" class="green-text">{{ 132|div:120|mul:100|sub:100|stringformat:".2f"}} %</td>
-        </tr>
-        {% endif %}
-
             {% for item in portfolio reversed%}
                 {% for price in prices %}
                     {% if price.stock == item%}
