@@ -183,59 +183,36 @@ function comp_fillDesc(result) {
   });
 }
 
-// todo - html
 function fillFinParams(result) {
   const roe = result.comp?.roe * 100;
   const divYield = (result.comp?.dividends / result.comp?.price) * 100;
   const marg = result.comp?.profitMargins * 100;
-  try {
-    const part1 = '<div class="comp-param-text">';
-    const part2 = '</div> <div class="comp-param-value">';
-    document.querySelector("#company-pe").innerHTML = `${part1} PE: ${part2} ${
-      result.comp?.pe?.toFixed(1) || "???"
-    } </div>`;
-    document.querySelector(
-      "#company-fpe"
-    ).innerHTML = `${part1} Forward PE: ${part2} ${
-      result.comp?.fpe?.toFixed(1) || "???"
-    }</div>`;
-    document.querySelector("#company-pb").innerHTML = `${part1} PB: ${part2} ${
-      result.comp?.pb?.toFixed(1) || "???"
-    }</div>`;
-    document.querySelector(
-      "#company-roe"
-    ).innerHTML = `${part1} ROE: ${part2} ${roe?.toFixed(1) || "???"} %</div>`;
-    document.querySelector(
-      "#company-debt"
-    ).innerHTML = `${part1} Debt to Equity: ${part2} ${
-      result.comp?.debt?.toFixed(2) || "???"
-    }</div>`;
-    document.querySelector(
-      "#company-profitMargins"
-    ).innerHTML = `${part1} Profit Margins: ${part2} ${
-      marg?.toFixed(1) || "???"
-    } %</div>`;
-    document.querySelector(
-      "#company-dividends"
-    ).innerHTML = `${part1} Dividends: ${part2} $ ${
-      result.comp?.dividends?.toFixed(2) || "???"
-    }</div>`;
-    document.querySelector(
-      "#company-dividends-yield"
-    ).innerHTML = `${part1} Dividends yield: ${part2}  ${
-      divYield?.toFixed(1) || "???"
-    } %</div>`;
-    if (userLoggedIn()) {
-      document.querySelector(".big-green-btn").addEventListener("click", () => {
-        document.querySelector("#hidden-buy-form").style.display = "block";
-        document.querySelector(".big-green-btn").style.display = "none";
-        document.querySelector("#hidden-buy-form").style.animationPlayState =
-          "running";
-      });
-    }
-  } catch (error) {
-    console.error(error);
-  }
+  document.querySelector("#company-pe").innerHTML =
+    result.comp?.pe.toFixed(1) || "???";
+  document.querySelector("#company-fpe").innerHTML =
+    result.comp?.fpe.toFixed(1) || "???";
+  document.querySelector("#company-pb").innerHTML =
+    result.comp?.pb.toFixed(1) || "???";
+  document.querySelector("#company-roe").innerHTML = roe?.toFixed(1) || "???";
+  document.querySelector("#company-debt").innerHTML =
+    result.comp?.debt.toFixed(2) || "???";
+  document.querySelector("#company-profitMargins").innerHTML =
+    marg.toFixed(1) || "???";
+  document.querySelector("#company-dividends").innerHTML =
+    result.comp?.dividends.toFixed(2) || "???";
+  document.querySelector("#company-dividends-yield").innerHTML =
+    divYield.toFixed(1) || "???";
+  if (userLoggedIn())
+    document
+      .querySelector(".big-green-btn")
+      .addEventListener("click", showBuyForm);
+}
+
+function showBuyForm() {
+  const buyForm = document.querySelector("#hidden-buy-form");
+  document.querySelector(".big-green-btn").style.display = "none";
+  buyForm.style.display = "block";
+  buyForm.style.animationPlayState = "running";
 }
 
 // ----------------------------------------------------------------------
