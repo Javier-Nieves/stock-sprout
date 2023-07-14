@@ -110,7 +110,7 @@ function showComp_CompSearch() {
   return compName;
 }
 
-function show_company(compName) {
+async function show_company(compName) {
   updateBrowserHistory(`/company/${compName}`);
   document.querySelector("#portfolio-view").style.display = "none";
   document.querySelector("#summary-row-top").style.display = "none";
@@ -119,22 +119,23 @@ function show_company(compName) {
     document.querySelector("#history-view").style.display = "none";
 
   blurAllFields(true);
-  fetch(`/companies/${compName}`)
-    .then((response) => response.json())
-    .then((result) => {
-      if (result.message) {
-        ShowMessage(result.message);
-        blurAllFields(false);
-        return false;
-      }
-      comp_fillName(result);
-      comp_fillPrice(result);
-      comp_fillTarget(result);
-      comp_fillDesc(result);
-      comp_fillRecom(result);
-      fillFinParams(result);
-      blurAllFields(false);
-    });
+  const response = await fetch(`/companies/${compName}`);
+  const result = await response.json();
+  // .then((response) => response.json())
+  // .then((result) => {
+  if (result.message) {
+    ShowMessage(result.message);
+    blurAllFields(false);
+    return false;
+  }
+  comp_fillName(result);
+  comp_fillPrice(result);
+  comp_fillTarget(result);
+  comp_fillDesc(result);
+  comp_fillRecom(result);
+  fillFinParams(result);
+  blurAllFields(false);
+  // });
 }
 
 function comp_fillPrice(result) {
@@ -188,20 +189,20 @@ function fillFinParams(result) {
   const divYield = (result.comp?.dividends / result.comp?.price) * 100;
   const marg = result.comp?.profitMargins * 100;
   document.querySelector("#company-pe").innerHTML =
-    result.comp?.pe.toFixed(1) || "???";
+    result.comp?.pe?.toFixed(1) || "???";
   document.querySelector("#company-fpe").innerHTML =
-    result.comp?.fpe.toFixed(1) || "???";
+    result.comp?.fpe?.toFixed(1) || "???";
   document.querySelector("#company-pb").innerHTML =
-    result.comp?.pb.toFixed(1) || "???";
+    result.comp?.pb?.toFixed(1) || "???";
   document.querySelector("#company-roe").innerHTML = roe?.toFixed(1) || "???";
   document.querySelector("#company-debt").innerHTML =
-    result.comp?.debt.toFixed(2) || "???";
+    result.comp?.debt?.toFixed(2) || "???";
   document.querySelector("#company-profitMargins").innerHTML =
-    marg.toFixed(1) || "???";
+    marg?.toFixed(1) || "???";
   document.querySelector("#company-dividends").innerHTML =
-    result.comp?.dividends.toFixed(2) || "???";
+    result.comp?.dividends?.toFixed(2) || "???";
   document.querySelector("#company-dividends-yield").innerHTML =
-    divYield.toFixed(1) || "???";
+    divYield?.toFixed(1) || "???";
   if (userLoggedIn())
     document
       .querySelector(".big-green-btn")
@@ -224,37 +225,39 @@ function showingHistory() {
 
   let HistRows = document.querySelectorAll(".hist-row");
   HistRows.forEach((Row) => {
-    let action = Row.querySelector(".hist-action").innerHTML;
-    // switch statement as an if-else alternative
-    switch (action) {
-      case "Buy":
-        Row.querySelector(".hist-sell").innerHTML = "-";
-        break;
-      case "Sell":
-        Row.querySelector(".hist-buy").innerHTML = "-";
-        Row.style.backgroundColor = "rgba(126, 21, 218, 0.08)";
-        break;
-      case "Div":
-        Row.querySelector(".hist-buy").innerHTML = "-";
-        Row.querySelector(".hist-amount").innerHTML = "-";
-        Row.querySelector(".hist-price").innerHTML = "-";
-        Row.querySelector("#hist-profit").innerHTML =
-          Row.querySelector(".hist-sell").innerHTML;
-        Row.querySelector("#hist-profit").style.color =
-          "rgba(78, 235, 0, 0.908)";
-        Row.querySelector(".hist-sell").innerHTML = "-";
-        Row.style.backgroundColor = "rgba(255, 205, 4, 0.165)";
-        break;
-      default:
-        console.log("Incorrect action!");
-    }
-    // if dividend title is clicked - change div title
-    Row.addEventListener("click", (event) => {
-      const tar2 = event.target;
-      if (tar2.className.includes("div-title")) changeDivName(Row);
-    });
+    changeHistRow(Row);
+    // change div title when clicked
+    const divCell = Row.querySelector(".div-title");
+    divCell?.addEventListener("click", () => changeDivName(Row));
   });
   updateBrowserHistory("/history");
+}
+
+function changeHistRow(Row) {
+  let action = Row.querySelector(".hist-action").innerHTML;
+  // switch statement as an if-else alternative
+  switch (action) {
+    case "Buy":
+      Row.querySelector(".hist-sell").innerHTML = "-";
+      break;
+    case "Sell":
+      Row.querySelector(".hist-buy").innerHTML = "-";
+      Row.style.backgroundColor = "rgba(126, 21, 218, 0.08)";
+      break;
+    case "Div":
+      const profitCell = Row.querySelector("#hist-profit");
+      const sellCell = Row.querySelector(".hist-sell");
+      Row.querySelector(".hist-buy").innerHTML = "-";
+      Row.querySelector(".hist-amount").innerHTML = "-";
+      Row.querySelector(".hist-price").innerHTML = "-";
+      profitCell.innerHTML = sellCell.innerHTML;
+      profitCell.style.color = "rgba(78, 235, 0, 0.908)";
+      sellCell.innerHTML = "-";
+      Row.style.backgroundColor = "rgba(255, 205, 4, 0.165)";
+      break;
+    default:
+      console.log("Incorrect action!");
+  }
 }
 
 function changeDivName(Row) {
@@ -277,67 +280,55 @@ function changeDivName(Row) {
 const activateDivForm = () =>
   document.getElementById("Div-form").addEventListener("submit", getDividend);
 
-function getDividend(event) {
+async function getDividend(event) {
   event.preventDefault();
-  const form = document.getElementById("Div-form");
   const title = document.querySelector("#Div-title").value;
   const amount = document.querySelector("#Div-amount").value.toString();
-  // make a call to backend to add this dividend to the DB
-  let newEntryId;
-  fetch(`/history/dividend`, {
+  // add dividend to the DB
+  const response = await fetch(`/history/dividend`, {
     method: "PUT",
     body: JSON.stringify({
       title: title,
       amount: amount,
     }),
-  })
-    .then((response) => response.json())
-    .then((data) => {
-      newEntryId = data.id;
-      // creatig new row for new dividend entry on the 1st position of the table
-      const HistRow = document.querySelector("#HistTable").insertRow(0);
-      HistRow.className = "hist-row new-hist-row";
-      HistRow.style.backgroundColor = "rgba(255, 205, 4, 0.165)";
+  });
+  const data = await response.json();
+  const newEntryId = data.id;
+  const HistRow = createNewHistRow(title, amount);
+  makeDivCellChangable(HistRow, newEntryId);
+  updateProfits(amount);
+  document.getElementById("Div-form").reset();
+  ShowMessage("Dividends received");
+}
 
-      const cells = [];
-      const content = [
-        "DIV",
-        `${title}`,
-        "Div",
-        "-",
-        "-",
-        "-",
-        "-",
-        `${amount}`,
-      ];
-      for (let k = 0; k < 8; k++) {
-        cells[k] = HistRow.insertCell(k);
-        cells[k].innerHTML = content[k];
-      }
-      // todo - stop hardcoding
-      cells[7].className = "green-text";
-      cells[0].className = "mobile-hide";
-      cells[2].className = "mobile-hide";
-      makeDivCellChangable(HistRow, newEntryId);
-      HistRow.style.animationPlayState = "running";
+function createNewHistRow(title, amount) {
+  const HistRow = document.querySelector("#HistTable").insertRow(0);
+  HistRow.className = "hist-row new-hist-row";
+  HistRow.style.backgroundColor = "rgba(255, 205, 4, 0.165)";
+  const cells = [];
+  const content = ["DIV", `${title}`, "Div", "-", "-", "-", "-", `${amount}`];
+  for (let [k, item] of content.entries()) {
+    cells[k] = HistRow.insertCell(k);
+    cells[k].innerHTML = item;
+  }
+  cells[7].className = "green-text";
+  cells[0].className = "mobile-hide";
+  cells[2].className = "mobile-hide";
+  HistRow.style.animationPlayState = "running";
+  return HistRow;
+}
 
-      // update profit value
-      const valuesToChange = document
-        .querySelector("#profit-main")
-        .querySelectorAll(".sum-value");
-      // get rid of space and $ sign
-      valuesToChange.forEach((value) => {
-        let profitValue = parseInt(
-          value.innerHTML.replace(/[^0-9-]+/g, ""),
-          10
-        );
-        let newValue = profitValue + Math.round(Number(amount));
-        value.innerHTML = moneyFormat(newValue);
-      });
-
-      form.reset();
-      ShowMessage("Dividends received");
-    });
+function updateProfits(amount) {
+  const valuesToChange = document
+    .querySelector("#profit-main")
+    .querySelectorAll(".sum-value");
+  valuesToChange.forEach((value) => {
+    let profitValue = parseInt(
+      value.innerHTML.replace("$", "").replaceAll(" ", "")
+    );
+    let newValue = profitValue + Math.round(Number(amount));
+    value.innerHTML = moneyFormat(newValue);
+  });
 }
 
 function makeDivCellChangable(HistRow, newEntryId) {
