@@ -350,10 +350,8 @@ function makeDivCellChangable(HistRow, newEntryId) {
 // ----------------------------------------------------------------------
 function fillTopInfo() {
   const rows = document.querySelectorAll(".table-row");
-
   let [sum1, sum2, dayCh] = calculateMainParameters(rows);
   let [nowChange, perChange] = calculateSecParameters(sum1, sum2, dayCh);
-
   fillMainBlock(sum1);
   fillChangeBlock("#nowChange", sum2, nowChange);
   fillChangeBlock("#dayChange", dayCh, perChange);
@@ -361,9 +359,9 @@ function fillTopInfo() {
 }
 
 function calculateMainParameters(rows) {
-  let sum1 = 0;
-  let sum2 = 0;
-  let dayCh = 0;
+  let sum1 = 0,
+    sum2 = 0,
+    dayCh = 0;
   rows.forEach((row) => {
     let dayOne;
     let myPr = parseFloat(row.querySelector(".my-price-row").innerHTML);
@@ -417,57 +415,43 @@ function fillMainBlock(sum1) {
 
 // ----------------------------------------------------------------------
 function sortTable(tar) {
+  // console.time("sortTable");
   const whichSort = tar.className;
-  const table = document.getElementById("mainTable");
-  let switching = true;
-  let shouldSwitch, i;
-
-  while (switching) {
-    switching = false;
-    const rows = table.rows;
-    let rowLen = rows.length;
-    for (i = 1; i < rowLen - 1; i++) {
-      shouldSwitch = false;
-      let [x, y] = determineSortParameter(whichSort, rows, i);
-
-      // * direction determination
-      // whichSort.includes("Up") ? parseFloat(x) < parseFloat(y) : parseFloat(x) < parseFloat(y);
-      if (whichSort.includes("Up")) {
-        if (parseFloat(x) < parseFloat(y)) {
-          shouldSwitch = true;
-          break;
-        }
-      } else if (whichSort.includes("Down")) {
-        if (parseFloat(x) > parseFloat(y)) {
-          shouldSwitch = true;
-          break;
-        }
-      }
-    }
-    if (shouldSwitch) {
-      rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-      switching = true;
-    }
+  const table = document.getElementById("mainTable").querySelector("tbody");
+  const rows = table.rows;
+  const crit = determineSortParameter(whichSort);
+  const rowMap = new Map();
+  for (let [i, row] of Array.from(table.rows).entries()) {
+    const param = Number(
+      row.querySelector(crit)?.innerHTML.replaceAll(" ", "").replace("%", "")
+    );
+    rowMap.set(param, row);
   }
-  // * switch classes after sorting in the main table
+  const sortedArray = Array.from(rowMap);
+  sortedArray.sort((a, b) =>
+    whichSort.includes("Up") ? b[0] - a[0] : a[0] - b[0]
+  );
+  const sortedMap = new Map(sortedArray);
+  let index = 0;
+  for (let [_, row] of sortedMap) {
+    const parent = row.parentNode;
+    parent.removeChild(row);
+    const targetRow = rows[index];
+    parent.insertBefore(row, targetRow);
+    index++;
+  }
+  // switch classes after sorting in the main table
   if (whichSort.includes("Up")) tar.classList.replace("Up", "Down");
   else tar.classList.replace("Down", "Up");
+  // console.timeEnd("sortTable");
 }
 
-function determineSortParameter(whichSort, rows, i) {
-  let x, y;
-  if (whichSort.includes("sortSigma")) {
-    x = rows[i].querySelector(".sigma-row").innerHTML;
-    y = rows[i + 1].querySelector(".sigma-row").innerHTML;
-  } else if (whichSort.includes("sortChange")) {
-    x = rows[i].querySelector("#change-field").innerHTML;
-    y = rows[i + 1].querySelector("#change-field").innerHTML;
-  } else if (whichSort.includes("sortDay")) {
-    let value = rows[i].querySelector("#day-one").innerHTML;
-    x = value == "" ? -100 : value;
-    y = rows[i + 1].querySelector("#day-one").innerHTML;
-  }
-  return [x, y];
+function determineSortParameter(whichSort) {
+  let crit;
+  if (whichSort.includes("sortSigma")) crit = ".sigma-row";
+  else if (whichSort.includes("sortChange")) crit = "#change-field";
+  else if (whichSort.includes("sortDay")) crit = "#day-one";
+  return crit;
 }
 // ----------------------------------------------------------------------
 function updateBtnFunction() {
