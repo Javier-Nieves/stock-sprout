@@ -366,35 +366,35 @@ def getTicker(company_name):
     return company_code
 
 
-# ! paper actualizer
-def ActualizeMini():
-    for paper in Stocks.objects.all():
-        if paper.ticker != 'DIV':
-            actual = checkStock(paper.ticker)
-            if actual is not None:
-                paper.price = actual.get('price')
-                paper.desc = actual.get('desc')
-                paper.company = actual.get('company')
-                paper.day = actual.get('day')
-                paper.pe = actual.get('pe')
-                paper.fpe = actual.get('fpe')
-                paper.pb = actual.get('pb')
-                paper.profitMargins = actual.get('profitMargins')
-                paper.roe = actual.get('roe')
-                paper.debt = actual.get('debt')
-                paper.divs = actual.get('dividends')
-                paper.targetPrice = actual.get('targetPrice')
-                paper.recom = actual.get('recom')
-                paper.save()
-    print('actualized at ', datetime.now())
-    return HttpResponse(status=204)
+# # ! paper actualizer
+# def ActualizeMini():
+#     for paper in Stocks.objects.all():
+#         if paper.ticker != 'DIV':
+#             actual = checkStock(paper.ticker)
+#             if actual is not None:
+#                 paper.price = actual.get('price')
+#                 paper.desc = actual.get('desc')
+#                 paper.company = actual.get('company')
+#                 paper.day = actual.get('day')
+#                 paper.pe = actual.get('pe')
+#                 paper.fpe = actual.get('fpe')
+#                 paper.pb = actual.get('pb')
+#                 paper.profitMargins = actual.get('profitMargins')
+#                 paper.roe = actual.get('roe')
+#                 paper.debt = actual.get('debt')
+#                 paper.divs = actual.get('dividends')
+#                 paper.targetPrice = actual.get('targetPrice')
+#                 paper.recom = actual.get('recom')
+#                 paper.save()
+#     print('actualized at ', datetime.now())
+#     return HttpResponse(status=204)
 
 
-# ! this module runs in background and periodically summons Actualize function
-scheduler = BackgroundScheduler({'apscheduler.job_defaults.max_instances': 4})
-trigger = IntervalTrigger(minutes=2)
-scheduler.add_job(ActualizeMini, trigger)
-scheduler.start()
+# # ! this module runs in background and periodically summons Actualize function
+# scheduler = BackgroundScheduler({'apscheduler.job_defaults.max_instances': 4})
+# trigger = IntervalTrigger(minutes=2)
+# scheduler.add_job(ActualizeMini, trigger)
+# scheduler.start()
 
 # ? ------------------- login & co ------------------------
 

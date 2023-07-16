@@ -12,6 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
       searchFormFunction();
       updateBtnFunction();
       capitalizeName();
+      // getPrices();
       document.addEventListener("click", (event) => handleClicks(event));
       // browser back button action
       window.addEventListener("popstate", loadCorrectView);
@@ -121,8 +122,6 @@ async function show_company(compName) {
   blurAllFields(true);
   const response = await fetch(`/companies/${compName}`);
   const result = await response.json();
-  // .then((response) => response.json())
-  // .then((result) => {
   if (result.message) {
     ShowMessage(result.message);
     blurAllFields(false);
@@ -135,7 +134,6 @@ async function show_company(compName) {
   comp_fillRecom(result);
   fillFinParams(result);
   blurAllFields(false);
-  // });
 }
 
 function comp_fillPrice(result) {
@@ -462,35 +460,11 @@ function updateBtnFunction() {
   updateBtn.addEventListener("mouseout", function () {
     updateBtn.textContent = "Price, $";
   });
-  updateBtn.addEventListener("mouseup", function () {
+  updateBtn.addEventListener("mouseup", async function () {
     updateBtn.style.display = "none";
     document.querySelector(".three-dots").style.display = "flex";
-  });
-  updateBtn.onclick = () => updatePrices();
-}
-
-function updatePrices() {
-  const rows = document.querySelectorAll(".table-row");
-  let rowCount = 0;
-  rows.forEach((row) => {
-    let ticker = row.querySelector("#company-ticker").innerHTML;
-    getData(ticker)
-      .then((data) => {
-        changeRowValues(row, data);
-      })
-      .then(() => {
-        rowCount++;
-        if (rowCount === rows.length) {
-          setTimeout(function () {
-            if (userLoggedIn()) fillTopInfo();
-            removeThreeDots();
-          }, 400);
-        }
-      })
-      .catch((error) => {
-        removeThreeDots();
-        console.error(error);
-      });
+    await getPrices();
+    removeThreeDots();
   });
 }
 
@@ -632,7 +606,6 @@ function blurAllFields(bool) {
 }
 
 function loadCorrectView() {
-  // The popstate event is fired each time when the current history entry changes.
   Timer("check");
   let url = window.location.href;
   if (url.slice(-7) === "history") {
@@ -701,3 +674,51 @@ function Timer(action) {
 const updateBrowserHistory = (str) => window.history.pushState("_", "_", str);
 
 const RedGreenText = (param) => (param < 0 ? "red-text" : "green-text");
+
+async function getPrices() {
+  const table = document.getElementById("mainTable").querySelector("tbody");
+  const rows = [...table.rows];
+  let tickList = [];
+  let tickStr = "";
+  for (let [i, row] of rows.entries()) {
+    const ticker = row.querySelector("#company-ticker").innerHTML;
+    tickList.push(ticker);
+    tickStr = tickList.join(",");
+  }
+  const APIkey = "a2e01fe80641a6a4c5f2d5cf985f2c18";
+  let url = `https://financialmodelingprep.com/api/v3/quote/${tickStr}?apikey=${APIkey}`;
+  const response = await fetch(url);
+  const data = await response.json();
+  console.log(data);
+
+  for (let [_, row] of rows.entries()) {
+    const ticker = row.querySelector("#company-ticker").innerHTML;
+    const day = row.querySelector("#day-one");
+    const myPrice = Number(row.querySelector(".my-price-row").innerHTML);
+    const quan = Number(row.querySelector(".quantity-row").innerHTML);
+    const price = row.querySelector(".market-price");
+    const sigma = row.querySelector(".sigma-row");
+    const change = row.querySelector("#change-field");
+    for (let item of data) {
+      if (item.symbol === ticker) {
+        const priceToday = quan * item.price;
+        const priceOrig = quan * myPrice;
+        day.innerHTML = `${item.changesPercentage.toFixed(2)} %`;
+        price.innerHTML = item.price.toFixed(2);
+        sigma.innerHTML = priceToday.toFixed(2);
+        const chNum = ((priceToday / priceOrig - 1) * 100).toFixed(2);
+        change.innerHTML = `${chNum} %`;
+        const animateList = [price, sigma, change, day];
+        for (let elem of animateList) elem.classList.add("animate");
+        setTimeout(function () {
+          price.className = "market-price";
+          sigma.className = "sigma-row";
+          change.className = RedGreenText(chNum);
+          day.className = RedGreenText(item.changesPercentage);
+        }, 1500);
+        break;
+      }
+    }
+  }
+  if (userLoggedIn()) fillTopInfo();
+}
