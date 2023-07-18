@@ -68,10 +68,28 @@ async function fillFormWithData(compName) {
     avPr200.innerHTML = ` $ ${data.priceAvg200.toFixed(2)}`;
     hidTicker.value = data.symbol;
     mutateForm(false);
+    sendStockToServer(data);
   } else {
     mutateForm(false);
     ShowMessage(data);
   }
+}
+
+function sendStockToServer(data) {
+  console.log(data);
+  fetch("dataHandler", {
+    method: "POST",
+    body: JSON.stringify({
+      ticker: data.symbol,
+      name: data.name,
+      day: data.changesPercentage,
+      price: data.price,
+      market: data.exchange,
+      eps: data.eps,
+      pe: data.pe,
+      priceAvg200: data.priceAvg200,
+    }),
+  });
 }
 
 function showActionBtns() {
@@ -731,7 +749,6 @@ function updateDB(data) {
 }
 
 async function checkComp(name) {
-  // todo - key to backend!
   const APIkey = await getKey();
   let url = `https://financialmodelingprep.com/api/v3/quote/${name}?apikey=${APIkey}`;
   const response = await fetch(url);
@@ -746,7 +763,7 @@ async function getKey() {
     const data = await response.json();
     localStorage.setItem("APIkey", data.key);
     key = data.key;
-    console.log("key set", localStorage.getItem("APIkey"));
   }
   return key;
 }
+// -------------------------------------------------------------------------------------------------

@@ -16,6 +16,7 @@ class Stocks(models.Model):
     pe = models.FloatField(null=True, blank=True)
     fpe = models.FloatField(null=True, blank=True)
     pb = models.FloatField(null=True, blank=True)
+    eps = models.FloatField(null=True, blank=True)
     avPr200 = models.FloatField(null=True, blank=True)
     roe = models.FloatField(null=True, blank=True)
     profitMargins = models.FloatField(null=True, blank=True)

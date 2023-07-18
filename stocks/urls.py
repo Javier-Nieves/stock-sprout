@@ -22,6 +22,7 @@ urlpatterns = [
 
     path('DB/update', views.db_update, name="update company"),
     path('getKey', views.get_key, name='get API key'),
+    path('dataHandler', views.data_handler, name='send comp data to buy/sell'),
 
     # OAuth 2
     path('social/authorize/', views.social_authorize, name='social-authorize'),

@@ -41,48 +41,21 @@ def index(request, message=""):
         'history': history,
         'profit': portfolio.profit,
         'message': message
-        # 'search_form': search_form,
     })
 
 
 @require_POST
 def indexPost(request):
-    # search_form = SearchForm(request.POST)
     buy_form = BuyForm(request.POST)
     if request.user.is_authenticated:
         user = request.user
     else:
         user = User.objects.get(username='tester')
     portfolio = Portfolio.objects.get(owner=user)
-    # prices = MyPrice.objects.filter(investor=user)
-    # history = History.objects.filter(user=user)
-
-    # ! if ticker is being searched
-    # check whether form is valid:
-    # if search_form.is_valid():
-    #     # process the data in form.cleaned_data as required
-    #     ticker = search_form.cleaned_data['stock_ticker']
-    #     # if user entered ticker:
-    #     compData = checkStock(ticker)
-    #     # if company name is entered - find it's ticker
-    #     if compData == None:
-    # compData = checkStock(getTicker(ticker))
-    #         if compData == None:
-    #             return index(request, "Stock doesn't exist")
-
-    #     buy_form = BuyForm()
-    #     return render(request, 'stocks/index.html', {
-    #         'search_form': search_form,
-    #         'buyForm': buy_form,
-    #         'compData': compData,
-    #         'portfolio': portfolio.stock.all(),
-    #         'prices': prices,
-    #         'history': history,
-    #         'profit': portfolio.profit
-    #     })
-
-    # ! BUY
-    ticker = request.POST.get('hidden-ticker').upper()
+    # get comp data
+    data = request.session['comp_data']
+    ticker = data['ticker']
+    #! BUY
     # if stock is being added to the portfolio
     if buy_form.is_valid():
         portfolio = Portfolio.objects.get(owner=request.user)
@@ -93,19 +66,14 @@ def indexPost(request):
             try:
                 Stocks.objects.get(ticker=ticker)
             except:
-                # get API data for the ticker
-                compData = checkStock(ticker)
-                # ? create Stock db entry
-                Stocks.objects.create(ticker=ticker, company=compData['company'], day=compData['day'], desc=compData['desc'], price=compData['price'],
-                                      pe=compData['pe'], fpe=compData['fpe'], pb=compData['pb'], debt=compData[
-                                          'debt'], roe=compData['roe'], profitMargins=compData['profitMargins'],
-                                      divs=compData['dividends'], targetPrice=compData['targetPrice'], recom=compData['recom'])
+                # create Stock db entry
+                Stocks.objects.create(ticker=ticker, company=data['name'], day=data['day'], price=data['price'],
+                                      pe=data['pe'], avPr200=data['priceAvg200'], market=data['market'], eps=data['eps'])
             # does User already have this stock?
             stock = Stocks.objects.get(ticker=ticker)
             if not stock in portfolio.stock.all():
                 portfolio.stock.add(stock)
                 portfolio.save()
-
             # * MyPrice update
             if MyPrice.objects.filter(investor=request.user, stock=stock).exists():
                 MP = MyPrice.objects.get(investor=request.user, stock=stock)
@@ -116,30 +84,24 @@ def indexPost(request):
             else:
                 MyPrice.objects.create(
                     investor=request.user, stock=stock, quant=amount, myPrice=form_price)
-
             # * History update on buy
             MP = MyPrice.objects.get(investor=request.user, stock=stock)
             History.objects.create(user=request.user, stock=stock, ammount=amount,
                                    MyPriceHist=MP.myPrice, BPrice=form_price, action="Buy")
-
             return index(request, 'Stock bought')
 
         # ! SELL
         elif 'sell_btn' in request.POST:
-
             # is there such stock in the db?
             if Stocks.objects.filter(ticker=ticker).exists():
-
                 # Does user have this stock?
                 stock = Stocks.objects.get(ticker=ticker)
                 if not stock in portfolio.stock.all():
                     return index(request, "You don't have this stock :(")
-
                 # Does user have enough of this stock to sell
                 MP = MyPrice.objects.get(investor=request.user, stock=stock)
                 if amount > MP.quant:
                     return index(request, "You don't have enough lots")
-
                 else:
                     MP.quant -= amount
                     portfolio.profit += amount * form_price - amount * MP.myPrice
@@ -149,17 +111,23 @@ def indexPost(request):
                     if MP.quant == 0:
                         portfolio.stock.remove(stock)
                         MP.delete()
-
                      # * History update on sell
                     History.objects.create(user=request.user, stock=stock, ammount=amount,
                                            SPrice=form_price, MyPriceHist=MP.myPrice, action="Sell")
-
                     return index(request, 'Stock sold')
-
             else:
                 return index(request, "You don't have this stock")
         else:
             return HttpResponse("<h1>How did you get here?</h1>")
+
+
+@csrf_exempt
+def data_handler(request):
+    data = json.loads(request.body)
+    request.session['comp_data'] = data
+    return JsonResponse({
+        "message": "ok"
+    }, status=200)
 
 
 def company_view(request, name):
