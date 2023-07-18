@@ -1,10 +1,10 @@
 from django import forms
 
 
-class SearchForm(forms.Form):
-    stock_ticker = forms.CharField(label='', max_length=10, widget=forms.TextInput(
-        attrs={'class': "ticker-inp",
-               'placeholder': "Company"}))
+# class SearchForm(forms.Form):
+#     stock_ticker = forms.CharField(label='', max_length=10, widget=forms.TextInput(
+#         attrs={'class': "ticker-inp",
+#                'placeholder': "Company"}))
 
 
 class BuyForm(forms.Form):

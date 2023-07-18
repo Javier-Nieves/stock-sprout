@@ -47,29 +47,29 @@
     {% endif %}
     <!-- ? search + company info + buy/sell -->
     <div class="top-row">
-        <form action="{% url 'indexPost' %}" method="post">
-            {% csrf_token %}
-            <div class="type-field">{{ search_form }}</div>
+        <form id="searchForm">
+            <!-- {% csrf_token %} -->
+            <!-- <div class="type-field">{{ search_form }}</div> -->
+            <input type="text" class="type-field ticker-inp" id="searchForComp" placeholder="Company">
             <input class="search-btn" id="main-view-search" type="submit" value="Search">
         </form>
 
         <div class="ticker-search-container">
             <ul class="ticker-search-box">
-                <div><strong style="color: whitesmoke">Company: </strong><span id="check-filled">{{compData.company}}</span></div>
-                <div><strong>Analysis: </strong>{{compData.recom}}</div>
+                <div><strong style="color: whitesmoke">Company: </strong><span id="search-display-name"></span></div>
+                <div><strong>PE: </strong><span id="search-display-PE"></span></div>
             </ul>
             <div class="loader hidden"></div>
             <div class="messenger hidden"></div>
             <ul class="ticker-search-box">
-                <div><strong>Price: </strong>$ {{compData.price}}</div>
-                <div><strong>TargetPrice: </strong>$ {{compData.targetPrice}}</div>
-                <input id="hidden-ticker" type="hidden" name="hidden-ticker" value="{{ compData.ticker }}">
+                <div><strong>Price: </strong><span id="search-display-price"></span></div>
+                <div><strong>Av-Price 200: </strong><span id="search-display-avPr200"></span></div>
+                <input id="hidden-ticker" type="hidden" name="hidden-ticker">
             </ul>
         </div>
         
 
         {% if user.is_authenticated %}
-            {% if compData.company != None %}
             <div id="action-buttons">
             <form action="{% url 'indexPost' %}" method="post">
                 {% csrf_token %}
@@ -81,7 +81,6 @@
                 <input id="hidden-ticker" type="hidden" name="hidden-ticker" value="{{ compData.ticker }}">
             </form>
             </div>
-            {% endif %} 
          {% endif %}
 
     </div>
@@ -101,7 +100,7 @@
     <table id="mainTable">
         <thead>
             <tr>
-                <th class="mobile-hide">Analysis</th>
+                <th class="mobile-hide">Market</th>
                 <th class="mobile-hide">Ticker</th>
                 <th class="sortDay Up">Company</th>
                 <th>MyPrice, $</th>
@@ -122,7 +121,7 @@
                 {% for price in prices %}
                     {% if price.stock == item%}
             <tr class="table-row">
-                <td class="mobile-hide">{{item.recom}}</td>
+                <td class="mobile-hide" id="company-market">{{item.market}}</td>
                 <td class="mobile-hide" id="company-ticker">{{item.ticker}}</td>
                 {% if item.day < 0 %}
                     <td>{{item.company}} <br> <div id="day-one" class="red-text">{{item.day|stringformat:".2f"}} %</div></td>

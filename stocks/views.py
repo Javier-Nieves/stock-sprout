@@ -1,13 +1,12 @@
 import os
 import requests
 from requests_oauthlib import OAuth2Session
-from datetime import datetime, timedelta
+# from datetime import datetime, timedelta
 from faker import Faker
 import random
 import json
-from apscheduler.schedulers.background import BackgroundScheduler
-from apscheduler.triggers.interval import IntervalTrigger
-
+# from apscheduler.schedulers.background import BackgroundScheduler
+# from apscheduler.triggers.interval import IntervalTrigger
 from django.shortcuts import redirect, render
 from django.contrib.auth import authenticate, login, logout
 from django.views.decorators.http import require_POST
@@ -15,14 +14,13 @@ from django.db import IntegrityError
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
-from .forms import SearchForm, BuyForm
+from .forms import BuyForm
 from .models import User, Stocks, MyPrice, Portfolio, History
 
 
 def index(request, message=""):
-    search_form = SearchForm()
     buy_form = BuyForm()
-
+    # search_form = SearchForm()
     # ? does user have a portfolio?
     if request.user.is_authenticated:
         user = request.user
@@ -34,55 +32,54 @@ def index(request, message=""):
     else:
         user = User.objects.get(username='tester')
         portfolio = Portfolio.objects.get(owner=user)
-
     prices = MyPrice.objects.filter(investor=user)
     history = History.objects.filter(user=user).order_by('id')
     return render(request, 'stocks/index.html', {
-        'search_form': search_form,
         'buyForm': buy_form,
         'portfolio': portfolio.stock.all(),
         'prices': prices,
         'history': history,
         'profit': portfolio.profit,
         'message': message
+        # 'search_form': search_form,
     })
 
 
 @require_POST
 def indexPost(request):
-    search_form = SearchForm(request.POST)
+    # search_form = SearchForm(request.POST)
     buy_form = BuyForm(request.POST)
     if request.user.is_authenticated:
         user = request.user
     else:
         user = User.objects.get(username='tester')
     portfolio = Portfolio.objects.get(owner=user)
-    prices = MyPrice.objects.filter(investor=user)
-    history = History.objects.filter(user=user)
+    # prices = MyPrice.objects.filter(investor=user)
+    # history = History.objects.filter(user=user)
 
     # ! if ticker is being searched
     # check whether form is valid:
-    if search_form.is_valid():
-        # process the data in form.cleaned_data as required
-        ticker = search_form.cleaned_data['stock_ticker']
-        # if user entered ticker:
-        compData = checkStock(ticker)
-        # if company name is entered - find it's ticker
-        if compData == None:
-            compData = checkStock(getTicker(ticker))
-            if compData == None:
-                return index(request, "Stock doesn't exist")
+    # if search_form.is_valid():
+    #     # process the data in form.cleaned_data as required
+    #     ticker = search_form.cleaned_data['stock_ticker']
+    #     # if user entered ticker:
+    #     compData = checkStock(ticker)
+    #     # if company name is entered - find it's ticker
+    #     if compData == None:
+    # compData = checkStock(getTicker(ticker))
+    #         if compData == None:
+    #             return index(request, "Stock doesn't exist")
 
-        buy_form = BuyForm()
-        return render(request, 'stocks/index.html', {
-            'search_form': search_form,
-            'buyForm': buy_form,
-            'compData': compData,
-            'portfolio': portfolio.stock.all(),
-            'prices': prices,
-            'history': history,
-            'profit': portfolio.profit
-        })
+    #     buy_form = BuyForm()
+    #     return render(request, 'stocks/index.html', {
+    #         'search_form': search_form,
+    #         'buyForm': buy_form,
+    #         'compData': compData,
+    #         'portfolio': portfolio.stock.all(),
+    #         'prices': prices,
+    #         'history': history,
+    #         'profit': portfolio.profit
+    #     })
 
     # ! BUY
     ticker = request.POST.get('hidden-ticker').upper()
@@ -208,14 +205,13 @@ def histPost(request):
         data = json.loads(request.body)
         title = data["title"]
         dividend = data["amount"]
-
-    # ? create new dividend entry in DB
-    newEntry = History.objects.create(user=request.user, action="Div", stock=stock,
-                                      SPrice=dividend, BPrice=0, MyPriceHist=0, ammount=0, note=title)
-    portfolio.profit += float(dividend)
-    portfolio.save()
-    return JsonResponse({'status': 'false',
-                         'id': newEntry.id})
+        # ? create new dividend entry in DB
+        newEntry = History.objects.create(user=request.user, action="Div", stock=stock,
+                                          SPrice=dividend, BPrice=0, MyPriceHist=0, ammount=0, note=title)
+        portfolio.profit += float(dividend)
+        portfolio.save()
+        return JsonResponse({'status': 'false',
+                             'id': newEntry.id})
 
 
 def histChange(request, ident, newText):
@@ -233,7 +229,22 @@ def blank_page(request, name=''):
 def auth_check(request):
     return JsonResponse({'LoggedIn': request.user.is_authenticated})
 
+
 # ! ------------------ functions ---------------
+@csrf_exempt
+def db_update(request):
+    if request.method == "PUT":
+        data = json.loads(request.body)
+        ticker = data["ticker"]
+        stock = Stocks.objects.get(ticker=ticker)
+        stock.price = data["price"]
+        stock.day = data["day"]
+        stock.pe = data["pe"]
+        stock.market = data["market"]
+        stock.avPr200 = data["priceAvg200"]
+        # stock.eps = data["eps"]
+        stock.save()
+        return JsonResponse({'status': 'ok'})
 
 
 # ! get company financial data by ticker (API function)
@@ -559,3 +570,10 @@ def fast_account(request):  # 20 minute account creation
     login(request, user)
 
     return index(request, "You have 20 minutes!")
+
+
+def get_key(request):
+    key = os.environ['API_KEY']
+    return JsonResponse({
+        "key": key
+    }, status=200)

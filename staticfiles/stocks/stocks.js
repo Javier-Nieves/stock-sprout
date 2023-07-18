@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
       searchFormFunction();
       updateBtnFunction();
       capitalizeName();
-      // getPrices();
+      getPrices();
       document.addEventListener("click", (event) => handleClicks(event));
       // browser back button action
       window.addEventListener("popstate", loadCorrectView);
@@ -30,14 +30,47 @@ function handleClicks(event) {
     sortTable(tar);
 }
 
+// -------------------------------------------------------------------------------------------------
 function searchFormFunction() {
-  // if company is searched - make Search field clickable and Buy button appear
-  const filledSearchForm = document.querySelector("#check-filled");
-  if (filledSearchForm !== null) {
-    if (filledSearchForm.innerHTML !== "") showActionBtns();
-    document
-      .querySelector("#main-view-search")
-      .addEventListener("click", beginSearch);
+  const form = document.querySelector("#searchForm");
+  const compName = form.querySelector("#searchForComp");
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    compName != "" && mutateForm(true);
+    fillFormWithData(compName.value);
+    showActionBtns();
+    document.querySelector("#searchForComp").value = "";
+  });
+}
+
+function mutateForm(bool) {
+  document.querySelector("#main-view-search").value = bool
+    ? "Loading.."
+    : "Search";
+  document.querySelector(".loader").classList.toggle("hidden");
+  const innerBoxes = document.querySelectorAll(".ticker-search-box");
+  innerBoxes.forEach(
+    (item) => (item.style.filter = bool ? "blur(8px)" : "blur(0px)")
+  );
+}
+
+async function fillFormWithData(compName) {
+  const name = document.querySelector("#search-display-name");
+  const price = document.querySelector("#search-display-price");
+  const PE = document.querySelector("#search-display-PE");
+  const avPr200 = document.querySelector("#search-display-avPr200");
+  const hidTicker = document.querySelector("#hidden-ticker");
+  let data = await checkComp(compName);
+  if (typeof data !== "string") {
+    name.innerHTML = data.name;
+    price.innerHTML = `$ ${data.price.toFixed(2)}`;
+    PE.innerHTML = data.pe;
+    avPr200.innerHTML = ` $ ${data.priceAvg200.toFixed(2)}`;
+    hidTicker.value = data.symbol;
+    mutateForm(false);
+  } else {
+    mutateForm(false);
+    ShowMessage(data);
   }
 }
 
@@ -52,16 +85,7 @@ function showActionBtns() {
       "running";
 }
 
-function beginSearch() {
-  if (document.querySelector(".ticker-inp").value != "") {
-    document.querySelector("#main-view-search").value = "Loading..";
-    document.querySelector(".loader").classList.remove("hidden");
-    const innerBoxes = document.querySelectorAll(".ticker-search-box");
-    innerBoxes.forEach((item) => (item.style.filter = "blur(3px)"));
-  }
-}
-// ----------------------------------------------------------------------
-
+// -------------------------------------------------------------------------------------------------
 function showingMain() {
   updateBrowserHistory("/");
   document.querySelector("#company-view").style.display = "none";
@@ -82,7 +106,6 @@ function showingCompany(tar) {
     compName = document.querySelector("#hidden-ticker").value;
   if (tar.className.includes("comp-search-btn"))
     compName = showComp_CompSearch();
-
   compName && show_company(compName);
 }
 
@@ -120,8 +143,7 @@ async function show_company(compName) {
     document.querySelector("#history-view").style.display = "none";
 
   blurAllFields(true);
-  const response = await fetch(`/companies/${compName}`);
-  const result = await response.json();
+  const result = await checkComp(compName);
   if (result.message) {
     ShowMessage(result.message);
     blurAllFields(false);
@@ -214,7 +236,7 @@ function showBuyForm() {
   buyForm.style.animationPlayState = "running";
 }
 
-// ----------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 function showingHistory() {
   document.querySelector("#portfolio-view").style.display = "none";
   document.querySelector("#summary-row-top").style.display = "flex";
@@ -345,7 +367,7 @@ function makeDivCellChangable(HistRow, newEntryId) {
   });
 }
 
-// ----------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 function fillTopInfo() {
   const rows = document.querySelectorAll(".table-row");
   let [sum1, sum2, dayCh] = calculateMainParameters(rows);
@@ -386,8 +408,8 @@ function fillChangeBlock(where, value1, value2) {
   const moneyBlock = document.querySelector(`${where}Dol`);
   const percentBlock = document.querySelector(`${where}Per`);
   const colorClass = RedGreenText(value2);
-  moneyBlock.classList.add(colorClass);
-  percentBlock.classList.add(colorClass);
+  moneyBlock.className = `sum-value ${colorClass}`;
+  percentBlock.className = `sum-value ${colorClass}`;
   moneyBlock.innerHTML = moneyFormat(value1);
   percentBlock.innerHTML = `${value2} %`;
 }
@@ -411,9 +433,8 @@ function fillMainBlock(sum1) {
     .querySelector(".sum-value").innerHTML = moneyFormat(sum1);
 }
 
-// ----------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------
 function sortTable(tar) {
-  // console.time("sortTable");
   const whichSort = tar.className;
   const table = document.getElementById("mainTable").querySelector("tbody");
   const rows = table.rows;
@@ -451,68 +472,8 @@ function determineSortParameter(whichSort) {
   else if (whichSort.includes("sortDay")) crit = "#day-one";
   return crit;
 }
-// ----------------------------------------------------------------------
-function updateBtnFunction() {
-  const updateBtn = document.querySelector(".prices-btn");
-  updateBtn.addEventListener("mouseover", function () {
-    updateBtn.textContent = "Update";
-  });
-  updateBtn.addEventListener("mouseout", function () {
-    updateBtn.textContent = "Price, $";
-  });
-  updateBtn.addEventListener("mouseup", async function () {
-    updateBtn.style.display = "none";
-    document.querySelector(".three-dots").style.display = "flex";
-    await getPrices();
-    removeThreeDots();
-  });
-}
 
-async function getData(ticker) {
-  const dbData = await fetch(`companies/${ticker}`);
-  const compData = await dbData.json();
-  return compData;
-}
-
-function changeRowValues(row, data) {
-  const day = row.querySelector("#day-one");
-  const price = row.querySelector(".market-price");
-  const sigma = row.querySelector(".sigma-row");
-  const change = row.querySelector("#change-field");
-  const myPrice = Number(row.querySelector(".my-price-row").innerHTML);
-  const quant = Number(row.querySelector(".quantity-row").innerHTML);
-
-  day.innerHTML = data.comp?.day?.toFixed(2) || "";
-  day.innerHTML = day.innerHTML && day.innerHTML + " %";
-
-  const stockPrice = data.comp?.price;
-  price.innerHTML =
-    stockPrice < 0.01 ? stockPrice.toExponential(2) : stockPrice.toFixed(2);
-
-  let sigNum = quant * stockPrice;
-  sigma.innerHTML = sigNum.toFixed(2);
-  let chNum = (stockPrice / myPrice - 1) * 100;
-  change.innerHTML = `${chNum.toFixed(2)} %`;
-  price.classList.add("animate");
-  sigma.classList.add("animate");
-  change.classList.add("animate");
-  day.classList.add("animate");
-  setTimeout(function () {
-    price.className = "market-price";
-    change.className = RedGreenText(chNum);
-    day.className = RedGreenText(data.comp.day);
-    sigma.className = "sigma-row";
-  }, 1500);
-  return true;
-}
-
-function removeThreeDots() {
-  const updateBtn = document.querySelector(".prices-btn");
-  updateBtn.style.display = "block";
-  document.querySelector(".three-dots").style.display = "none";
-}
-// ----------------------------------------------------------------------
-
+// -------------------------------------------------------------------------------------------------
 function moneyFormat(string) {
   let changed = string + "";
   if (3 < changed.length && changed.length < 7)
@@ -570,6 +531,7 @@ function ShowMessage(text) {
     messenger.innerHTML = text;
     messenger.classList.toggle("hidden");
     box.classList.toggle("box-shimmer");
+    // mutateForm(false);
     const innerBoxes = document.querySelectorAll(".ticker-search-box");
     innerBoxes.forEach((box) => {
       box.style.filter = "blur(8px)";
@@ -675,22 +637,51 @@ const updateBrowserHistory = (str) => window.history.pushState("_", "_", str);
 
 const RedGreenText = (param) => (param < 0 ? "red-text" : "green-text");
 
+// -------------------------------------------------------------------------------------------------
+function updateBtnFunction() {
+  const updateBtn = document.querySelector(".prices-btn");
+  updateBtn.addEventListener("mouseover", function () {
+    updateBtn.textContent = "Update";
+  });
+  updateBtn.addEventListener("mouseout", function () {
+    updateBtn.textContent = "Price, $";
+  });
+  updateBtn.addEventListener("mouseup", async function () {
+    updateBtn.style.display = "none";
+    document.querySelector(".three-dots").style.display = "flex";
+    await getPrices();
+    removeThreeDots();
+  });
+}
+
+function removeThreeDots() {
+  const updateBtn = document.querySelector(".prices-btn");
+  updateBtn.style.display = "block";
+  document.querySelector(".three-dots").style.display = "none";
+}
+
 async function getPrices() {
   const table = document.getElementById("mainTable").querySelector("tbody");
   const rows = [...table.rows];
   let tickList = [];
   let tickStr = "";
-  for (let [i, row] of rows.entries()) {
+  for (let [_, row] of rows.entries()) {
     const ticker = row.querySelector("#company-ticker").innerHTML;
-    tickList.push(ticker);
-    tickStr = tickList.join(",");
+    const market = row.querySelector("#company-market").innerHTML;
+    if (market != "MOEX" && market != "XETRA") tickList.push(ticker);
   }
-  const APIkey = "a2e01fe80641a6a4c5f2d5cf985f2c18";
+  tickStr = tickList.join(",");
+  const APIkey = await getKey();
   let url = `https://financialmodelingprep.com/api/v3/quote/${tickStr}?apikey=${APIkey}`;
   const response = await fetch(url);
   const data = await response.json();
-  console.log(data);
+  // console.log(data);
+  updateDB(data);
+  updateMainTable(rows, data);
+  if (userLoggedIn()) fillTopInfo();
+}
 
+function updateMainTable(rows, data) {
   for (let [_, row] of rows.entries()) {
     const ticker = row.querySelector("#company-ticker").innerHTML;
     const day = row.querySelector("#day-one");
@@ -720,5 +711,42 @@ async function getPrices() {
       }
     }
   }
-  if (userLoggedIn()) fillTopInfo();
+}
+
+function updateDB(data) {
+  for (let item of data) {
+    fetch(`DB/update`, {
+      method: "PUT",
+      body: JSON.stringify({
+        day: item.changesPercentage,
+        price: item.price,
+        ticker: item.symbol,
+        market: item.exchange,
+        eps: item.eps,
+        pe: item.pe,
+        priceAvg200: item.priceAvg200,
+      }),
+    });
+  }
+}
+
+async function checkComp(name) {
+  // todo - key to backend!
+  const APIkey = await getKey();
+  let url = `https://financialmodelingprep.com/api/v3/quote/${name}?apikey=${APIkey}`;
+  const response = await fetch(url);
+  const data = await response.json();
+  return data[0] || "No such company";
+}
+
+async function getKey() {
+  let key = localStorage.getItem("APIkey");
+  if (!key) {
+    const response = await fetch("getKey");
+    const data = await response.json();
+    localStorage.setItem("APIkey", data.key);
+    key = data.key;
+    console.log("key set", localStorage.getItem("APIkey"));
+  }
+  return key;
 }

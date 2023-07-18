@@ -14,11 +14,14 @@ urlpatterns = [
     path("company/<str:name>", views.blank_page, name='companypage refresh'),
 
     # API Routes
-    path("companies/<str:name>", views.company_view, name="company"),
-    path("history/dividend", views.histPost, name="dividends"),
+    path("companies/<str:name>", views.company_view, name="company info"),
+    path("history/dividend", views.histPost, name="new-dividends"),
     path("change/<int:ident>/<str:newText>",
-         views.histChange, name="div-title"),
-    path('authCheck', views.auth_check, name='logged in'),
+         views.histChange, name="new-div-title"),
+    path('authCheck', views.auth_check, name='is logged in?'),
+
+    path('DB/update', views.db_update, name="update company"),
+    path('getKey', views.get_key, name='get API key'),
 
     # OAuth 2
     path('social/authorize/', views.social_authorize, name='social-authorize'),

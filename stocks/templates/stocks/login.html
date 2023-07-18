@@ -30,12 +30,12 @@
                             <span class="link-text">Login with Github</span>
                         </button>
                 </form>
-                        <div class="facebook-btn" name="facebook_btn">
+                        <!-- <div class="facebook-btn" name="facebook_btn">
                             <svg viewBox="-1 -1 27 27" class="svg-facebook"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-3 7h-1.924c-.615 0-1.076.252-1.076.889v1.111h3l-.238 3h-2.762v8h-3v-8h-2v-3h2v-1.923c0-2.022 1.064-3.077 3.461-3.077h2.539v3z"/>
                             </svg>
                             <span class="link-text facebook">Login with Facebook</span>
                             <span class="tooltiptext">Meta made it impossible</span>
-                        </div>
+                        </div> -->
                         <form action="{% url 'fast-account' %}" method="post">
                             {% csrf_token %}
                             <button class="fast-account-btn">

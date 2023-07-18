@@ -11,17 +11,18 @@ class Stocks(models.Model):
     ticker = models.CharField(max_length=10)
     company = models.CharField(max_length=50)
     day = models.FloatField(null=True, blank=True)
-    desc = models.TextField(max_length=1000, default="None", null=True)
+    desc = models.TextField(max_length=1500, default="None", null=True)
     price = models.FloatField(null=True, blank=True)
     pe = models.FloatField(null=True, blank=True)
     fpe = models.FloatField(null=True, blank=True)
     pb = models.FloatField(null=True, blank=True)
-    debt = models.FloatField(null=True, blank=True)
+    avPr200 = models.FloatField(null=True, blank=True)
     roe = models.FloatField(null=True, blank=True)
     profitMargins = models.FloatField(null=True, blank=True)
     divs = models.IntegerField(null=True, blank=True)
     targetPrice = models.FloatField(null=True, blank=True)
     recom = models.CharField(max_length=30, null=True, blank=True)
+    market = models.CharField(max_length=30, null=True, blank=True)
 
     def serialize(self):  # object.serialize() now will return a JSON object
         return {
