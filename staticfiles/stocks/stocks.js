@@ -215,12 +215,7 @@ const comp_fillRecom = (data) =>
   (document.querySelector("#company-recom").innerHTML = data.recom || "???");
 
 async function comp_fillDesc(data) {
-  let fullText = data.desc || "no description";
-  console.log("starting desc:", fullText);
-  if (fullText === "no description") {
-    console.log("getting desc for ", data.symbol);
-    fullText = await getDescription(data.symbol);
-  }
+  let fullText = data.desc || (await getDescription(data.symbol));
   const desc = document.querySelector("#company-desc");
   desc.innerHTML = truncate(fullText, 600);
   let collapsed = true;
@@ -238,7 +233,6 @@ async function comp_fillDesc(data) {
 async function getDescription(ticker) {
   const response = await fetch(`/DB/desc/${ticker}`);
   const data = await response.json();
-  console.log(data);
   return data.description;
 }
 
@@ -787,11 +781,4 @@ async function getKey() {
   return key;
 }
 
-async function stockInfo(ticker) {
-  url = `https://api.polygon.io/v3/reference/tickers/${ticker}?apiKey=MW0_T2p6Y_mAosDpF5dkDzejyh5hQIVN`;
-  const response = await fetch(url);
-  const data = await response.json();
-  console.log(data);
-  return data;
-}
 // -------------------------------------------------------------------------------------------------

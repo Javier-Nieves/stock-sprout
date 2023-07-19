@@ -1,7 +1,6 @@
 import os
 import requests
 from requests_oauthlib import OAuth2Session
-# from datetime import datetime, timedelta
 from faker import Faker
 import random
 import json
@@ -139,7 +138,7 @@ def histPost(request):
         data = json.loads(request.body)
         title = data["title"]
         dividend = data["amount"]
-        # ? create new dividend entry in DB
+        # create new dividend entry in DB
         newEntry = History.objects.create(user=request.user, action="Div", stock=stock,
                                           SPrice=dividend, BPrice=0, MyPriceHist=0, ammount=0, note=title)
         portfolio.profit += float(dividend)
@@ -158,10 +157,6 @@ def histChange(request, ident, newText):
 
 def blank_page(request, name=''):
     return index(request)
-
-
-def auth_check(request):
-    return JsonResponse({'LoggedIn': request.user.is_authenticated})
 
 
 # ! ------------------ functions ---------------
@@ -197,144 +192,108 @@ def db_desc(request, ticker):
         stock = Stocks.objects.get(ticker=ticker)
         description = stock.desc
         if not description:
-            print('desc is empty. Go API!')
+            description = get_comp_desc(ticker)
     else:
-        print('no stock! go API!')
-        description = 'bollocks'
+        description = get_comp_desc(ticker)
+        # todo - create DB entry for searched company?
     return JsonResponse({
         "description": description
     }, status=200)
 
 
-# ! get company financial data by ticker (API function)
-def checkStock(ticker):
-    # we try international stocks first
-    try:
-        url = f"https://query1.finance.yahoo.com/v11/finance/quoteSummary/{ticker}?modules=financialData"
-        urlComp = f"https://query1.finance.yahoo.com/v7/finance/options/{ticker}"
-        urlDesc = f"https://query1.finance.yahoo.com/v11/finance/quoteSummary/{ticker}?modules=assetProfile"
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'}
-        response = requests.get(url, headers=headers)
-        responseComp = requests.get(urlComp, headers=headers)
-        responseDesc = requests.get(urlDesc, headers=headers)
-        response.raise_for_status()
-        responseComp.raise_for_status()
-        responseDesc.raise_for_status()
-    except requests.RequestException:
-        # If unsuccessful - try for russian ticker
-        return checkStockRus(ticker)
-    # Parse responses
-    try:
-        quote = response.json()
-        quoteComp = responseComp.json()
-        quoteDesc = responseDesc.json()
-        # initial 3 dicts preparation
-        Comp = quoteComp["optionChain"]["result"][0]["quote"]
-        Desc = quoteDesc["quoteSummary"]["result"][0]["assetProfile"]
-        Fin = quote["quoteSummary"]["result"][0]["financialData"]
-
-        return {  # .get method allows to check a dictionary for the key and sets a None value if the key doesn't exist. Thus one could avoid a KeyError
-            "ticker": Comp.get("symbol"),
-            "company": Comp.get("shortName"),
-            "day": Comp.get("regularMarketChangePercent"),
-            "desc": Desc.get("longBusinessSummary"),
-            "price": Fin.get("currentPrice").get("raw"),
-            "pe": Comp.get("trailingPE"),
-            "fpe": Comp.get("forwardPE"),
-            "pb": Comp.get("priceToBook"),
-            "debt": Fin.get("debtToEquity").get("raw"),
-            "roe": Fin.get("returnOnEquity").get("raw"),
-            "profitMargins": Fin.get("profitMargins").get("raw"),
-            "dividends": Comp.get("trailingAnnualDividendRate"),
-            "targetPrice": Fin.get("targetMeanPrice").get("raw"),
-            "recom": Comp.get("averageAnalystRating")
-        }
-    except (KeyError, TypeError, ValueError):
-        return None
+def get_comp_desc(ticker):
+    url = f'https://api.polygon.io/v3/reference/tickers/{ticker}?apiKey={os.environ["API_KEY_DESC"]}'
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'}
+    response = requests.get(url, headers=headers)
+    data = response.json()
+    return data['results']['description']
 
 
-def checkStockRus(ticker):
-    try:
-        url = f"https://iss.moex.com/iss/engines/stock/markets/shares/securities/{ticker}.json"
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'}
-        response = requests.get(url, headers=headers)
-        response.raise_for_status()
-    except requests.RequestException:
-        # this API always return some JSON. It just might be full of empty forms
-        return None
+# # ! get company financial data by ticker (API function)
+# def checkStockRus(ticker):
+#     try:
+#         url = f"https://iss.moex.com/iss/engines/stock/markets/shares/securities/{ticker}.json"
+#         headers = {
+#             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'}
+#         response = requests.get(url, headers=headers)
+#         response.raise_for_status()
+#     except requests.RequestException:
+#         # this API always return some JSON. It just might be full of empty forms
+#         return None
 
-    quote = response.json()
-    if len(quote['marketdata']['data']) == 0:
-        print('no price data for', ticker)
-        return None
+#     quote = response.json()
+#     if len(quote['marketdata']['data']) == 0:
+#         print('no price data for', ticker)
+#         return None
 
-    i = 0
-    while quote['marketdata']['data'][i][1] != 'TQBR':
-        i += 1
-    data = quote['marketdata']['data'][i]
+#     i = 0
+#     while quote['marketdata']['data'][i][1] != 'TQBR':
+#         i += 1
+#     data = quote['marketdata']['data'][i]
 
-    for item in data:
-        if isinstance(item, (int, float)) and item != 0:
-            price = item
-            break
-    if not price:
-        print('all is none or 0')
-        return None  # If no non-null numbers are found
-    Desc = quote['securities']['data'][0]
-    rate = GiveExchangeFor('rub')
-    try:
-        return {
-            "ticker": data[0],
-            "company": Desc[20],
-            "day": None,
-            "desc":  None,
-            "price": price*rate,
-            "pe":  None,
-            "fpe":  None,
-            "pb":   None,
-            "debt":   None,
-            "roe":   None,
-            "profitMargins":  None,
-            "dividends":  None,
-            "targetPrice":  None,
-            "recom":  None,
-        }
+#     for item in data:
+#         if isinstance(item, (int, float)) and item != 0:
+#             price = item
+#             break
+#     if not price:
+#         print('all is none or 0')
+#         return None  # If no non-null numbers are found
+#     Desc = quote['securities']['data'][0]
+#     rate = GiveExchangeFor('rub')
+#     try:
+#         return {
+#             "ticker": data[0],
+#             "company": Desc[20],
+#             "day": None,
+#             "desc":  None,
+#             "price": price*rate,
+#             "pe":  None,
+#             "fpe":  None,
+#             "pb":   None,
+#             "debt":   None,
+#             "roe":   None,
+#             "profitMargins":  None,
+#             "dividends":  None,
+#             "targetPrice":  None,
+#             "recom":  None,
+#         }
 
-    except KeyError as error:
-        print(str(error))
-
-
-def GiveExchangeFor(currency):
-    # this API can do much more than this
-    try:
-        url = f'https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/latest/currencies/{currency}/usd.json'
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'}
-        response = requests.get(url, headers=headers)
-        response.raise_for_status()
-        return response.json()['usd']
-    except requests.RequestException:
-        return None
+#     except KeyError as error:
+#         print(str(error))
 
 
-# ! look up a ticker for company name entered
-def getTicker(company_name):
-    yfinance = "https://query2.finance.yahoo.com/v1/finance/search"
-    user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36'
-    params = {"q": company_name, "quotes_count": 1, "country": "United States"}
-    res = requests.get(url=yfinance, params=params,
-                       headers={'User-Agent': user_agent})
-    data = res.json()
-    try:
-        company_code = data['quotes'][0]['symbol']
-    except:
-        company_code = 'DIV'
+# def GiveExchangeFor(currency):
+#     # this API can do much more than this
+#     try:
+#         url = f'https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/latest/currencies/{currency}/usd.json'
+#         headers = {
+#             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'}
+#         response = requests.get(url, headers=headers)
+#         response.raise_for_status()
+#         return response.json()['usd']
+#     except requests.RequestException:
+#         return None
 
-    return company_code
+
+# # ! look up a ticker for company name entered
+# def getTicker(company_name):
+#     yfinance = "https://query2.finance.yahoo.com/v1/finance/search"
+#     user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36'
+#     params = {"q": company_name, "quotes_count": 1, "country": "United States"}
+#     res = requests.get(url=yfinance, params=params,
+#                        headers={'User-Agent': user_agent})
+#     data = res.json()
+#     try:
+#         company_code = data['quotes'][0]['symbol']
+#     except:
+#         company_code = 'DIV'
+
+#     return company_code
 
 # ? ------------------- login & co ------------------------
+def auth_check(request):
+    return JsonResponse({'LoggedIn': request.user.is_authenticated})
 
 
 def login_view(request):
