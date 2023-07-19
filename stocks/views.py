@@ -181,9 +181,7 @@ def db_random(request):
     # function returns company data in JSON form
     StockList = list(Stocks.objects.exclude(company='dividends'))
     comp = random.choice(StockList).serialize()
-    return JsonResponse({
-        "comp": comp
-    }, status=200)
+    return JsonResponse({"comp": comp}, status=200)
 
 
 @csrf_exempt
@@ -202,65 +200,13 @@ def db_desc(request, ticker):
 
 
 def get_comp_desc(ticker):
+    # todo - get logo from this response
     url = f'https://api.polygon.io/v3/reference/tickers/{ticker}?apiKey={os.environ["API_KEY_DESC"]}'
     headers = {
         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'}
     response = requests.get(url, headers=headers)
     data = response.json()
     return data['results']['description']
-
-
-# # ! get company financial data by ticker (API function)
-# def checkStockRus(ticker):
-#     try:
-#         url = f"https://iss.moex.com/iss/engines/stock/markets/shares/securities/{ticker}.json"
-#         headers = {
-#             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'}
-#         response = requests.get(url, headers=headers)
-#         response.raise_for_status()
-#     except requests.RequestException:
-#         # this API always return some JSON. It just might be full of empty forms
-#         return None
-
-#     quote = response.json()
-#     if len(quote['marketdata']['data']) == 0:
-#         print('no price data for', ticker)
-#         return None
-
-#     i = 0
-#     while quote['marketdata']['data'][i][1] != 'TQBR':
-#         i += 1
-#     data = quote['marketdata']['data'][i]
-
-#     for item in data:
-#         if isinstance(item, (int, float)) and item != 0:
-#             price = item
-#             break
-#     if not price:
-#         print('all is none or 0')
-#         return None  # If no non-null numbers are found
-#     Desc = quote['securities']['data'][0]
-#     rate = GiveExchangeFor('rub')
-#     try:
-#         return {
-#             "ticker": data[0],
-#             "company": Desc[20],
-#             "day": None,
-#             "desc":  None,
-#             "price": price*rate,
-#             "pe":  None,
-#             "fpe":  None,
-#             "pb":   None,
-#             "debt":   None,
-#             "roe":   None,
-#             "profitMargins":  None,
-#             "dividends":  None,
-#             "targetPrice":  None,
-#             "recom":  None,
-#         }
-
-#     except KeyError as error:
-#         print(str(error))
 
 
 # def GiveExchangeFor(currency):

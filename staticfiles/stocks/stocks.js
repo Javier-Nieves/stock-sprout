@@ -59,12 +59,12 @@ async function fillFormWithData(compName) {
   const PE = document.querySelector("#search-display-PE");
   const avPr200 = document.querySelector("#search-display-avPr200");
   const hidTicker = document.querySelector("#hidden-ticker");
-  let data = await checkComp(compName);
+  let data = await checkComp_US(compName);
   if (typeof data !== "string") {
     name.innerHTML = data.name;
     price.innerHTML = `$ ${data.price.toFixed(2)}`;
-    PE.innerHTML = data.pe;
-    avPr200.innerHTML = ` $ ${data.priceAvg200.toFixed(2)}`;
+    PE.innerHTML = data.pe || "---";
+    avPr200.innerHTML = ` $ ${data.priceAvg200?.toFixed(2) || "---"}`;
     hidTicker.value = data.symbol;
     mutateForm(false);
     sendStockToServer(data);
@@ -75,7 +75,6 @@ async function fillFormWithData(compName) {
 }
 
 function sendStockToServer(data) {
-  console.log(data);
   fetch("dataHandler", {
     method: "POST",
     body: JSON.stringify({
@@ -105,7 +104,7 @@ function showActionBtns() {
 // -------------------------------------------------------------------------------------------------
 function showingMain() {
   updateBrowserHistory("/");
-  getPrices();
+  updateAllPrices();
   document.querySelector("#company-view").style.display = "none";
   document.querySelector("#portfolio-view").style.display = "block";
   document.querySelector("#summary-row-top").style.display = "flex";
@@ -161,9 +160,8 @@ async function show_company(compName) {
   blurAllFields(true);
   let data;
   compName !== "random"
-    ? (data = await checkComp(compName))
+    ? (data = await checkComp_US(compName))
     : (data = await getRandomComp());
-  console.log(data);
   if (typeof data === "string") {
     ShowMessage(data);
     blurAllFields(false);
@@ -215,7 +213,10 @@ const comp_fillRecom = (data) =>
   (document.querySelector("#company-recom").innerHTML = data.recom || "???");
 
 async function comp_fillDesc(data) {
-  let fullText = data.desc || (await getDescription(data.symbol));
+  let fullText =
+    data.desc ||
+    (data.market !== "MOEX" && (await getDescription(data.symbol))) ||
+    "No description";
   const desc = document.querySelector("#company-desc");
   desc.innerHTML = truncate(fullText, 600);
   let collapsed = true;
@@ -681,7 +682,7 @@ function updateBtnFunction() {
   updateBtn.addEventListener("mouseup", async function () {
     updateBtn.style.display = "none";
     document.querySelector(".three-dots").style.display = "flex";
-    await getPrices();
+    await updateAllPrices();
     removeThreeDots();
   });
 }
@@ -692,7 +693,7 @@ function removeThreeDots() {
   document.querySelector(".three-dots").style.display = "none";
 }
 
-async function getPrices() {
+async function updateAllPrices() {
   const table = document.getElementById("mainTable").querySelector("tbody");
   const rows = [...table.rows];
   let tickList = [];
@@ -762,12 +763,41 @@ function updateDB(data) {
   }
 }
 
-async function checkComp(name) {
+async function checkComp_US(ticker) {
   const APIkey = await getKey();
-  let url = `https://financialmodelingprep.com/api/v3/quote/${name}?apikey=${APIkey}`;
+  let url = `https://financialmodelingprep.com/api/v3/quote/${ticker}?apikey=${APIkey}`;
   const response = await fetch(url);
   const data = await response.json();
-  return data[0] || "No such company";
+  return data[0] || checkComp_RU(ticker);
+}
+
+async function checkComp_RU(ticker) {
+  let url = `https://iss.moex.com/iss/engines/stock/markets/shares/securities/${ticker}.json`;
+  const response = await fetch(url);
+  let data = await response.json();
+  if (data.marketdata.data.length == 0) {
+    return "No such company";
+  }
+  let prices, price;
+  let i = 0;
+  while (data.marketdata.data[i][1] !== "TQBR") {
+    i++;
+    prices = data.marketdata.data[i];
+  }
+  for (let [n, item] of prices.entries()) {
+    if (typeof item === "number" && item !== 0) {
+      price = prices[n];
+      break;
+    }
+  }
+  const desc = data.securities.data[0];
+  const company = {
+    symbol: prices[0],
+    name: desc[20],
+    price: price,
+    market: "MOEX",
+  };
+  return company;
 }
 
 async function getKey() {
