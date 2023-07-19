@@ -5,8 +5,6 @@ from requests_oauthlib import OAuth2Session
 from faker import Faker
 import random
 import json
-# from apscheduler.schedulers.background import BackgroundScheduler
-# from apscheduler.triggers.interval import IntervalTrigger
 from django.shortcuts import redirect, render
 from django.contrib.auth import authenticate, login, logout
 from django.views.decorators.http import require_POST
@@ -20,8 +18,7 @@ from .models import User, Stocks, MyPrice, Portfolio, History
 
 def index(request, message=""):
     buy_form = BuyForm()
-    # search_form = SearchForm()
-    # ? does user have a portfolio?
+    # does user have a portfolio?
     if request.user.is_authenticated:
         user = request.user
         try:
@@ -89,8 +86,7 @@ def indexPost(request):
             History.objects.create(user=request.user, stock=stock, ammount=amount,
                                    MyPriceHist=MP.myPrice, BPrice=form_price, action="Buy")
             return index(request, 'Stock bought')
-
-        # ! SELL
+        #! SELL
         elif 'sell_btn' in request.POST:
             # is there such stock in the db?
             if Stocks.objects.filter(ticker=ticker).exists():
@@ -126,7 +122,7 @@ def data_handler(request):
     data = json.loads(request.body)
     request.session['comp_data'] = data
     return JsonResponse({
-        "message": "ok"
+        "message": "data received"
     }, status=200)
 
 
@@ -137,7 +133,6 @@ def company_view(request, name):
             return JsonResponse({
                 "message": "No such company"
             }, status=200)
-
     # if Company View is summoned via top link - open random company from DB
     if name == 'random':
         name = 'DIV'
@@ -145,7 +140,7 @@ def company_view(request, name):
             StockList = list(Stocks.objects.all())
             name = random.choice(StockList).ticker
 
-    # ? if company exists in DB:
+    # if company exists in DB:
     try:
         # function returns company data in JSON form straight from the DB
         comp = Stocks.objects.get(ticker=name).serialize()
@@ -213,6 +208,16 @@ def db_update(request):
         # stock.eps = data["eps"]
         stock.save()
         return JsonResponse({'status': 'ok'})
+
+
+@csrf_exempt
+def db_random(request):
+    # function returns company data in JSON form
+    StockList = list(Stocks.objects.exclude(company='dividends'))
+    comp = random.choice(StockList).serialize()
+    return JsonResponse({
+        "comp": comp
+    }, status=200)
 
 
 # ! get company financial data by ticker (API function)
@@ -343,37 +348,6 @@ def getTicker(company_name):
         company_code = 'DIV'
 
     return company_code
-
-
-# # ! paper actualizer
-# def ActualizeMini():
-#     for paper in Stocks.objects.all():
-#         if paper.ticker != 'DIV':
-#             actual = checkStock(paper.ticker)
-#             if actual is not None:
-#                 paper.price = actual.get('price')
-#                 paper.desc = actual.get('desc')
-#                 paper.company = actual.get('company')
-#                 paper.day = actual.get('day')
-#                 paper.pe = actual.get('pe')
-#                 paper.fpe = actual.get('fpe')
-#                 paper.pb = actual.get('pb')
-#                 paper.profitMargins = actual.get('profitMargins')
-#                 paper.roe = actual.get('roe')
-#                 paper.debt = actual.get('debt')
-#                 paper.divs = actual.get('dividends')
-#                 paper.targetPrice = actual.get('targetPrice')
-#                 paper.recom = actual.get('recom')
-#                 paper.save()
-#     print('actualized at ', datetime.now())
-#     return HttpResponse(status=204)
-
-
-# # ! this module runs in background and periodically summons Actualize function
-# scheduler = BackgroundScheduler({'apscheduler.job_defaults.max_instances': 4})
-# trigger = IntervalTrigger(minutes=2)
-# scheduler.add_job(ActualizeMini, trigger)
-# scheduler.start()
 
 # ? ------------------- login & co ------------------------
 

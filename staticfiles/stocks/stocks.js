@@ -12,7 +12,6 @@ document.addEventListener("DOMContentLoaded", () => {
       searchFormFunction();
       updateBtnFunction();
       capitalizeName();
-      getPrices();
       document.addEventListener("click", (event) => handleClicks(event));
       // browser back button action
       window.addEventListener("popstate", loadCorrectView);
@@ -106,6 +105,7 @@ function showActionBtns() {
 // -------------------------------------------------------------------------------------------------
 function showingMain() {
   updateBrowserHistory("/");
+  getPrices();
   document.querySelector("#company-view").style.display = "none";
   document.querySelector("#portfolio-view").style.display = "block";
   document.querySelector("#summary-row-top").style.display = "flex";
@@ -153,61 +153,70 @@ function showComp_CompSearch() {
 }
 
 async function show_company(compName) {
-  updateBrowserHistory(`/company/${compName}`);
   document.querySelector("#portfolio-view").style.display = "none";
   document.querySelector("#summary-row-top").style.display = "none";
   document.querySelector("#company-view").style.display = "block";
   if (userLoggedIn())
     document.querySelector("#history-view").style.display = "none";
-
   blurAllFields(true);
-  const result = await checkComp(compName);
-  if (result.message) {
-    ShowMessage(result.message);
+
+  let data;
+  compName !== "random"
+    ? (data = await checkComp(compName))
+    : (data = await getRandomComp());
+  console.log(data);
+  if (data.message) {
+    ShowMessage(data.message);
     blurAllFields(false);
     return false;
   }
-  comp_fillName(result);
-  comp_fillPrice(result);
-  comp_fillTarget(result);
-  comp_fillDesc(result);
-  comp_fillRecom(result);
-  fillFinParams(result);
+  comp_fillName(data);
+  comp_fillPrice(data);
+  comp_fillAvPr200(data);
+  comp_fillDesc(data);
+  comp_fillRecom(data);
+  fillFinParams(data);
   blurAllFields(false);
+  updateBrowserHistory(`/company/${compName}`);
 }
 
-function comp_fillPrice(result) {
+async function getRandomComp() {
+  const response = await fetch("/DB/random");
+  const data = await response.json();
+  return data.comp;
+}
+
+function comp_fillName(data) {
+  document.querySelector("#company-title").innerHTML = `${MakeCapitalized(
+    data.name
+  )}`;
+  document.querySelector("#comp-ticker").innerHTML = data.symbol;
+  document.querySelector("#hidden-ticker-comp").value = data.symbol;
+}
+function comp_fillPrice(data) {
   document.querySelector("#res-comp-price").innerHTML = `$ ${
-    result.comp?.price?.toFixed(2) || "???"
+    data.price.toFixed(2) || "???"
   }`;
   const resComDay = document.querySelector("#res-comp-day");
-  const valuePer = result.comp?.day?.toFixed(1);
+  const valuePer = data.changesPercentage?.toFixed(1);
   resComDay.innerHTML = `${valuePer || "???"} % `;
   resComDay.className = `med-text ${RedGreenText(valuePer)}`;
 }
-function comp_fillTarget(result) {
-  let potential =
-    (result.comp?.targetPrice / result.comp?.price - 1) * 100 ?? 0;
+function comp_fillAvPr200(data) {
+  let potential = (data.priceAvg200 / data.price - 1) * 100 ?? 0;
   document.querySelector("#comp-target-dol").innerHTML = `$ ${
-    result.comp?.targetPrice?.toFixed(2) || "???"
+    data.priceAvg200?.toFixed(2) || "???"
   }`;
   const targPer = document.querySelector("#comp-target-per");
   targPer.innerHTML = `${potential.toFixed(1)} %`;
   targPer.classList.add(RedGreenText(potential));
 }
-function comp_fillName(result) {
-  document.querySelector("#company-title").innerHTML = `${MakeCapitalized(
-    result.comp?.company
-  )}`;
-  document.querySelector("#comp-ticker").innerHTML = result.comp?.ticker;
-  document.querySelector("#hidden-ticker-comp").value = result.comp?.ticker;
-}
-const comp_fillRecom = (result) =>
-  (document.querySelector("#company-recom").innerHTML =
-    result.comp?.recom || "???");
 
-function comp_fillDesc(result) {
-  const fullText = result.comp?.desc || "no description";
+const comp_fillRecom = (data) =>
+  (document.querySelector("#company-recom").innerHTML = data.recom || "???");
+
+function comp_fillDesc(data) {
+  const fullText = data.desc || "no description";
   const desc = document.querySelector("#company-desc");
   desc.innerHTML = truncate(fullText, 600);
   let collapsed = true;
@@ -222,23 +231,23 @@ function comp_fillDesc(result) {
   });
 }
 
-function fillFinParams(result) {
-  const roe = result.comp?.roe * 100;
-  const divYield = (result.comp?.dividends / result.comp?.price) * 100;
-  const marg = result.comp?.profitMargins * 100;
+function fillFinParams(data) {
+  const roe = data.roe * 100;
+  const divYield = (data.dividends / data.price) * 100;
+  const marg = data.profitMargins * 100;
   document.querySelector("#company-pe").innerHTML =
-    result.comp?.pe?.toFixed(1) || "???";
+    data.pe?.toFixed(1) || "???";
   document.querySelector("#company-fpe").innerHTML =
-    result.comp?.fpe?.toFixed(1) || "???";
+    data.eps?.toFixed(1) || "???";
   document.querySelector("#company-pb").innerHTML =
-    result.comp?.pb?.toFixed(1) || "???";
+    data.pb?.toFixed(1) || "???";
   document.querySelector("#company-roe").innerHTML = roe?.toFixed(1) || "???";
   document.querySelector("#company-debt").innerHTML =
-    result.comp?.debt?.toFixed(2) || "???";
+    data.debt?.toFixed(2) || "???";
   document.querySelector("#company-profitMargins").innerHTML =
     marg?.toFixed(1) || "???";
   document.querySelector("#company-dividends").innerHTML =
-    result.comp?.dividends?.toFixed(2) || "???";
+    data.dividends?.toFixed(2) || "???";
   document.querySelector("#company-dividends-yield").innerHTML =
     divYield?.toFixed(1) || "???";
   if (userLoggedIn())

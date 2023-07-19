@@ -27,20 +27,23 @@ class Stocks(models.Model):
 
     def serialize(self):  # object.serialize() now will return a JSON object
         return {
-            "ticker": self.ticker,
-            "company": self.company,
-            "day": self.day,
+            "symbol": self.ticker,
+            "name": self.company,
+            "changesPercentage": self.day,
             "desc": self.desc,
             "price": self.price,
             "pe": self.pe,
-            "fpe": self.fpe,
-            "pb": self.pb,
-            "profitMargins": self.profitMargins,
-            "roe": self.roe,
-            "debt": self.debt,
-            "dividends": self.divs,
-            "targetPrice": self.targetPrice,
-            "recom": self.recom
+            "eps": self.eps,
+            'priceAvg200': self.avPr200,
+            'market': self.market,
+            # "fpe": self.fpe,
+            # "pb": self.pb,
+            # "profitMargins": self.profitMargins,
+            # "roe": self.roe,
+            # "debt": self.debt,
+            # "dividends": self.divs,
+            # "targetPrice": self.targetPrice,
+            # "recom": self.recom
         }
 
     def __str__(self):

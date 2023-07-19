@@ -21,6 +21,7 @@ urlpatterns = [
     path('authCheck', views.auth_check, name='is logged in?'),
 
     path('DB/update', views.db_update, name="update company"),
+    path('DB/random', views.db_random, name='random comp'),
     path('getKey', views.get_key, name='get API key'),
     path('dataHandler', views.data_handler, name='send comp data to buy/sell'),
 
