@@ -126,35 +126,6 @@ def data_handler(request):
     }, status=200)
 
 
-def company_view(request, name):
-    if checkStock(name) == None and name != "random":
-        name = getTicker(name)
-        if checkStock(name) == None:
-            return JsonResponse({
-                "message": "No such company"
-            }, status=200)
-    # if Company View is summoned via top link - open random company from DB
-    if name == 'random':
-        name = 'DIV'
-        while name == 'DIV':
-            StockList = list(Stocks.objects.all())
-            name = random.choice(StockList).ticker
-
-    # if company exists in DB:
-    try:
-        # function returns company data in JSON form straight from the DB
-        comp = Stocks.objects.get(ticker=name).serialize()
-        return JsonResponse({
-            "comp": comp
-        }, status=200)
-
-    # ? for new companies
-    except:
-        return JsonResponse({
-            "comp": checkStock(name)
-        }, status=200)
-
-
 @csrf_exempt
 def histPost(request):
     portfolio = Portfolio.objects.get(owner=request.user)
@@ -205,7 +176,7 @@ def db_update(request):
         stock.pe = data["pe"]
         stock.market = data["market"]
         stock.avPr200 = data["priceAvg200"]
-        # stock.eps = data["eps"]
+        stock.eps = data["eps"]
         stock.save()
         return JsonResponse({'status': 'ok'})
 
@@ -217,6 +188,21 @@ def db_random(request):
     comp = random.choice(StockList).serialize()
     return JsonResponse({
         "comp": comp
+    }, status=200)
+
+
+@csrf_exempt
+def db_desc(request, ticker):
+    if Stocks.objects.filter(ticker=ticker).exists():
+        stock = Stocks.objects.get(ticker=ticker)
+        description = stock.desc
+        if not description:
+            print('desc is empty. Go API!')
+    else:
+        print('no stock! go API!')
+        description = 'bollocks'
+    return JsonResponse({
+        "description": description
     }, status=200)
 
 
@@ -238,7 +224,6 @@ def checkStock(ticker):
     except requests.RequestException:
         # If unsuccessful - try for russian ticker
         return checkStockRus(ticker)
-
     # Parse responses
     try:
         quote = response.json()
@@ -410,7 +395,6 @@ def register(request):
 
 
 # Social login:
-
 def social_authorize(request):
     redirect_uri = 'https://stock-sprout.onrender.com/callback'
     if 'git_btn' in request.POST:

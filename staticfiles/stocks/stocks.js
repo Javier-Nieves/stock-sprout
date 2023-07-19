@@ -159,14 +159,13 @@ async function show_company(compName) {
   if (userLoggedIn())
     document.querySelector("#history-view").style.display = "none";
   blurAllFields(true);
-
   let data;
   compName !== "random"
     ? (data = await checkComp(compName))
     : (data = await getRandomComp());
   console.log(data);
-  if (data.message) {
-    ShowMessage(data.message);
+  if (typeof data === "string") {
+    ShowMessage(data);
     blurAllFields(false);
     return false;
   }
@@ -215,8 +214,13 @@ function comp_fillAvPr200(data) {
 const comp_fillRecom = (data) =>
   (document.querySelector("#company-recom").innerHTML = data.recom || "???");
 
-function comp_fillDesc(data) {
-  const fullText = data.desc || "no description";
+async function comp_fillDesc(data) {
+  let fullText = data.desc || "no description";
+  console.log("starting desc:", fullText);
+  if (fullText === "no description") {
+    console.log("getting desc for ", data.symbol);
+    fullText = await getDescription(data.symbol);
+  }
   const desc = document.querySelector("#company-desc");
   desc.innerHTML = truncate(fullText, 600);
   let collapsed = true;
@@ -229,6 +233,13 @@ function comp_fillDesc(data) {
       collapsed = true;
     }
   });
+}
+
+async function getDescription(ticker) {
+  const response = await fetch(`/DB/desc/${ticker}`);
+  const data = await response.json();
+  console.log(data);
+  return data.description;
 }
 
 function fillFinParams(data) {
@@ -774,5 +785,13 @@ async function getKey() {
     key = data.key;
   }
   return key;
+}
+
+async function stockInfo(ticker) {
+  url = `https://api.polygon.io/v3/reference/tickers/${ticker}?apiKey=MW0_T2p6Y_mAosDpF5dkDzejyh5hQIVN`;
+  const response = await fetch(url);
+  const data = await response.json();
+  console.log(data);
+  return data;
 }
 // -------------------------------------------------------------------------------------------------

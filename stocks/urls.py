@@ -14,7 +14,7 @@ urlpatterns = [
     path("company/<str:name>", views.blank_page, name='companypage refresh'),
 
     # API Routes
-    path("companies/<str:name>", views.company_view, name="company info"),
+    # path("companies/<str:name>", views.company_view, name="company info"),
     path("history/dividend", views.histPost, name="new-dividends"),
     path("change/<int:ident>/<str:newText>",
          views.histChange, name="new-div-title"),
@@ -22,6 +22,7 @@ urlpatterns = [
 
     path('DB/update', views.db_update, name="update company"),
     path('DB/random', views.db_random, name='random comp'),
+    path('DB/desc/<str:ticker>', views.db_desc, name='comp description'),
     path('getKey', views.get_key, name='get API key'),
     path('dataHandler', views.data_handler, name='send comp data to buy/sell'),
 
