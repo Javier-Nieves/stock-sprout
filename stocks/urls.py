@@ -25,6 +25,8 @@ urlpatterns = [
     path('DB/desc/<str:ticker>', views.db_desc, name='comp description'),
     path('getKey', views.get_key, name='get API key'),
     path('dataHandler', views.data_handler, name='send comp data to buy/sell'),
+    path('getTicker/<str:company_name>',
+         views.getTicker, name='Search for ticker'),
 
     # OAuth 2
     path('social/authorize/', views.social_authorize, name='social-authorize'),

@@ -206,7 +206,7 @@ function comp_fillAvPr200(data) {
   }`;
   const targPer = document.querySelector("#comp-target-per");
   targPer.innerHTML = `${potential.toFixed(1)} %`;
-  targPer.classList.add(RedGreenText(potential));
+  targPer.className = `med-text ${RedGreenText(potential)}`;
 }
 
 const comp_fillRecom = (data) =>
@@ -764,11 +764,21 @@ function updateDB(data) {
 }
 
 async function checkComp_US(ticker) {
+  // free version allow only 5 API calls in a minute
+  // russian stocks will be checked first to not spare this 5 calls
+  const ruStock = await checkComp_RU(ticker);
+  if (ruStock) return ruStock;
+  // now we check for US stocks
   const APIkey = await getKey();
   let url = `https://financialmodelingprep.com/api/v3/quote/${ticker}?apikey=${APIkey}`;
   const response = await fetch(url);
-  const data = await response.json();
-  return data[0] || checkComp_RU(ticker);
+  let data = await response.json();
+  if (data[0]) return data[0];
+  else {
+    const realTicker = await getTicker(ticker);
+    if (realTicker) return await checkComp_US(realTicker);
+    else return "no such company";
+  }
 }
 
 async function checkComp_RU(ticker) {
@@ -776,7 +786,7 @@ async function checkComp_RU(ticker) {
   const response = await fetch(url);
   let data = await response.json();
   if (data.marketdata.data.length == 0) {
-    return "No such company";
+    return false;
   }
   let prices, price;
   let i = 0;
@@ -791,13 +801,20 @@ async function checkComp_RU(ticker) {
     }
   }
   const desc = data.securities.data[0];
+  const exchangeRate = await GiveExchangeFor("rub");
   const company = {
     symbol: prices[0],
     name: desc[20],
-    price: price,
+    price: price * exchangeRate,
     market: "MOEX",
   };
   return company;
+}
+
+async function getTicker(name) {
+  const response = await fetch(`getTicker/${name}`);
+  const data = await response.json();
+  return data.ticker;
 }
 
 async function getKey() {
@@ -811,4 +828,11 @@ async function getKey() {
   return key;
 }
 
+async function GiveExchangeFor(currency) {
+  // this API can do much more than this
+  const url = `https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/latest/currencies/${currency}/usd.json`;
+  const response = await fetch(url);
+  const data = await response.json();
+  return data.usd;
+}
 // -------------------------------------------------------------------------------------------------

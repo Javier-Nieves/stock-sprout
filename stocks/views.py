@@ -209,35 +209,21 @@ def get_comp_desc(ticker):
     return data['results']['description']
 
 
-# def GiveExchangeFor(currency):
-#     # this API can do much more than this
-#     try:
-#         url = f'https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/latest/currencies/{currency}/usd.json'
-#         headers = {
-#             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'}
-#         response = requests.get(url, headers=headers)
-#         response.raise_for_status()
-#         return response.json()['usd']
-#     except requests.RequestException:
-#         return None
+def getTicker(request, company_name):  # * look up a ticker for company name entered. Still works
+    yfinance = "https://query2.finance.yahoo.com/v1/finance/search"
+    user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36'
+    params = {"q": company_name, "quotes_count": 1, "country": "United States"}
+    res = requests.get(url=yfinance, params=params,
+                       headers={'User-Agent': user_agent})
+    data = res.json()
+    try:
+        company_code = data['quotes'][0]['symbol']
+    except:
+        company_code = ''
+    return JsonResponse({"ticker": company_code})
 
 
-# # ! look up a ticker for company name entered
-# def getTicker(company_name):
-#     yfinance = "https://query2.finance.yahoo.com/v1/finance/search"
-#     user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36'
-#     params = {"q": company_name, "quotes_count": 1, "country": "United States"}
-#     res = requests.get(url=yfinance, params=params,
-#                        headers={'User-Agent': user_agent})
-#     data = res.json()
-#     try:
-#         company_code = data['quotes'][0]['symbol']
-#     except:
-#         company_code = 'DIV'
-
-#     return company_code
-
-# ? ------------------- login & co ------------------------
+# ? ------------------------------------------- login & co --------------------------------------------
 def auth_check(request):
     return JsonResponse({'LoggedIn': request.user.is_authenticated})
 
