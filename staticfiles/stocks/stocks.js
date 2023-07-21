@@ -158,24 +158,21 @@ async function show_company(compName) {
   if (userLoggedIn())
     document.querySelector("#history-view").style.display = "none";
   blurAllFields(true);
-  let data;
-
+  let data1;
   compName !== "random"
-    ? (data = await checkComp_US(compName))
-    : (data = await getRandomComp());
-
+    ? (data1 = await checkComp_US(compName))
+    : (data1 = await getRandomComp());
   // if no such company:
-  if (typeof data === "string") {
-    ShowMessage(data);
+  if (typeof data1 === "string") {
+    ShowMessage(data1);
     blurAllFields(false);
     return false;
   }
-  comp_fillName(data);
-  comp_fillPrice(data);
-  comp_fillAvPr200(data);
-  comp_fillRecom(data);
-  await comp_fillDesc(data);
-  if (data.market !== "MOEX") await fillFinParams(data);
+  comp_fillName(data1);
+  comp_fillPrice(data1);
+  comp_fillAvPr200(data1);
+  comp_fillRecom(data1);
+  await CheckDBfillData(data1);
   blurAllFields(false);
   updateBrowserHistory(`/company/${compName}`);
 }
@@ -184,6 +181,80 @@ async function getRandomComp() {
   const response = await fetch("/DB/random");
   const data = await response.json();
   return data.comp;
+}
+
+async function CheckDBfillData(data1) {
+  if (data1.market !== "MOEX") {
+    const data2 = await getDBparam(data1.symbol);
+    Object.assign(data2, data1);
+    console.log(data2);
+    await fillFinParams(data2);
+    comp_fillDesc(data2.desc || "no description"); //todo!
+  }
+}
+
+async function getDBparam(ticker) {
+  const response = await fetch(`/DB/param/${ticker}`);
+  const data = await response.json();
+  return data.company;
+}
+
+async function fillFinParams(data) {
+  let company;
+  let today = new Date().toISOString().slice(0, 10);
+  if ("NotInDB" in data || data.updateTime < today) {
+    company = await finParamFromAPI(data.symbol);
+    updateDBbig(company, data);
+  } else company = data;
+
+  const divYield = (company.dividends / data.price) * 100;
+  document.querySelector("#company-pe").innerHTML = company.pe || "-";
+  document.querySelector("#company-fpe").innerHTML = company.fpe || "-";
+  document.querySelector("#company-pb").innerHTML = company.PB || "-";
+  document.querySelector("#company-roe").innerHTML =
+    `${company.ROE * 100} %` || "-";
+  document.querySelector("#company-debt").innerHTML = company.debt || "-";
+  document.querySelector("#company-profitMargins").innerHTML =
+    `${company.profitMargins * 100} %` || "-";
+  document.querySelector("#company-dividends").innerHTML =
+    company.dividends || "-";
+  document.querySelector("#company-dividends-yield").innerHTML =
+    `${divYield.toFixed(2)} %` || "-";
+  if (userLoggedIn())
+    document
+      .querySelector(".big-green-btn")
+      .addEventListener("click", showBuyForm);
+}
+
+async function finParamFromAPI(ticker) {
+  const APIkey = await getKey();
+  let url_params = `https://financialmodelingprep.com/api/v3/ratios/${ticker}?apikey=${APIkey}`;
+  const response_params = await fetch(url_params);
+  const finData = await response_params.json();
+  return {
+    pe: finData[0].priceEarningsRatio?.toFixed(2),
+    fpe: finData[0].priceEarningsToGrowthRatio?.toFixed(2),
+    PB: finData[0].priceToBookRatio?.toFixed(2),
+    ROE: finData[0].returnOnEquity?.toFixed(2),
+    profitMargins: finData[0].netProfitMargin?.toFixed(2),
+    dividends: finData[0].dividendPayoutRatio?.toFixed(2),
+    debt: finData[0].debtEquityRatio?.toFixed(2),
+  };
+}
+
+function comp_fillDesc(fullText) {
+  const desc = document.querySelector("#company-desc");
+  desc.innerHTML = truncate(fullText, 600);
+  let collapsed = true;
+  desc.addEventListener("click", () => {
+    if (collapsed) {
+      desc.innerHTML = fullText;
+      collapsed = false;
+    } else {
+      desc.innerHTML = truncate(fullText, 600);
+      collapsed = true;
+    }
+  });
 }
 
 function comp_fillName(data) {
@@ -214,73 +285,6 @@ function comp_fillAvPr200(data) {
 
 const comp_fillRecom = (data) =>
   (document.querySelector("#company-recom").innerHTML = data.eps || "???");
-
-async function comp_fillDesc(data) {
-  let fullText =
-    data.desc ||
-    (data.market !== "MOEX" && (await getDescription(data.symbol))) ||
-    "No description";
-  const desc = document.querySelector("#company-desc");
-  desc.innerHTML = truncate(fullText, 600);
-  let collapsed = true;
-  desc.addEventListener("click", () => {
-    if (collapsed) {
-      desc.innerHTML = fullText;
-      collapsed = false;
-    } else {
-      desc.innerHTML = truncate(fullText, 600);
-      collapsed = true;
-    }
-  });
-}
-
-async function getDescription(ticker) {
-  const response = await fetch(`/DB/desc/${ticker}`);
-  const data = await response.json();
-  fillLogo(data.picture);
-  return data.description;
-}
-
-function fillLogo(url) {
-  // console.log(url);
-  // it's possible to receive company logo, but it uses additional API call (from 5 in 1 min)
-}
-
-async function fillFinParams(data) {
-  console.log(data);
-  const ticker = data.symbol;
-  console.log(ticker);
-  // get financial parameters for this company
-  const APIkey = "aa0e59ae3e34a1ace7188048088c0dc3"; //! await getKey();
-  let url_params = `https://financialmodelingprep.com/api/v3/ratios/${ticker}?apikey=${APIkey}`;
-  const response_params = await fetch(url_params);
-  const finData = await response_params.json();
-  const pe = finData[0].priceEarningsRatio?.toFixed(2);
-  const fpe = finData[0].priceEarningsToGrowthRatio?.toFixed(2);
-  const profMarg = finData[0].netProfitMargin?.toFixed(2);
-  const divs = finData[0].dividendPayoutRatio?.toFixed(2);
-  const debtToEq = finData[0].debtEquityRatio?.toFixed(2);
-  const PB = finData[0].priceToBookRatio?.toFixed(2);
-  const ROE = finData[0].returnOnEquity?.toFixed(2);
-  // const fairPr = finData[0].priceFairValue.toFixed(2);
-  const divYield = (divs / data.price) * 100;
-  // const roe = data.roe * 100;
-  // const marg = data.profitMargins * 100;
-  document.querySelector("#company-pe").innerHTML = pe || "???";
-  document.querySelector("#company-fpe").innerHTML = fpe || "???";
-  document.querySelector("#company-pb").innerHTML = PB || "???";
-  document.querySelector("#company-roe").innerHTML = `${ROE * 100} %` || "???";
-  document.querySelector("#company-debt").innerHTML = debtToEq || "???";
-  document.querySelector("#company-profitMargins").innerHTML =
-    `${profMarg * 100} %` || "-";
-  document.querySelector("#company-dividends").innerHTML = divs || "???";
-  document.querySelector("#company-dividends-yield").innerHTML =
-    `${divYield.toFixed(2)} %` || "-";
-  if (userLoggedIn())
-    document
-      .querySelector(".big-green-btn")
-      .addEventListener("click", showBuyForm);
-}
 
 function showBuyForm() {
   const buyForm = document.querySelector("#hidden-buy-form");
@@ -726,11 +730,11 @@ async function updateAllPrices() {
     else if (market === "MOEX") tickList_rus.push(ticker);
   }
   tickStr = tickList.join(",");
-  const APIkey = "aa0e59ae3e34a1ace7188048088c0dc3"; //await getKey();
+  const APIkey = await getKey();
   let url = `https://financialmodelingprep.com/api/v3/quote/${tickStr}?apikey=${APIkey}`;
   const response = await fetch(url);
   const data = await response.json();
-  updateDB(data);
+  updateDBsmall(data);
   updateMainTable(rows, data);
   updateMOEXprices(rows, tickList_rus);
   if (userLoggedIn()) fillTopInfo();
@@ -779,21 +783,43 @@ function updateMainTable(rows, data) {
   }
 }
 
-function updateDB(data) {
+function updateDBsmall(data) {
   for (let item of data) {
     fetch(`DB/update`, {
       method: "PUT",
       body: JSON.stringify({
-        day: item.changesPercentage,
-        price: item.price,
         ticker: item.symbol,
         market: item.exchange,
+        day: item.changesPercentage,
+        price: item.price,
         eps: item.eps,
         pe: item.pe,
         priceAvg200: item.priceAvg200,
       }),
     });
   }
+}
+function updateDBbig(data1, data2) {
+  fetch("/DB/financial", {
+    method: "PUT",
+    body: JSON.stringify({
+      ticker: data2.symbol,
+      name: data2.name,
+      changesPercentage: data2.changesPercentage,
+      price: data2.price,
+      market: data2.exchange,
+      avPr200: data2.priceAvg200,
+      eps: data2.eps,
+      pe: data1.pe,
+      fpe: data1.fpe,
+      PB: data1.PB,
+      ROE: data1.ROE,
+      debtToEq: data1.debt,
+      dividends: data1.dividends,
+      profMarg: data1.profitMargins,
+      updateTime: new Date().toISOString().slice(0, 10),
+    }),
+  });
 }
 
 async function checkComp_US(ticker) {
@@ -802,8 +828,7 @@ async function checkComp_US(ticker) {
   const ruStock = await checkComp_RU(ticker);
   if (ruStock) return ruStock;
   // now we check for US stocks
-  // const APIkey = await getKey();
-  const APIkey = "aa0e59ae3e34a1ace7188048088c0dc3"; //test
+  const APIkey = await getKey();
   let url = `https://financialmodelingprep.com/api/v3/quote/${ticker}?apikey=${APIkey}`;
   const response = await fetch(url);
   let data = await response.json();

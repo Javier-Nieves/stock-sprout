@@ -177,6 +177,32 @@ def db_update(request):
 
 
 @csrf_exempt
+def db_update_big(request):
+    if request.method == "PUT":
+        data = json.loads(request.body)
+        ticker = data["ticker"]
+        if Stocks.objects.filter(ticker=ticker).exists():
+            stock = Stocks.objects.get(ticker=ticker)
+        else:
+            stock = Stocks()
+        stock.price = data["price"]
+        stock.day = data["changesPercentage"]
+        stock.avPr200 = data["avPr200"]
+        stock.pe = data["pe"]
+        stock.fpe = data["fpe"]
+        stock.pb = data["PB"]
+        stock.roe = data["ROE"]
+        stock.debt = data["debtToEq"]
+        stock.market = data["market"]
+        stock.eps = data["eps"]
+        stock.divs = data["dividends"]
+        stock.profitMargins = data["profMarg"]
+        stock.updateTime = data['updateTime']
+        stock.save()
+        return JsonResponse({'status': 'ok'})
+
+
+@csrf_exempt
 def db_random(request):
     # function returns company data in JSON form
     StockList = list(Stocks.objects.exclude(company='dividends'))
@@ -185,16 +211,18 @@ def db_random(request):
 
 
 @csrf_exempt
-def db_desc(request, ticker):
+def db_param(request, ticker):
     if Stocks.objects.filter(ticker=ticker).exists():
         stock = Stocks.objects.get(ticker=ticker)
-        description = stock.desc
-        if not description:
-            description = get_comp_desc(ticker)
+        if not stock.desc:
+            stock.desc = get_comp_desc(ticker)
+            stock.save()
+            # todo make better
+        return JsonResponse({"company": stock.serialize()}, status=200)
     else:
-        description = get_comp_desc(ticker)
+        stock = {'symbol': ticker, 'NotInDB': 1}
         # todo - create DB entry for searched company?
-    return JsonResponse({"description": description}, status=200)
+    return JsonResponse({"company": stock}, status=200)
 
 
 def get_comp_desc(ticker):

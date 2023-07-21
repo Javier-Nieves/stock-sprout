@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from datetime import date
 
 
 class User(AbstractUser):
@@ -25,6 +26,8 @@ class Stocks(models.Model):
     targetPrice = models.FloatField(null=True, blank=True)
     recom = models.CharField(max_length=30, null=True, blank=True)
     market = models.CharField(max_length=30, null=True, blank=True)
+    updateTime = models.DateField(
+        default=date(2023, 7, 18), null=True, blank=True)
 
     def serialize(self):  # object.serialize() returns a JSON object
         return {
@@ -38,11 +41,12 @@ class Stocks(models.Model):
             'priceAvg200': self.avPr200,
             'market': self.market,
             "fpe": self.fpe,
-            "pb": self.pb,
+            "PB": self.pb,
             "profitMargins": self.profitMargins,
-            "roe": self.roe,
+            "ROE": self.roe,
             "debt": self.debt,
             "dividends": self.divs,
+            'updateTime': self.updateTime
             # "targetPrice": self.targetPrice,
             # "recom": self.recom
         }

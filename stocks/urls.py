@@ -17,9 +17,10 @@ urlpatterns = [
          views.histChange, name="new-div-title"),
     path('authCheck', views.auth_check, name='is logged in?'),
 
-    path('DB/update', views.db_update, name="update company"),
+    path('DB/update', views.db_update, name="update all comp prices"),
+    path('DB/financial', views.db_update_big, name="update comp params"),
     path('DB/random', views.db_random, name='random comp'),
-    path('DB/desc/<str:ticker>', views.db_desc, name='comp description'),
+    path('DB/param/<str:ticker>', views.db_param, name='comp description'),
     path('getKey', views.get_key, name='get API key'),
     path('dataHandler', views.data_handler, name='send comp data to buy/sell'),
     path('getTicker/<str:company_name>',
