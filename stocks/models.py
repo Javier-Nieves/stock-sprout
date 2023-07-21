@@ -20,12 +20,13 @@ class Stocks(models.Model):
     avPr200 = models.FloatField(null=True, blank=True)
     roe = models.FloatField(null=True, blank=True)
     profitMargins = models.FloatField(null=True, blank=True)
-    divs = models.IntegerField(null=True, blank=True)
+    divs = models.FloatField(null=True, blank=True)
+    debt = models.FloatField(null=True, blank=True)
     targetPrice = models.FloatField(null=True, blank=True)
     recom = models.CharField(max_length=30, null=True, blank=True)
     market = models.CharField(max_length=30, null=True, blank=True)
 
-    def serialize(self):  # object.serialize() now will return a JSON object
+    def serialize(self):  # object.serialize() returns a JSON object
         return {
             "symbol": self.ticker,
             "name": self.company,
@@ -36,12 +37,12 @@ class Stocks(models.Model):
             "eps": self.eps,
             'priceAvg200': self.avPr200,
             'market': self.market,
-            # "fpe": self.fpe,
-            # "pb": self.pb,
-            # "profitMargins": self.profitMargins,
-            # "roe": self.roe,
-            # "debt": self.debt,
-            # "dividends": self.divs,
+            "fpe": self.fpe,
+            "pb": self.pb,
+            "profitMargins": self.profitMargins,
+            "roe": self.roe,
+            "debt": self.debt,
+            "dividends": self.divs,
             # "targetPrice": self.targetPrice,
             # "recom": self.recom
         }

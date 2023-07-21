@@ -194,14 +194,11 @@ def db_desc(request, ticker):
     else:
         description = get_comp_desc(ticker)
         # todo - create DB entry for searched company?
-    return JsonResponse({
-        "description": description
-    }, status=200)
+    return JsonResponse({"description": description}, status=200)
 
 
 def get_comp_desc(ticker):
-    # todo - get logo from this response
-    url = f'https://api.polygon.io/v3/reference/tickers/{ticker}?apiKey={os.environ["API_KEY_DESC"]}'
+    url = f'https://api.polygon.io/v3/reference/tickers/{ticker}?apiKey=MW0_T2p6Y_mAosDpF5dkDzejyh5hQIVN'
     headers = {
         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'}
     response = requests.get(url, headers=headers)

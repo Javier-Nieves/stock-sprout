@@ -159,9 +159,12 @@ async function show_company(compName) {
     document.querySelector("#history-view").style.display = "none";
   blurAllFields(true);
   let data;
+
   compName !== "random"
     ? (data = await checkComp_US(compName))
     : (data = await getRandomComp());
+
+  // if no such company:
   if (typeof data === "string") {
     ShowMessage(data);
     blurAllFields(false);
@@ -170,9 +173,9 @@ async function show_company(compName) {
   comp_fillName(data);
   comp_fillPrice(data);
   comp_fillAvPr200(data);
-  comp_fillDesc(data);
   comp_fillRecom(data);
-  fillFinParams(data);
+  await comp_fillDesc(data);
+  if (data.market !== "MOEX") await fillFinParams(data);
   blurAllFields(false);
   updateBrowserHistory(`/company/${compName}`);
 }
@@ -210,7 +213,7 @@ function comp_fillAvPr200(data) {
 }
 
 const comp_fillRecom = (data) =>
-  (document.querySelector("#company-recom").innerHTML = data.recom || "???");
+  (document.querySelector("#company-recom").innerHTML = data.eps || "???");
 
 async function comp_fillDesc(data) {
   let fullText =
@@ -234,28 +237,45 @@ async function comp_fillDesc(data) {
 async function getDescription(ticker) {
   const response = await fetch(`/DB/desc/${ticker}`);
   const data = await response.json();
+  fillLogo(data.picture);
   return data.description;
 }
 
-function fillFinParams(data) {
-  const roe = data.roe * 100;
-  const divYield = (data.dividends / data.price) * 100;
-  const marg = data.profitMargins * 100;
-  document.querySelector("#company-pe").innerHTML =
-    data.pe?.toFixed(1) || "???";
-  document.querySelector("#company-fpe").innerHTML =
-    data.eps?.toFixed(1) || "???";
-  document.querySelector("#company-pb").innerHTML =
-    data.pb?.toFixed(1) || "???";
-  document.querySelector("#company-roe").innerHTML = roe?.toFixed(1) || "???";
-  document.querySelector("#company-debt").innerHTML =
-    data.debt?.toFixed(2) || "???";
+function fillLogo(url) {
+  // console.log(url);
+  // it's possible to receive company logo, but it uses additional API call (from 5 in 1 min)
+}
+
+async function fillFinParams(data) {
+  console.log(data);
+  const ticker = data.symbol;
+  console.log(ticker);
+  // get financial parameters for this company
+  const APIkey = "aa0e59ae3e34a1ace7188048088c0dc3"; //! await getKey();
+  let url_params = `https://financialmodelingprep.com/api/v3/ratios/${ticker}?apikey=${APIkey}`;
+  const response_params = await fetch(url_params);
+  const finData = await response_params.json();
+  const pe = finData[0].priceEarningsRatio?.toFixed(2);
+  const fpe = finData[0].priceEarningsToGrowthRatio?.toFixed(2);
+  const profMarg = finData[0].netProfitMargin?.toFixed(2);
+  const divs = finData[0].dividendPayoutRatio?.toFixed(2);
+  const debtToEq = finData[0].debtEquityRatio?.toFixed(2);
+  const PB = finData[0].priceToBookRatio?.toFixed(2);
+  const ROE = finData[0].returnOnEquity?.toFixed(2);
+  // const fairPr = finData[0].priceFairValue.toFixed(2);
+  const divYield = (divs / data.price) * 100;
+  // const roe = data.roe * 100;
+  // const marg = data.profitMargins * 100;
+  document.querySelector("#company-pe").innerHTML = pe || "???";
+  document.querySelector("#company-fpe").innerHTML = fpe || "???";
+  document.querySelector("#company-pb").innerHTML = PB || "???";
+  document.querySelector("#company-roe").innerHTML = `${ROE * 100} %` || "???";
+  document.querySelector("#company-debt").innerHTML = debtToEq || "???";
   document.querySelector("#company-profitMargins").innerHTML =
-    marg?.toFixed(1) || "???";
-  document.querySelector("#company-dividends").innerHTML =
-    data.dividends?.toFixed(2) || "???";
+    `${profMarg * 100} %` || "-";
+  document.querySelector("#company-dividends").innerHTML = divs || "???";
   document.querySelector("#company-dividends-yield").innerHTML =
-    divYield?.toFixed(1) || "???";
+    `${divYield.toFixed(2)} %` || "-";
   if (userLoggedIn())
     document
       .querySelector(".big-green-btn")
@@ -697,21 +717,32 @@ async function updateAllPrices() {
   const table = document.getElementById("mainTable").querySelector("tbody");
   const rows = [...table.rows];
   let tickList = [];
+  let tickList_rus = [];
   let tickStr = "";
   for (let [_, row] of rows.entries()) {
     const ticker = row.querySelector("#company-ticker").innerHTML;
     const market = row.querySelector("#company-market").innerHTML;
     if (market != "MOEX" && market != "XETRA") tickList.push(ticker);
+    else if (market === "MOEX") tickList_rus.push(ticker);
   }
   tickStr = tickList.join(",");
-  const APIkey = await getKey();
+  const APIkey = "aa0e59ae3e34a1ace7188048088c0dc3"; //await getKey();
   let url = `https://financialmodelingprep.com/api/v3/quote/${tickStr}?apikey=${APIkey}`;
   const response = await fetch(url);
   const data = await response.json();
-  // console.log(data);
   updateDB(data);
   updateMainTable(rows, data);
+  updateMOEXprices(rows, tickList_rus);
   if (userLoggedIn()) fillTopInfo();
+}
+
+async function updateMOEXprices(rows, tickList_rus) {
+  let data = [];
+  for (let stock of tickList_rus) {
+    const comp = await checkComp_RU(stock);
+    data.push(comp);
+  }
+  updateMainTable(rows, data);
 }
 
 function updateMainTable(rows, data) {
@@ -727,7 +758,9 @@ function updateMainTable(rows, data) {
       if (item.symbol === ticker) {
         const priceToday = quan * item.price;
         const priceOrig = quan * myPrice;
-        day.innerHTML = `${item.changesPercentage.toFixed(2)} %`;
+        day.innerHTML = item.changesPercentage
+          ? `${item.changesPercentage?.toFixed(2)} %`
+          : "";
         price.innerHTML = item.price.toFixed(2);
         sigma.innerHTML = priceToday.toFixed(2);
         const chNum = ((priceToday / priceOrig - 1) * 100).toFixed(2);
@@ -764,12 +797,13 @@ function updateDB(data) {
 }
 
 async function checkComp_US(ticker) {
-  // free version allow only 5 API calls in a minute
-  // russian stocks will be checked first to not spare this 5 calls
+  // free version allow only 250 API calls daily
+  // russian stocks will be checked first to not spend this 250 calls
   const ruStock = await checkComp_RU(ticker);
   if (ruStock) return ruStock;
   // now we check for US stocks
-  const APIkey = await getKey();
+  // const APIkey = await getKey();
+  const APIkey = "aa0e59ae3e34a1ace7188048088c0dc3"; //test
   let url = `https://financialmodelingprep.com/api/v3/quote/${ticker}?apikey=${APIkey}`;
   const response = await fetch(url);
   let data = await response.json();
