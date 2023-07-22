@@ -187,7 +187,7 @@ async function CheckDBfillData(data1) {
   if (data1.market !== "MOEX") {
     const data2 = await getDBparam(data1.symbol);
     Object.assign(data2, data1);
-    console.log(data2);
+    // console.log(data2);
     await fillFinParams(data2);
     comp_fillDesc(data2.desc || "no description"); //todo!
   }
@@ -196,6 +196,7 @@ async function CheckDBfillData(data1) {
 async function getDBparam(ticker) {
   const response = await fetch(`/DB/param/${ticker}`);
   const data = await response.json();
+  console.log(data.company);
   return data.company;
 }
 
@@ -203,9 +204,11 @@ async function fillFinParams(data) {
   let company;
   let today = new Date().toISOString().slice(0, 10);
   if ("NotInDB" in data || data.updateTime < today) {
+    console.log("new data from API for:", data.symbol);
     company = await finParamFromAPI(data.symbol);
     updateDBbig(company, data);
   } else company = data;
+  console.log(company);
 
   const divYield = (company.dividends / data.price) * 100;
   document.querySelector("#company-pe").innerHTML = company.pe || "-";
@@ -805,6 +808,7 @@ function updateDBbig(data1, data2) {
     body: JSON.stringify({
       ticker: data2.symbol,
       name: data2.name,
+      desc: data1.desc,
       changesPercentage: data2.changesPercentage,
       price: data2.price,
       market: data2.exchange,

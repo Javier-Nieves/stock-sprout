@@ -3,7 +3,7 @@
 {% load mathfilters %}
 
 {% block body %}
-    <!-- ! top 4 columns, summary -->
+    <!-- top 4 columns, summary -->
     <div id="summary-row-top" class="summary-row">
         <div id="invested-main">
             <div class="sum-text"> Invested: </div> 
@@ -38,18 +38,16 @@
 
 
 
-<!-- ! portfolio  view -->
+<!-- portfolio  view -->
 <div id="portfolio-view">
     {% if user.is_authenticated %}
         {% if not portfolio.exists %}
             <div class="intro-text">1) Search for a company using it's name or ticker</div>
         {% endif %}
     {% endif %}
-    <!-- ? search + company info + buy/sell -->
+    <!-- search + company info + buy/sell -->
     <div class="top-row">
         <form id="searchForm">
-            <!-- {% csrf_token %} -->
-            <!-- <div class="type-field">{{ search_form }}</div> -->
             <input type="text" class="type-field ticker-inp" id="searchForComp" placeholder="Company">
             <input class="search-btn" id="main-view-search" type="submit" value="Search">
         </form>
@@ -166,7 +164,7 @@
 {% endif %}
 </div>
 
-<!-- ! Company view -->
+<!-- Company view -->
 <div id="company-view" style="display:none;">
         <div class="title-bar">
             <button class="search-btn companies-btn">Random</button>
@@ -258,7 +256,7 @@
 </div>
 
 {% if user.is_authenticated %}
-<!-- ! History view -->
+<!-- History view -->
 <div id="history-view" style="display:none;">
     <div class="title-bar">
         <h1>History</h1>

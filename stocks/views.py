@@ -20,11 +20,9 @@ def index(request, message=""):
     # does user have a portfolio?
     if request.user.is_authenticated:
         user = request.user
-        try:
-            portfolio = Portfolio.objects.get(owner=user)
-        except:
+        if not Portfolio.objects.filter(owner=user).exists():
             Portfolio.objects.create(owner=user)
-            portfolio = Portfolio.objects.get(owner=user)
+        portfolio = Portfolio.objects.get(owner=user)
     else:
         user = User.objects.get(username='tester')
         portfolio = Portfolio.objects.get(owner=user)
@@ -185,6 +183,8 @@ def db_update_big(request):
             stock = Stocks.objects.get(ticker=ticker)
         else:
             stock = Stocks()
+        stock.ticker = data["ticker"]
+        stock.company = data["name"]
         stock.price = data["price"]
         stock.day = data["changesPercentage"]
         stock.avPr200 = data["avPr200"]
@@ -198,6 +198,7 @@ def db_update_big(request):
         stock.divs = data["dividends"]
         stock.profitMargins = data["profMarg"]
         stock.updateTime = data['updateTime']
+        print('db in updated', stock)
         stock.save()
         return JsonResponse({'status': 'ok'})
 
@@ -214,15 +215,11 @@ def db_random(request):
 def db_param(request, ticker):
     if Stocks.objects.filter(ticker=ticker).exists():
         stock = Stocks.objects.get(ticker=ticker)
-        if not stock.desc:
-            stock.desc = get_comp_desc(ticker)
-            stock.save()
-            # todo make better
         return JsonResponse({"company": stock.serialize()}, status=200)
     else:
-        stock = {'symbol': ticker, 'NotInDB': 1}
-        # todo - create DB entry for searched company?
-    return JsonResponse({"company": stock}, status=200)
+        desc = get_comp_desc(ticker)
+        stock = {'symbol': ticker, 'desc': desc, 'NotInDB': 1}
+        return JsonResponse({"company": stock}, status=200)
 
 
 def get_comp_desc(ticker):
