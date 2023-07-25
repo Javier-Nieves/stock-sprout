@@ -1,22 +1,20 @@
 "use strict";
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", loadingSequence);
+
+async function loadingSequence() {
   checkMessages();
-  AuthCheck()
-    .then((answer) => localStorage.setItem("loggedIn", answer))
-    .then(() => {
-      if (userLoggedIn()) {
-        fillTopInfo();
-        activateDivForm();
-      }
-      loadCorrectView();
-      searchFormFunction();
-      updateBtnFunction();
-      capitalizeName();
-      document.addEventListener("click", (event) => handleClicks(event));
-      // browser back button action
-      window.addEventListener("popstate", loadCorrectView);
-    });
-});
+  const loggedIn = await AuthCheck();
+  localStorage.setItem("loggedIn", loggedIn);
+  loadCorrectView();
+  capitalizeName();
+  if (userLoggedIn()) {
+    fillTopInfo();
+    activateDivForm();
+  }
+  document.addEventListener("click", (event) => handleClicks(event));
+  // browser back button action
+  window.addEventListener("popstate", loadCorrectView);
+}
 
 function handleClicks(event) {
   const tar = event.target;
@@ -29,6 +27,22 @@ function handleClicks(event) {
     sortTable(tar);
 }
 
+function loadCorrectView() {
+  Timer("check");
+  let url = window.location.href;
+  if (url.includes("login") && localStorage.getItem("loggedIn")) showingMain();
+  if (url.includes("action") || url.includes("logout") || url.includes("login"))
+    updateBrowserHistory("/");
+  if (url.includes("company")) {
+    // todo - find comp name easiers
+    const location = url.indexOf("company");
+    const company = url.slice(location + 8);
+    show_company(company);
+  }
+  if (url.slice(-7) === "history") showingHistory();
+  if (url.slice(-1) === "/") showingMain();
+}
+
 // -------------------------------------------------------------------------------------------------
 function searchFormFunction() {
   const form = document.querySelector("#searchForm");
@@ -38,7 +52,7 @@ function searchFormFunction() {
     compName != "" && mutateForm(true);
     fillFormWithData(compName.value);
     showActionBtns();
-    document.querySelector("#searchForComp").value = "";
+    compName.value = "";
   });
 }
 
@@ -104,6 +118,8 @@ function showActionBtns() {
 // -------------------------------------------------------------------------------------------------
 function showingMain() {
   updateBrowserHistory("/");
+  searchFormFunction();
+  updateBtnFunction();
   updateAllPrices();
   document.querySelector("#company-view").style.display = "none";
   document.querySelector("#portfolio-view").style.display = "block";
@@ -196,7 +212,6 @@ async function CheckDBfillData(data1) {
 async function getDBparam(ticker) {
   const response = await fetch(`/DB/param/${ticker}`);
   const data = await response.json();
-  console.log(data.company);
   return data.company;
 }
 
@@ -429,6 +444,7 @@ function makeDivCellChangable(HistRow, newEntryId) {
 
 // -------------------------------------------------------------------------------------------------
 function fillTopInfo() {
+  console.log("filling top info");
   const rows = document.querySelectorAll(".table-row");
   let [sum1, sum2, dayCh] = calculateMainParameters(rows);
   let [nowChange, perChange] = calculateSecParameters(sum1, sum2, dayCh);
@@ -480,7 +496,6 @@ function fillEarnProfit(sum1, sum2) {
     earnElem.innerHTML.replaceAll(" ", "").replace("$", "")
   );
   earnElem.innerHTML = moneyFormat(earnings);
-
   let prof = sum2 - sum1 + earnings;
   const profitBox = document.querySelector("#profit");
   profitBox.className = `sum-value ${RedGreenText(prof)}`;
@@ -571,9 +586,7 @@ function truncate(string, length) {
 
 function checkMessages() {
   const message = document.querySelector("#message");
-  if (message !== null) {
-    ShowMessage(message.innerHTML);
-  }
+  if (message !== null) ShowMessage(message.innerHTML); // todo - check if message
 }
 function ShowMessage(text) {
   let url = window.location.href;
@@ -627,37 +640,12 @@ function blurAllFields(bool) {
   });
 }
 
-function loadCorrectView() {
-  Timer("check");
-  let url = window.location.href;
-  if (url.slice(-7) === "history") {
-    showingHistory();
-  }
-  if (url.slice(-1) === "/") {
-    showingMain();
-  }
-  if (
-    url.slice(-6) === "action" ||
-    url.slice(-5) === "login" ||
-    url.slice(-6) === "logout" ||
-    url.slice(-8) === "register"
-  ) {
-    updateBrowserHistory("/");
-  }
-  if (url.includes("company")) {
-    const location = url.indexOf("company");
-    const company = url.slice(location + 8);
-    show_company(company);
-  }
-}
-
 async function AuthCheck() {
-  let status;
   const resp = await fetch(`/authCheck`);
   const data = await resp.json();
-  status = data.LoggedIn;
-  return status;
+  return data.LoggedIn;
 }
+
 const userLoggedIn = () => localStorage.getItem("loggedIn") === "true";
 
 function Timer(action) {
@@ -806,21 +794,21 @@ function updateDBbig(data1, data2) {
   fetch("/DB/financial", {
     method: "PUT",
     body: JSON.stringify({
-      ticker: data2.symbol,
-      name: data2.name,
-      desc: data1.desc,
-      changesPercentage: data2.changesPercentage,
-      price: data2.price,
-      market: data2.exchange,
-      avPr200: data2.priceAvg200,
-      eps: data2.eps,
-      pe: data1.pe,
-      fpe: data1.fpe,
-      PB: data1.PB,
-      ROE: data1.ROE,
-      debtToEq: data1.debt,
-      dividends: data1.dividends,
-      profMarg: data1.profitMargins,
+      ticker: data2.symbol || 0,
+      name: data2.name || 0,
+      desc: data1.desc || 0,
+      changesPercentage: data2.changesPercentage || 0,
+      price: data2.price || 0,
+      market: data2.exchange || 0,
+      avPr200: data2.priceAvg200 || 0,
+      eps: data2.eps || 0,
+      pe: data1.pe || 0,
+      fpe: data1.fpe || 0,
+      PB: data1.PB || 0,
+      ROE: data1.ROE || 0,
+      debtToEq: data1.debt || 0,
+      dividends: data1.dividends || 0,
+      profMarg: data1.profitMargins || 0,
       updateTime: new Date().toISOString().slice(0, 10),
     }),
   });
@@ -875,7 +863,7 @@ async function checkComp_RU(ticker) {
 }
 
 async function getTicker(name) {
-  const response = await fetch(`getTicker/${name}`);
+  const response = await fetch(`/getTicker/${name}`);
   const data = await response.json();
   return data.ticker;
 }

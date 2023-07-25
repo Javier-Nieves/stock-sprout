@@ -228,7 +228,10 @@ def get_comp_desc(ticker):
         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'}
     response = requests.get(url, headers=headers)
     data = response.json()
-    return data['results']['description']
+    try:
+        return data['results']['description']
+    except:
+        return False
 
 
 def getTicker(request, company_name):  # * look up a ticker for company name entered. Still works
@@ -252,12 +255,10 @@ def auth_check(request):
 
 def login_view(request):
     if request.method == "POST":
-
         # * Attempt to sign user in
         username = request.POST["username"].lower()
         password = request.POST["password"]
         user = authenticate(request, username=username, password=password)
-
         # * Check if authentication is successful
         if user is not None:
             login(request, user)
