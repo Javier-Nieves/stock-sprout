@@ -61,8 +61,8 @@ def indexPost(request):
                 Stocks.objects.get(ticker=ticker)
             except:
                 # create Stock db entry
-                Stocks.objects.create(ticker=ticker, company=data['name'], day=data['day'], price=data['price'],
-                                      pe=data['pe'], avPr200=data['priceAvg200'], market=data['market'], eps=data['eps'])
+                Stocks.objects.create(
+                    ticker=ticker, company=data['name'], day=data['day'], price=data['price'], market=data['market'])
             # does User already have this stock?
             stock = Stocks.objects.get(ticker=ticker)
             if not stock in portfolio.stock.all():
@@ -162,76 +162,30 @@ def blank_page(request, name=''):
 def db_update(request):
     if request.method == "PUT":
         data = json.loads(request.body)
-        ticker = data["ticker"]
-        stock = Stocks.objects.get(ticker=ticker)
+        stock = Stocks.objects.get(ticker=data["ticker"])
         stock.price = data["price"]
         stock.day = data["day"]
-        stock.pe = data["pe"]
-        stock.market = data["market"]
-        stock.avPr200 = data["priceAvg200"]
-        stock.eps = data["eps"]
-        stock.save()
-        return JsonResponse({'status': 'ok'})
-
-
-@csrf_exempt
-def db_update_big(request):
-    if request.method == "PUT":
-        data = json.loads(request.body)
-        ticker = data["ticker"]
-        if Stocks.objects.filter(ticker=ticker).exists():
-            stock = Stocks.objects.get(ticker=ticker)
-        else:
-            stock = Stocks()
-        stock.ticker = data["ticker"]
-        stock.company = data["name"]
-        stock.price = data["price"]
-        stock.day = data["changesPercentage"]
-        stock.avPr200 = data["avPr200"]
-        stock.pe = data["pe"]
-        stock.fpe = data["fpe"]
-        stock.pb = data["PB"]
-        stock.roe = data["ROE"]
-        stock.debt = data["debtToEq"]
-        stock.market = data["market"]
-        stock.eps = data["eps"]
-        stock.divs = data["dividends"]
-        stock.profitMargins = data["profMarg"]
-        stock.updateTime = data['updateTime']
-        print('db in updated', stock)
         stock.save()
         return JsonResponse({'status': 'ok'})
 
 
 @csrf_exempt
 def db_random(request):
-    # function returns company data in JSON form
     StockList = list(Stocks.objects.exclude(company='dividends'))
-    comp = random.choice(StockList).serialize()
-    return JsonResponse({"comp": comp}, status=200)
+    randomTicker = random.choice(StockList).ticker
+    return JsonResponse({"randomTicker": randomTicker}, status=200)
 
 
-@csrf_exempt
-def db_param(request, ticker):
-    if Stocks.objects.filter(ticker=ticker).exists():
-        stock = Stocks.objects.get(ticker=ticker)
-        return JsonResponse({"company": stock.serialize()}, status=200)
-    else:
-        desc = get_comp_desc(ticker)
-        stock = {'symbol': ticker, 'desc': desc, 'NotInDB': 1}
-        return JsonResponse({"company": stock}, status=200)
-
-
-def get_comp_desc(ticker):
+def get_comp_desc(request, ticker):
     url = f'https://api.polygon.io/v3/reference/tickers/{ticker}?apiKey=MW0_T2p6Y_mAosDpF5dkDzejyh5hQIVN'
     headers = {
         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'}
     response = requests.get(url, headers=headers)
     data = response.json()
     try:
-        return data['results']['description']
+        return JsonResponse({"desc": data['results']['description']}, status=200)
     except:
-        return False
+        return JsonResponse({"desc": 'No description'}, status=200)
 
 
 def getTicker(request, company_name):  # * look up a ticker for company name entered. Still works

@@ -14,20 +14,20 @@ class Stocks(models.Model):
     day = models.FloatField(null=True, blank=True)
     desc = models.TextField(max_length=1500, default="None", null=True)
     price = models.FloatField(null=True, blank=True)
-    pe = models.FloatField(null=True, blank=True)
-    fpe = models.FloatField(null=True, blank=True)
-    pb = models.FloatField(null=True, blank=True)
-    eps = models.FloatField(null=True, blank=True)
-    avPr200 = models.FloatField(null=True, blank=True)
-    roe = models.FloatField(null=True, blank=True)
-    profitMargins = models.FloatField(null=True, blank=True)
-    divs = models.FloatField(null=True, blank=True)
-    debt = models.FloatField(null=True, blank=True)
-    targetPrice = models.FloatField(null=True, blank=True)
-    recom = models.CharField(max_length=30, null=True, blank=True)
     market = models.CharField(max_length=30, null=True, blank=True)
-    updateTime = models.DateField(
-        default=date(2023, 7, 18), null=True, blank=True)
+    # pe = models.FloatField(null=True, blank=True)
+    # fpe = models.FloatField(null=True, blank=True)
+    # pb = models.FloatField(null=True, blank=True)
+    # eps = models.FloatField(null=True, blank=True)
+    # avPr200 = models.FloatField(null=True, blank=True)
+    # roe = models.FloatField(null=True, blank=True)
+    # profitMargins = models.FloatField(null=True, blank=True)
+    # divs = models.FloatField(null=True, blank=True)
+    # debt = models.FloatField(null=True, blank=True)
+    # targetPrice = models.FloatField(null=True, blank=True)
+    # recom = models.CharField(max_length=30, null=True, blank=True)
+    # updateTime = models.DateField(
+    #     default=date(2023, 7, 18), null=True, blank=True)
 
     def serialize(self):  # object.serialize() returns a JSON object
         return {
@@ -36,17 +36,17 @@ class Stocks(models.Model):
             "changesPercentage": self.day,
             "desc": self.desc,
             "price": self.price,
-            "pe": self.pe,
-            "eps": self.eps,
-            'priceAvg200': self.avPr200,
             'market': self.market,
-            "fpe": self.fpe,
-            "PB": self.pb,
-            "profitMargins": self.profitMargins,
-            "ROE": self.roe,
-            "debt": self.debt,
-            "dividends": self.divs,
-            'updateTime': self.updateTime
+            # "pe": self.pe,
+            # "eps": self.eps,
+            # 'priceAvg200': self.avPr200,
+            # "fpe": self.fpe,
+            # "PB": self.pb,
+            # "profitMargins": self.profitMargins,
+            # "ROE": self.roe,
+            # "debt": self.debt,
+            # "dividends": self.divs,
+            # 'updateTime': self.updateTime
             # "targetPrice": self.targetPrice,
             # "recom": self.recom
         }

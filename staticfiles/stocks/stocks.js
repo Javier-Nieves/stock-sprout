@@ -7,7 +7,7 @@ async function loadingSequence() {
   localStorage.setItem("loggedIn", loggedIn);
   loadCorrectView();
   capitalizeName();
-  if (userLoggedIn()) {
+  if (loggedIn) {
     fillTopInfo();
     activateDivForm();
   }
@@ -30,15 +30,16 @@ function handleClicks(event) {
 function loadCorrectView() {
   Timer("check");
   let url = window.location.href;
-  if (url.includes("login") && localStorage.getItem("loggedIn")) showingMain();
-  if (url.includes("action") || url.includes("logout") || url.includes("login"))
+  if (
+    url.includes("action") ||
+    url.includes("logout") ||
+    url.includes("login")
+  ) {
     updateBrowserHistory("/");
-  if (url.includes("company")) {
-    // todo - find comp name easiers
-    const location = url.indexOf("company");
-    const company = url.slice(location + 8);
-    show_company(company);
+    localStorage.getItem("loggedIn") && showingMain();
   }
+  if (url.includes("company"))
+    show_company(url.slice(url.lastIndexOf("/") + 1));
   if (url.slice(-7) === "history") showingHistory();
   if (url.slice(-1) === "/") showingMain();
 }
@@ -174,74 +175,70 @@ async function show_company(compName) {
   if (userLoggedIn())
     document.querySelector("#history-view").style.display = "none";
   blurAllFields(true);
-  let data1;
-  compName !== "random"
-    ? (data1 = await checkComp_US(compName))
-    : (data1 = await getRandomComp());
+  let data;
+  compName === "random" && (compName = await getRandomTicker());
+  data = await checkComp_US(compName);
   // if no such company:
-  if (typeof data1 === "string") {
-    ShowMessage(data1);
+  if (typeof data === "string") {
+    ShowMessage(data);
     blurAllFields(false);
-    return false;
+    return;
   }
-  comp_fillName(data1);
-  comp_fillPrice(data1);
-  comp_fillAvPr200(data1);
-  comp_fillRecom(data1);
-  await CheckDBfillData(data1);
+  comp_fillName(data);
+  comp_fillPrice(data);
+  comp_fillAvPr200(data);
+  await comp_fillRest(data);
   blurAllFields(false);
   updateBrowserHistory(`/company/${compName}`);
 }
 
-async function getRandomComp() {
+async function getRandomTicker() {
   const response = await fetch("/DB/random");
   const data = await response.json();
-  return data.comp;
+  return data.randomTicker;
 }
 
-async function CheckDBfillData(data1) {
-  if (data1.market !== "MOEX") {
-    const data2 = await getDBparam(data1.symbol);
-    Object.assign(data2, data1);
-    // console.log(data2);
-    await fillFinParams(data2);
-    comp_fillDesc(data2.desc || "no description"); //todo!
-  }
+async function comp_fillRest(data) {
+  data.market !== "MOEX" && (data.desc = await getDescription(data.symbol));
+  fillFinParams(data);
+  document.querySelector("#company-eps").innerHTML = data.eps || "-";
+  comp_fillDesc(data.desc || "No description");
 }
 
-async function getDBparam(ticker) {
-  const response = await fetch(`/DB/param/${ticker}`);
+async function getDescription(ticker) {
+  const response = await fetch(`/getDesc/${ticker}`);
   const data = await response.json();
-  return data.company;
+  return data.desc;
 }
 
 async function fillFinParams(data) {
-  let company;
-  let today = new Date().toISOString().slice(0, 10);
-  if ("NotInDB" in data || data.updateTime < today) {
-    console.log("new data from API for:", data.symbol);
-    company = await finParamFromAPI(data.symbol);
-    updateDBbig(company, data);
-  } else company = data;
-  console.log(company);
+  const allFields = document.querySelectorAll(".finParam");
+  allFields.forEach((field) => {
+    field.innerHTML = "";
+  });
+  if (data.market === "MOEX") return;
+  const pe = document.querySelector("#company-pe");
+  const fpe = document.querySelector("#company-fpe");
+  const pb = document.querySelector("#company-pb");
+  const roe = document.querySelector("#company-roe");
+  const debt = document.querySelector("#company-debt");
+  const profitMargins = document.querySelector("#company-profitMargins");
+  const dividends = document.querySelector("#company-dividends");
+  const divPer = document.querySelector("#company-dividends-yield");
+  const button = document.querySelector(".big-green-btn");
 
+  const company = await finParamFromAPI(data.symbol);
+  // todo - add checks
   const divYield = (company.dividends / data.price) * 100;
-  document.querySelector("#company-pe").innerHTML = company.pe || "-";
-  document.querySelector("#company-fpe").innerHTML = company.fpe || "-";
-  document.querySelector("#company-pb").innerHTML = company.PB || "-";
-  document.querySelector("#company-roe").innerHTML =
-    `${company.ROE * 100} %` || "-";
-  document.querySelector("#company-debt").innerHTML = company.debt || "-";
-  document.querySelector("#company-profitMargins").innerHTML =
-    `${company.profitMargins * 100} %` || "-";
-  document.querySelector("#company-dividends").innerHTML =
-    company.dividends || "-";
-  document.querySelector("#company-dividends-yield").innerHTML =
-    `${divYield.toFixed(2)} %` || "-";
-  if (userLoggedIn())
-    document
-      .querySelector(".big-green-btn")
-      .addEventListener("click", showBuyForm);
+  pe.innerHTML = company.pe || "-";
+  fpe.innerHTML = company.fpe || "-";
+  pb.innerHTML = company.PB || "-";
+  roe.innerHTML = `${company.ROE * 100} %` || "-";
+  debt.innerHTML = company.debt || "-";
+  profitMargins.innerHTML = `${company.profitMargins * 100} %` || "-";
+  dividends.innerHTML = company.dividends || "-";
+  divPer.innerHTML = `${divYield.toFixed(2)} %` || "-";
+  if (userLoggedIn()) button.addEventListener("click", showBuyForm);
 }
 
 async function finParamFromAPI(ticker) {
@@ -284,25 +281,22 @@ function comp_fillName(data) {
 }
 function comp_fillPrice(data) {
   document.querySelector("#res-comp-price").innerHTML = `$ ${
-    data.price.toFixed(2) || "???"
+    data.price.toFixed(2) || "-"
   }`;
   const resComDay = document.querySelector("#res-comp-day");
   const valuePer = data.changesPercentage?.toFixed(1);
-  resComDay.innerHTML = `${valuePer || "???"} % `;
+  resComDay.innerHTML = `${valuePer || "-"} % `;
   resComDay.className = `med-text ${RedGreenText(valuePer)}`;
 }
 function comp_fillAvPr200(data) {
   let potential = (data.priceAvg200 / data.price - 1) * 100 ?? 0;
   document.querySelector("#comp-target-dol").innerHTML = `$ ${
-    data.priceAvg200?.toFixed(2) || "???"
+    data.priceAvg200?.toFixed(2) || "-"
   }`;
   const targPer = document.querySelector("#comp-target-per");
   targPer.innerHTML = `${potential.toFixed(1)} %`;
   targPer.className = `med-text ${RedGreenText(potential)}`;
 }
-
-const comp_fillRecom = (data) =>
-  (document.querySelector("#company-recom").innerHTML = data.eps || "???");
 
 function showBuyForm() {
   const buyForm = document.querySelector("#hidden-buy-form");
@@ -444,7 +438,6 @@ function makeDivCellChangable(HistRow, newEntryId) {
 
 // -------------------------------------------------------------------------------------------------
 function fillTopInfo() {
-  console.log("filling top info");
   const rows = document.querySelectorAll(".table-row");
   let [sum1, sum2, dayCh] = calculateMainParameters(rows);
   let [nowChange, perChange] = calculateSecParameters(sum1, sum2, dayCh);
@@ -725,7 +718,7 @@ async function updateAllPrices() {
   let url = `https://financialmodelingprep.com/api/v3/quote/${tickStr}?apikey=${APIkey}`;
   const response = await fetch(url);
   const data = await response.json();
-  updateDBsmall(data);
+  updateDB(data);
   updateMainTable(rows, data);
   updateMOEXprices(rows, tickList_rus);
   if (userLoggedIn()) fillTopInfo();
@@ -774,44 +767,17 @@ function updateMainTable(rows, data) {
   }
 }
 
-function updateDBsmall(data) {
+function updateDB(data) {
   for (let item of data) {
     fetch(`DB/update`, {
       method: "PUT",
       body: JSON.stringify({
         ticker: item.symbol,
-        market: item.exchange,
         day: item.changesPercentage,
         price: item.price,
-        eps: item.eps,
-        pe: item.pe,
-        priceAvg200: item.priceAvg200,
       }),
     });
   }
-}
-function updateDBbig(data1, data2) {
-  fetch("/DB/financial", {
-    method: "PUT",
-    body: JSON.stringify({
-      ticker: data2.symbol || 0,
-      name: data2.name || 0,
-      desc: data1.desc || 0,
-      changesPercentage: data2.changesPercentage || 0,
-      price: data2.price || 0,
-      market: data2.exchange || 0,
-      avPr200: data2.priceAvg200 || 0,
-      eps: data2.eps || 0,
-      pe: data1.pe || 0,
-      fpe: data1.fpe || 0,
-      PB: data1.PB || 0,
-      ROE: data1.ROE || 0,
-      debtToEq: data1.debt || 0,
-      dividends: data1.dividends || 0,
-      profMarg: data1.profitMargins || 0,
-      updateTime: new Date().toISOString().slice(0, 10),
-    }),
-  });
 }
 
 async function checkComp_US(ticker) {
@@ -828,7 +794,7 @@ async function checkComp_US(ticker) {
   else {
     const realTicker = await getTicker(ticker);
     if (realTicker) return await checkComp_US(realTicker);
-    else return "no such company";
+    else return "No such company";
   }
 }
 
