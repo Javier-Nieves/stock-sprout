@@ -782,7 +782,7 @@ function updateDB(data) {
 
 async function checkComp_US(ticker) {
   // free version allow only 250 API calls daily
-  // russian stocks will be checked first to not spend this 250 calls
+  // MOEX stocks will be checked first to not spend this 250 calls
   const ruStock = await checkComp_RU(ticker);
   if (ruStock) return ruStock;
   // now we check for US stocks
@@ -802,26 +802,13 @@ async function checkComp_RU(ticker) {
   let url = `https://iss.moex.com/iss/engines/stock/markets/shares/securities/${ticker}.json`;
   const response = await fetch(url);
   let data = await response.json();
-  if (data.marketdata.data.length == 0) {
-    return false;
-  }
-  let prices, price;
-  let i = 0;
-  while (data.marketdata.data[i][1] !== "TQBR") {
-    i++;
-    prices = data.marketdata.data[i];
-  }
-  for (let [n, item] of prices.entries()) {
-    if (typeof item === "number" && item !== 0) {
-      price = prices[n];
-      break;
-    }
-  }
-  const desc = data.securities.data[0];
+  if (data.marketdata.data.length == 0) return false;
+  const prices = data.marketdata.data.find((elem) => elem.includes("TQBR"));
+  const price = prices.find((item) => typeof item === "number" && item !== 0);
   const exchangeRate = await GiveExchangeFor("rub");
   const company = {
     symbol: prices[0],
-    name: desc[20],
+    name: data.securities.data[0][20],
     price: price * exchangeRate,
     market: "MOEX",
   };
