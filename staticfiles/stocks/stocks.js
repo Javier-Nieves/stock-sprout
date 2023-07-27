@@ -74,7 +74,7 @@ async function fillFormWithData(compName) {
   const PE = document.querySelector("#search-display-PE");
   const avPr200 = document.querySelector("#search-display-avPr200");
   const hidTicker = document.querySelector("#hidden-ticker");
-  let data = await checkComp_US(compName);
+  let data = await checkComp(compName);
   if (typeof data !== "string") {
     name.innerHTML = data.name;
     price.innerHTML = `$ ${data.price.toFixed(2)}`;
@@ -177,7 +177,7 @@ async function show_company(compName) {
   blurAllFields(true);
   let data;
   compName === "random" && (compName = await getRandomTicker());
-  data = await checkComp_US(compName);
+  data = await checkComp(compName);
   // if no such company:
   if (typeof data === "string") {
     ShowMessage(data);
@@ -311,7 +311,6 @@ function showingHistory() {
   document.querySelector("#summary-row-top").style.display = "flex";
   document.querySelector("#history-view").style.display = "block";
   document.querySelector("#company-view").style.display = "none";
-
   let HistRows = document.querySelectorAll(".hist-row");
   HistRows.forEach((Row) => {
     changeHistRow(Row);
@@ -448,11 +447,9 @@ function fillTopInfo() {
 }
 
 function calculateMainParameters(rows) {
-  let sum1 = 0,
-    sum2 = 0,
-    dayCh = 0;
+  let sum1, sum2, dayCh, dayOne;
+  sum1 = sum2 = dayCh = 0;
   rows.forEach((row) => {
-    let dayOne;
     let myPr = parseFloat(row.querySelector(".my-price-row").innerHTML);
     let Qu = parseFloat(row.querySelector(".quantity-row").innerHTML);
     let Si = parseFloat(row.querySelector(".sigma-row").innerHTML);
@@ -495,11 +492,10 @@ function fillEarnProfit(sum1, sum2) {
   profitBox.innerHTML = moneyFormat(prof);
 }
 
-function fillMainBlock(sum1) {
-  document
+const fillMainBlock = (sum1) =>
+  (document
     .querySelector("#invested-main")
-    .querySelector(".sum-value").innerHTML = moneyFormat(sum1);
-}
+    .querySelector(".sum-value").innerHTML = moneyFormat(sum1));
 
 // -------------------------------------------------------------------------------------------------
 function sortTable(tar) {
@@ -726,10 +722,7 @@ async function updateAllPrices() {
 
 async function updateMOEXprices(rows, tickList_rus) {
   let data = [];
-  for (let stock of tickList_rus) {
-    const comp = await checkComp_RU(stock);
-    data.push(comp);
-  }
+  for (let stock of tickList_rus) data.push(await checkComp_RU(stock));
   updateMainTable(rows, data);
 }
 
@@ -754,7 +747,7 @@ function updateMainTable(rows, data) {
         const chNum = ((priceToday / priceOrig - 1) * 100).toFixed(2);
         change.innerHTML = `${chNum} %`;
         const animateList = [price, sigma, change, day];
-        for (let elem of animateList) elem.classList.add("animate");
+        animateList.forEach((elem) => elem.classList.add("animate"));
         setTimeout(function () {
           price.className = "market-price";
           sigma.className = "sigma-row";
@@ -780,7 +773,7 @@ function updateDB(data) {
   }
 }
 
-async function checkComp_US(ticker) {
+async function checkComp(ticker) {
   // free version allow only 250 API calls daily
   // MOEX stocks will be checked first to not spend this 250 calls
   const ruStock = await checkComp_RU(ticker);
@@ -793,7 +786,7 @@ async function checkComp_US(ticker) {
   if (data[0]) return data[0];
   else {
     const realTicker = await getTicker(ticker);
-    if (realTicker) return await checkComp_US(realTicker);
+    if (realTicker) return await checkComp(realTicker);
     else return "No such company";
   }
 }
@@ -808,9 +801,10 @@ async function checkComp_RU(ticker) {
   const exchangeRate = await GiveExchangeFor("rub");
   const company = {
     symbol: prices[0],
+    changesPercentage: null,
     name: data.securities.data[0][20],
     price: price * exchangeRate,
-    market: "MOEX",
+    exchange: "MOEX",
   };
   return company;
 }
@@ -839,4 +833,3 @@ async function GiveExchangeFor(currency) {
   const data = await response.json();
   return data.usd;
 }
-// -------------------------------------------------------------------------------------------------

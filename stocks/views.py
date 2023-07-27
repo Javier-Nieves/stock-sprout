@@ -61,6 +61,7 @@ def indexPost(request):
                 Stocks.objects.get(ticker=ticker)
             except:
                 # create Stock db entry
+                print(data)
                 Stocks.objects.create(
                     ticker=ticker, company=data['name'], day=data['day'], price=data['price'], market=data['market'])
             # does User already have this stock?
@@ -118,6 +119,7 @@ def indexPost(request):
 def data_handler(request):
     data = json.loads(request.body)
     request.session['comp_data'] = data
+    print('handler data ', data)
     return JsonResponse({
         "message": "data received"
     }, status=200)
