@@ -90,7 +90,8 @@ async function fillFormWithData(compName) {
 }
 
 function sendStockToServer(data) {
-  fetch("dataHandler", {
+  console.log("sending to server ", data);
+  fetch("/dataHandler", {
     method: "POST",
     body: JSON.stringify({
       ticker: data.symbol,
@@ -175,9 +176,8 @@ async function show_company(compName) {
   if (userLoggedIn())
     document.querySelector("#history-view").style.display = "none";
   blurAllFields(true);
-  let data;
   compName === "random" && (compName = await getRandomTicker());
-  data = await checkComp(compName);
+  let data = await checkComp(compName);
   // if no such company:
   if (typeof data === "string") {
     ShowMessage(data);
@@ -199,7 +199,7 @@ async function getRandomTicker() {
 }
 
 async function comp_fillRest(data) {
-  data.market !== "MOEX" && (data.desc = await getDescription(data.symbol));
+  data.exchange !== "MOEX" && (data.desc = await getDescription(data.symbol));
   fillFinParams(data);
   document.querySelector("#company-eps").innerHTML = data.eps || "-";
   comp_fillDesc(data.desc || "No description");
@@ -216,7 +216,7 @@ async function fillFinParams(data) {
   allFields.forEach((field) => {
     field.innerHTML = "";
   });
-  if (data.market === "MOEX") return;
+  if (data.exchange === "MOEX") return;
   const pe = document.querySelector("#company-pe");
   const fpe = document.querySelector("#company-fpe");
   const pb = document.querySelector("#company-pb");
@@ -238,7 +238,8 @@ async function fillFinParams(data) {
   profitMargins.innerHTML = `${company.profitMargins * 100} %` || "-";
   dividends.innerHTML = company.dividends || "-";
   divPer.innerHTML = `${divYield.toFixed(2)} %` || "-";
-  if (userLoggedIn()) button.addEventListener("click", showBuyForm);
+  if (userLoggedIn())
+    button.addEventListener("click", () => activateBuyForm(data.symbol));
 }
 
 async function finParamFromAPI(ticker) {
@@ -262,13 +263,8 @@ function comp_fillDesc(fullText) {
   desc.innerHTML = truncate(fullText, 600);
   let collapsed = true;
   desc.addEventListener("click", () => {
-    if (collapsed) {
-      desc.innerHTML = fullText;
-      collapsed = false;
-    } else {
-      desc.innerHTML = truncate(fullText, 600);
-      collapsed = true;
-    }
+    desc.innerHTML = collapsed ? fullText : truncate(fullText, 600);
+    collapsed = !collapsed;
   });
 }
 
@@ -289,7 +285,8 @@ function comp_fillPrice(data) {
   resComDay.className = `med-text ${RedGreenText(valuePer)}`;
 }
 function comp_fillAvPr200(data) {
-  let potential = (data.priceAvg200 / data.price - 1) * 100 ?? 0;
+  let potential = (data.priceAvg200 / data.price - 1) * 100 || 0;
+  console.log(potential);
   document.querySelector("#comp-target-dol").innerHTML = `$ ${
     data.priceAvg200?.toFixed(2) || "-"
   }`;
@@ -298,7 +295,9 @@ function comp_fillAvPr200(data) {
   targPer.className = `med-text ${RedGreenText(potential)}`;
 }
 
-function showBuyForm() {
+async function activateBuyForm(ticker) {
+  let data = await checkComp(ticker);
+  sendStockToServer(data);
   const buyForm = document.querySelector("#hidden-buy-form");
   document.querySelector(".big-green-btn").style.display = "none";
   buyForm.style.display = "block";
@@ -414,7 +413,7 @@ function updateProfits(amount) {
     let profitValue = parseInt(
       value.innerHTML.replace("$", "").replaceAll(" ", "")
     );
-    let newValue = profitValue + Math.round(Number(amount));
+    let newValue = profitValue + Math.round(+amount);
     value.innerHTML = moneyFormat(newValue);
   });
 }
@@ -437,8 +436,7 @@ function makeDivCellChangable(HistRow, newEntryId) {
 
 // -------------------------------------------------------------------------------------------------
 function fillTopInfo() {
-  const rows = document.querySelectorAll(".table-row");
-  let { sum1, sum2, dayCh } = calculateMainParameters(rows);
+  let { sum1, sum2, dayCh } = calculateMainParameters();
   let [nowChange, perChange] = calculateSecParameters(sum1, sum2, dayCh);
   fillMainBlock(sum1);
   fillChangeBlock("#nowChange", sum2, nowChange);
@@ -446,29 +444,27 @@ function fillTopInfo() {
   fillEarnProfit(sum1, sum2);
 }
 
-function calculateMainParameters(rows) {
+function calculateMainParameters() {
+  const rows = document.querySelectorAll(".table-row");
   const parameters = Array.from(rows).reduce(
     (params, row) => {
-      const myPr = Number(row.querySelector(".my-price-row").innerHTML);
-      const Qu = Number(row.querySelector(".quantity-row").innerHTML);
-      const Si = Number(row.querySelector(".sigma-row").innerHTML);
+      const myPr = +row.querySelector(".my-price-row").innerHTML;
+      const Qu = +row.querySelector(".quantity-row").innerHTML;
+      const Si = +row.querySelector(".sigma-row").innerHTML;
       const dayOne = parseFloat(row.querySelector("#day-one").innerHTML) || 0;
-      params.sum1 += myPr * Qu; // money originally paid for all stocks
-      params.sum2 += Si; // actual money in stocks now
-      params.dayCh += (Si * dayOne) / 100; // day change in dollars for every stock combined
+      params.sum1 += Math.trunc(myPr * Qu); // money originally paid for all stocks
+      params.sum2 += Math.trunc(Si); // actual money in stocks now
+      params.dayCh += Math.trunc((Si * dayOne) / 100); // day change in dollars for every stock combined
       return params;
     },
     { sum1: 0, sum2: 0, dayCh: 0 }
   );
-  parameters.sum1 = parameters.sum1.toFixed();
-  parameters.sum2 = parameters.sum2.toFixed();
-  parameters.dayCh = parameters.dayCh.toFixed();
   return parameters;
 }
 
 function calculateSecParameters(sum1, sum2, dayCh) {
-  let nowChange = Number(((sum2 / sum1 - 1) * 100).toFixed(2)) || 0;
-  let perChange = Number(((dayCh / sum2) * 100).toFixed(2)) || 0;
+  let nowChange = +((sum2 / sum1 - 1) * 100).toFixed(2) || 0;
+  let perChange = +((dayCh / sum2) * 100).toFixed(2) || 0;
   return [nowChange, perChange];
 }
 
@@ -484,9 +480,7 @@ function fillChangeBlock(where, value1, value2) {
 
 function fillEarnProfit(sum1, sum2) {
   const earnElem = document.querySelector("#earnings");
-  let earnings = Number(
-    earnElem.innerHTML.replaceAll(" ", "").replace("$", "")
-  );
+  let earnings = +earnElem.innerHTML.replaceAll(" ", "").replace("$", "");
   earnElem.innerHTML = moneyFormat(earnings);
   let prof = sum2 - sum1 + earnings;
   const profitBox = document.querySelector("#profit");
@@ -507,9 +501,10 @@ function sortTable(tar) {
   const crit = determineSortParameter(whichSort);
   const rowMap = new Map();
   for (let [i, row] of Array.from(table.rows).entries()) {
-    const param = Number(
-      row.querySelector(crit)?.innerHTML.replaceAll(" ", "").replace("%", "")
-    );
+    const param = +row
+      .querySelector(crit)
+      ?.innerHTML.replaceAll(" ", "")
+      .replace("%", "");
     rowMap.set(param, row);
   }
   const sortedArray = Array.from(rowMap);
@@ -528,7 +523,6 @@ function sortTable(tar) {
   // switch classes after sorting in the main table
   if (whichSort.includes("Up")) tar.classList.replace("Up", "Down");
   else tar.classList.replace("Down", "Up");
-  // console.timeEnd("sortTable");
 }
 
 function determineSortParameter(whichSort) {
@@ -556,16 +550,13 @@ function capitalizeName() {
 }
 function MakeCapitalized(string) {
   const low = string.toLowerCase();
-  // uppercase first letter
   let converted = low.at(0).toUpperCase() + low.slice(1);
   const separators = [" ", "&", "-"];
   let capitalized = "";
   let next;
   for (const char of converted) {
-    if (next) {
-      capitalized += char.toUpperCase();
-      next = false;
-    } else capitalized += char;
+    capitalized += next ? char.toUpperCase() : char;
+    next = false;
     if (separators.includes(char)) next = true;
   }
   return capitalized;
@@ -577,37 +568,45 @@ function truncate(string, length) {
 
 function checkMessages() {
   const message = document.querySelector("#message");
-  if (message !== null) ShowMessage(message.innerHTML); // todo - check if message
+  if (message) ShowMessage(message.innerHTML);
 }
+
 function ShowMessage(text) {
   let url = window.location.href;
   if (url.includes("company") || url.includes("history")) {
-    const dialog = document.querySelector("#modal-messenger");
-    dialog.showModal();
-    const message = document.querySelector("#modal-message");
-    message.innerHTML = text;
-    setTimeout(() => {
-      dialog.close();
-    }, 2000);
+    ShowMessageDialog(text);
   } else {
-    const box = document.querySelector(".ticker-search-container");
-    const messenger = document.querySelector(".messenger");
-    messenger.innerHTML = text;
+    ShowMessageSearchBox(text);
+  }
+}
+
+function ShowMessageDialog(text) {
+  const dialog = document.querySelector("#modal-messenger");
+  dialog.showModal();
+  const message = document.querySelector("#modal-message");
+  message.innerHTML = text;
+  setTimeout(() => {
+    dialog.close();
+  }, 2000);
+}
+
+function ShowMessageSearchBox(text) {
+  const box = document.querySelector(".ticker-search-container");
+  const messenger = document.querySelector(".messenger");
+  messenger.innerHTML = text;
+  messenger.classList.toggle("hidden");
+  box.classList.toggle("box-shimmer");
+  const innerBoxes = document.querySelectorAll(".ticker-search-box");
+  innerBoxes.forEach((box) => {
+    box.style.filter = "blur(8px)";
+    setTimeout(() => {
+      box.style.filter = "blur(0)";
+    }, 2000);
+  });
+  setTimeout(() => {
     messenger.classList.toggle("hidden");
     box.classList.toggle("box-shimmer");
-    // mutateForm(false);
-    const innerBoxes = document.querySelectorAll(".ticker-search-box");
-    innerBoxes.forEach((box) => {
-      box.style.filter = "blur(8px)";
-      setTimeout(() => {
-        box.style.filter = "blur(0)";
-      }, 2000);
-    });
-    setTimeout(() => {
-      messenger.classList.toggle("hidden");
-      box.classList.toggle("box-shimmer");
-    }, 2000);
-  }
+  }, 2000);
 }
 
 function blurAllFields(bool) {
@@ -642,7 +641,7 @@ const userLoggedIn = () => localStorage.getItem("loggedIn") === "true";
 function Timer(action) {
   if (action == "stop") {
     localStorage.removeItem("countdown");
-    return true;
+    return;
   }
   let countdown;
   if (localStorage.getItem("countdown") !== null) {
@@ -686,17 +685,17 @@ function updateBtnFunction() {
     updateBtn.textContent = "Price, $";
   });
   updateBtn.addEventListener("mouseup", async function () {
-    updateBtn.style.display = "none";
-    document.querySelector(".three-dots").style.display = "flex";
+    showBtnLoader(true);
     await updateAllPrices();
-    removeThreeDots();
+    showBtnLoader(false);
   });
 }
 
-function removeThreeDots() {
+function showBtnLoader(bool) {
   const updateBtn = document.querySelector(".prices-btn");
-  updateBtn.style.display = "block";
-  document.querySelector(".three-dots").style.display = "none";
+  const threeDots = document.querySelector(".three-dots");
+  updateBtn.style.display = bool ? "none" : "block";
+  threeDots.style.display = bool ? "flex" : "none";
 }
 
 async function updateAllPrices() {
@@ -732,8 +731,8 @@ function updateMainTable(rows, data) {
   for (let [_, row] of rows.entries()) {
     const ticker = row.querySelector("#company-ticker").innerHTML;
     const day = row.querySelector("#day-one");
-    const myPrice = Number(row.querySelector(".my-price-row").innerHTML);
-    const quan = Number(row.querySelector(".quantity-row").innerHTML);
+    const myPrice = +row.querySelector(".my-price-row").innerHTML;
+    const quan = +row.querySelector(".quantity-row").innerHTML;
     const price = row.querySelector(".market-price");
     const sigma = row.querySelector(".sigma-row");
     const change = row.querySelector("#change-field");
