@@ -438,7 +438,7 @@ function makeDivCellChangable(HistRow, newEntryId) {
 // -------------------------------------------------------------------------------------------------
 function fillTopInfo() {
   const rows = document.querySelectorAll(".table-row");
-  let [sum1, sum2, dayCh] = calculateMainParameters(rows);
+  let { sum1, sum2, dayCh } = calculateMainParameters(rows);
   let [nowChange, perChange] = calculateSecParameters(sum1, sum2, dayCh);
   fillMainBlock(sum1);
   fillChangeBlock("#nowChange", sum2, nowChange);
@@ -447,21 +447,23 @@ function fillTopInfo() {
 }
 
 function calculateMainParameters(rows) {
-  let sum1, sum2, dayCh, dayOne;
-  sum1 = sum2 = dayCh = 0;
-  rows.forEach((row) => {
-    let myPr = parseFloat(row.querySelector(".my-price-row").innerHTML);
-    let Qu = parseFloat(row.querySelector(".quantity-row").innerHTML);
-    let Si = parseFloat(row.querySelector(".sigma-row").innerHTML);
-    sum1 += myPr * Qu; // money originally paid for all stocks
-    sum2 += Si; // actual money in stocks now
-    dayOne = parseFloat(row.querySelector("#day-one").innerHTML) || 0;
-    dayCh += (Si * dayOne) / 100; // day change in dollars for every stock combined
-  });
-  dayCh = Number(dayCh.toFixed());
-  sum1 = Number(parseFloat(sum1).toFixed());
-  sum2 = Number(parseFloat(sum2).toFixed());
-  return [sum1, sum2, dayCh];
+  const parameters = Array.from(rows).reduce(
+    (params, row) => {
+      const myPr = Number(row.querySelector(".my-price-row").innerHTML);
+      const Qu = Number(row.querySelector(".quantity-row").innerHTML);
+      const Si = Number(row.querySelector(".sigma-row").innerHTML);
+      const dayOne = parseFloat(row.querySelector("#day-one").innerHTML) || 0;
+      params.sum1 += myPr * Qu; // money originally paid for all stocks
+      params.sum2 += Si; // actual money in stocks now
+      params.dayCh += (Si * dayOne) / 100; // day change in dollars for every stock combined
+      return params;
+    },
+    { sum1: 0, sum2: 0, dayCh: 0 }
+  );
+  parameters.sum1 = parameters.sum1.toFixed();
+  parameters.sum2 = parameters.sum2.toFixed();
+  parameters.dayCh = parameters.dayCh.toFixed();
+  return parameters;
 }
 
 function calculateSecParameters(sum1, sum2, dayCh) {
