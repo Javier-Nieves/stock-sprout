@@ -286,7 +286,6 @@ function comp_fillPrice(data) {
 }
 function comp_fillAvPr200(data) {
   let potential = (data.priceAvg200 / data.price - 1) * 100 || 0;
-  console.log(potential);
   document.querySelector("#comp-target-dol").innerHTML = `$ ${
     data.priceAvg200?.toFixed(2) || "-"
   }`;
@@ -410,7 +409,7 @@ function updateProfits(amount) {
     .querySelector("#profit-main")
     .querySelectorAll(".sum-value");
   valuesToChange.forEach((value) => {
-    let profitValue = parseInt(
+    let profitValue = Number.parseInt(
       value.innerHTML.replace("$", "").replaceAll(" ", "")
     );
     let newValue = profitValue + Math.round(+amount);
@@ -451,7 +450,8 @@ function calculateMainParameters() {
       const myPr = +row.querySelector(".my-price-row").innerHTML;
       const Qu = +row.querySelector(".quantity-row").innerHTML;
       const Si = +row.querySelector(".sigma-row").innerHTML;
-      const dayOne = parseFloat(row.querySelector("#day-one").innerHTML) || 0;
+      const dayOne =
+        Number.parseFloat(row.querySelector("#day-one").innerHTML) || 0;
       params.sum1 += Math.trunc(myPr * Qu); // money originally paid for all stocks
       params.sum2 += Math.trunc(Si); // actual money in stocks now
       params.dayCh += Math.trunc((Si * dayOne) / 100); // day change in dollars for every stock combined
@@ -796,6 +796,7 @@ async function checkComp_RU(ticker) {
   let url = `https://iss.moex.com/iss/engines/stock/markets/shares/securities/${ticker}.json`;
   const response = await fetch(url);
   let data = await response.json();
+  console.log("checkComp data:", data);
   if (data.marketdata.data.length == 0) return false;
   const prices = data.marketdata.data.find((elem) => elem.includes("TQBR"));
   const price = prices.find((item) => typeof item === "number" && item !== 0);

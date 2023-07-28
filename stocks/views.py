@@ -119,7 +119,7 @@ def indexPost(request):
 def data_handler(request):
     data = json.loads(request.body)
     request.session['comp_data'] = data
-    print('handler data ', data)
+    # print('handler data ', data)
     return JsonResponse({
         "message": "data received"
     }, status=200)
