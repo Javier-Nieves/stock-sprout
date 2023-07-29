@@ -90,7 +90,7 @@ async function fillFormWithData(compName) {
 }
 
 function sendStockToServer(data) {
-  console.log("sending to server ", data);
+  // console.log("sending to server ", data);
   fetch("/dataHandler", {
     method: "POST",
     body: JSON.stringify({
@@ -230,13 +230,14 @@ async function fillFinParams(data) {
   const company = await finParamFromAPI(data.symbol);
   // todo - add checks
   const divYield = (company.dividends / data.price) * 100;
-  pe.innerHTML = company.pe || "-";
-  fpe.innerHTML = company.fpe || "-";
-  pb.innerHTML = company.PB || "-";
-  roe.innerHTML = `${company.ROE * 100} %` || "-";
-  debt.innerHTML = company.debt || "-";
-  profitMargins.innerHTML = `${company.profitMargins * 100} %` || "-";
-  dividends.innerHTML = company.dividends || "-";
+  pe.innerHTML = company.pe.toFixed(2) || "-";
+  fpe.innerHTML = company.fpe.toFixed(2) || "-";
+  pb.innerHTML = company.PB.toFixed(2) || "-";
+  roe.innerHTML = `${(company.ROE * 100).toFixed(2)} %` || "-";
+  debt.innerHTML = company.debt.toFixed(2) || "-";
+  profitMargins.innerHTML =
+    `${(company.profitMargins * 100).toFixed(2)} %` || "-";
+  dividends.innerHTML = company.dividends.toFixed(1) || "-";
   divPer.innerHTML = `${divYield.toFixed(2)} %` || "-";
   if (userLoggedIn())
     button.addEventListener("click", () => activateBuyForm(data.symbol));
@@ -248,13 +249,13 @@ async function finParamFromAPI(ticker) {
   const response_params = await fetch(url_params);
   const finData = await response_params.json();
   return {
-    pe: finData[0].priceEarningsRatio?.toFixed(2),
-    fpe: finData[0].priceEarningsToGrowthRatio?.toFixed(2),
-    PB: finData[0].priceToBookRatio?.toFixed(2),
-    ROE: finData[0].returnOnEquity?.toFixed(2),
-    profitMargins: finData[0].netProfitMargin?.toFixed(2),
-    dividends: finData[0].dividendPayoutRatio?.toFixed(2),
-    debt: finData[0].debtEquityRatio?.toFixed(2),
+    pe: +finData[0].priceEarningsRatio?.toFixed(2),
+    fpe: +finData[0].priceEarningsToGrowthRatio?.toFixed(2),
+    PB: +finData[0].priceToBookRatio?.toFixed(2),
+    ROE: +finData[0].returnOnEquity?.toFixed(2),
+    profitMargins: +finData[0].netProfitMargin?.toFixed(2),
+    dividends: +finData[0].dividendPayoutRatio?.toFixed(2),
+    debt: +finData[0].debtEquityRatio?.toFixed(2),
   };
 }
 
@@ -276,9 +277,10 @@ function comp_fillName(data) {
   document.querySelector("#hidden-ticker-comp").value = data.symbol;
 }
 function comp_fillPrice(data) {
-  document.querySelector("#res-comp-price").innerHTML = `$ ${
-    data.price.toFixed(2) || "-"
-  }`;
+  document.querySelector("#res-comp-price").innerHTML = moneyFormat(
+    data.price,
+    2
+  );
   const resComDay = document.querySelector("#res-comp-day");
   const valuePer = data.changesPercentage?.toFixed(1);
   resComDay.innerHTML = `${valuePer || "-"} % `;
@@ -286,9 +288,10 @@ function comp_fillPrice(data) {
 }
 function comp_fillAvPr200(data) {
   let potential = (data.priceAvg200 / data.price - 1) * 100 || 0;
-  document.querySelector("#comp-target-dol").innerHTML = `$ ${
-    data.priceAvg200?.toFixed(2) || "-"
-  }`;
+  document.querySelector("#comp-target-dol").innerHTML = moneyFormat(
+    data.priceAvg200,
+    2
+  );
   const targPer = document.querySelector("#comp-target-per");
   targPer.innerHTML = `${potential.toFixed(1)} %`;
   targPer.className = `med-text ${RedGreenText(potential)}`;
@@ -480,12 +483,12 @@ function fillChangeBlock(where, value1, value2) {
 
 function fillEarnProfit(sum1, sum2) {
   const earnElem = document.querySelector("#earnings");
-  let earnings = +earnElem.innerHTML.replaceAll(" ", "").replace("$", "");
-  earnElem.innerHTML = moneyFormat(earnings);
-  let prof = sum2 - sum1 + earnings;
   const profitBox = document.querySelector("#profit");
-  profitBox.className = `sum-value ${RedGreenText(prof)}`;
+  let earnings = +earnElem.innerHTML.replaceAll(" ", "").replace("$", "");
+  let prof = sum2 - sum1 + earnings;
+  earnElem.innerHTML = moneyFormat(earnings);
   profitBox.innerHTML = moneyFormat(prof);
+  profitBox.className = `sum-value ${RedGreenText(prof)}`;
 }
 
 const fillMainBlock = (sum1) =>
@@ -507,7 +510,7 @@ function sortTable(tar) {
       .replace("%", "");
     rowMap.set(param, row);
   }
-  const sortedArray = Array.from(rowMap);
+  const sortedArray = [...rowMap];
   sortedArray.sort((a, b) =>
     whichSort.includes("Up") ? b[0] - a[0] : a[0] - b[0]
   );
@@ -534,11 +537,17 @@ function determineSortParameter(whichSort) {
 }
 
 // -------------------------------------------------------------------------------------------------
-function moneyFormat(string) {
-  let changed = string + "";
-  if (3 < changed.length && changed.length < 7)
-    changed = `${changed.slice(0, -3)} ${changed.slice(-3)}`;
-  return `$ ${changed}`.padEnd(9);
+function moneyFormat(number, digits = 0) {
+  const options = {
+    style: "currency",
+    currency: "USD",
+    CurrencyDisplay: "narrowSymbol",
+    maximumFractionDigits: digits,
+  };
+  const formatted = new Intl.NumberFormat("en-US", options)
+    .format(+number)
+    .replace(",", " ");
+  return isNaN(+number) ? "-" : formatted;
 }
 
 function capitalizeName() {
@@ -651,10 +660,8 @@ function Timer(action) {
   const timer = document.getElementById("time");
   if (timer !== null && localStorage.getItem("countdown") !== null) {
     const update = setInterval(function () {
-      let minutes = String(Math.trunc(countdown / 60));
-      let seconds = String(countdown - minutes * 60);
-      minutes = minutes < 10 ? `0${minutes}` : minutes;
-      seconds = seconds < 10 ? `0${seconds}` : seconds;
+      let minutes = String(Math.trunc(countdown / 60)).padStart(2, 0);
+      let seconds = String(countdown - minutes * 60).padStart(2, 0);
       timer.innerHTML = `${minutes}:${seconds}`;
       countdown--;
       localStorage.setItem("countdown", countdown);
@@ -796,7 +803,7 @@ async function checkComp_RU(ticker) {
   let url = `https://iss.moex.com/iss/engines/stock/markets/shares/securities/${ticker}.json`;
   const response = await fetch(url);
   let data = await response.json();
-  console.log("checkComp data:", data);
+  // console.log("checkComp data:", data);
   if (data.marketdata.data.length == 0) return false;
   const prices = data.marketdata.data.find((elem) => elem.includes("TQBR"));
   const price = prices.find((item) => typeof item === "number" && item !== 0);
