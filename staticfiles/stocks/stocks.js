@@ -20,10 +20,10 @@ function handleClicks(event) {
   const tar = event.target;
   // show a view
   showingCompany(tar);
-  if (tar.className.includes("portfolio-btn")) showingMain();
-  if (tar.className.includes("history-btn")) showingHistory();
+  if (tar.classList.contains("portfolio-btn")) showingMain();
+  if (tar.classList.contains("history-btn")) showingHistory();
   // or sort main table
-  if (tar.className.includes("Up") || tar.className.includes("Down"))
+  if (tar.classList.contains("Up") || tar.classList.contains("Down"))
     sortTable(tar);
 }
 
@@ -73,6 +73,7 @@ async function fillFormWithData(compName) {
   const price = document.querySelector("#search-display-price");
   const PE = document.querySelector("#search-display-PE");
   const avPr200 = document.querySelector("#search-display-avPr200");
+  // todo - change all hidden-ticker appearences to data elements
   const hidTicker = document.querySelector("#hidden-ticker");
   let data = await checkComp(compName);
   if (typeof data !== "string") {
@@ -87,6 +88,18 @@ async function fillFormWithData(compName) {
     mutateForm(false);
     ShowMessage(data);
   }
+}
+
+function showActionBtns() {
+  // todo - implement event delegation for click event
+  const seBox = document.querySelectorAll(".ticker-search-box");
+  seBox.forEach((box) => box.classList.add("ticker-link"));
+  document
+    .querySelector(".ticker-search-container")
+    .classList.add("ticker-link");
+  if (userLoggedIn())
+    document.getElementById("action-buttons").style.animationPlayState =
+      "running";
 }
 
 function sendStockToServer(data) {
@@ -106,17 +119,6 @@ function sendStockToServer(data) {
   });
 }
 
-function showActionBtns() {
-  const seBox = document.querySelectorAll(".ticker-search-box");
-  seBox.forEach((box) => box.classList.add("ticker-link"));
-  document
-    .querySelector(".ticker-search-container")
-    .classList.add("ticker-link");
-  if (userLoggedIn())
-    document.getElementById("action-buttons").style.animationPlayState =
-      "running";
-}
-
 // -------------------------------------------------------------------------------------------------
 function showingMain() {
   updateBrowserHistory("/");
@@ -132,14 +134,14 @@ function showingMain() {
 }
 
 function showingCompany(tar) {
-  let clName = tar.parentElement?.className;
+  let clList = tar.parentElement?.classList;
   let compName;
-  if (clName.includes("hist-row")) compName = showComp_history(tar);
-  if (clName.includes("table-row")) compName = showComp_main(tar);
-  if (tar.className.includes("companies-btn")) compName = showComp_link();
-  if (tar.parentElement.parentElement.className.includes("ticker-link"))
+  if (clList.contains("hist-row")) compName = showComp_history(tar);
+  if (clList.contains("table-row")) compName = showComp_main(tar);
+  if (tar.classList.contains("companies-btn")) compName = showComp_link();
+  if (tar.parentElement.parentElement.classList.contains("ticker-link"))
     compName = document.querySelector("#hidden-ticker").value;
-  if (tar.className.includes("comp-search-btn"))
+  if (tar.classList.contains("comp-search-btn"))
     compName = showComp_CompSearch();
   compName && show_company(compName);
 }
@@ -392,7 +394,7 @@ async function getDividend(event) {
 
 function createNewHistRow(title, amount) {
   const HistRow = document.querySelector("#HistTable").insertRow(0);
-  HistRow.className = "hist-row new-hist-row";
+  HistRow.classList.add("hist-row", "new-hist-row");
   HistRow.style.backgroundColor = "rgba(255, 205, 4, 0.165)";
   const cells = [];
   const content = ["DIV", `${title}`, "Div", "-", "-", "-", "-", `${amount}`];
@@ -400,9 +402,9 @@ function createNewHistRow(title, amount) {
     cells[k] = HistRow.insertCell(k);
     cells[k].innerHTML = item;
   }
-  cells[7].className = "green-text";
-  cells[0].className = "mobile-hide";
-  cells[2].className = "mobile-hide";
+  cells[7].classList.add("green-text");
+  cells[0].classList.add("mobile-hide");
+  cells[2].classList.add("mobile-hide");
   HistRow.style.animationPlayState = "running";
   return HistRow;
 }
@@ -421,7 +423,7 @@ function updateProfits(amount) {
 }
 
 function makeDivCellChangable(HistRow, newEntryId) {
-  HistRow.cells[1].className = "div-title";
+  HistRow.cells[1].classList.add("div-title");
   const techCell = HistRow.insertCell(2);
   techCell.id = "change-title-cell";
   techCell.innerHTML = `
@@ -432,7 +434,7 @@ function makeDivCellChangable(HistRow, newEntryId) {
         </div>
   `;
   HistRow.cells[1].addEventListener("click", () => {
-    changeDivName(HistRow);
+    changeDivName(this);
   });
 }
 
@@ -498,7 +500,7 @@ const fillMainBlock = (sum1) =>
 
 // -------------------------------------------------------------------------------------------------
 function sortTable(tar) {
-  const whichSort = tar.className;
+  const whichSort = tar.classList;
   const table = document.getElementById("mainTable").querySelector("tbody");
   const rows = table.rows;
   const crit = determineSortParameter(whichSort);
@@ -512,7 +514,7 @@ function sortTable(tar) {
   }
   const sortedArray = [...rowMap];
   sortedArray.sort((a, b) =>
-    whichSort.includes("Up") ? b[0] - a[0] : a[0] - b[0]
+    whichSort.contains("Up") ? b[0] - a[0] : a[0] - b[0]
   );
   const sortedMap = new Map(sortedArray);
   let index = 0;
@@ -524,15 +526,16 @@ function sortTable(tar) {
     index++;
   }
   // switch classes after sorting in the main table
-  if (whichSort.includes("Up")) tar.classList.replace("Up", "Down");
-  else tar.classList.replace("Down", "Up");
+  whichSort.contains("Up")
+    ? whichSort.replace("Up", "Down")
+    : whichSort.replace("Down", "Up");
 }
 
 function determineSortParameter(whichSort) {
   let crit;
-  if (whichSort.includes("sortSigma")) crit = ".sigma-row";
-  else if (whichSort.includes("sortChange")) crit = "#change-field";
-  else if (whichSort.includes("sortDay")) crit = "#day-one";
+  if (whichSort.contains("sortSigma")) crit = ".sigma-row";
+  else if (whichSort.contains("sortChange")) crit = "#change-field";
+  else if (whichSort.contains("sortDay")) crit = "#day-one";
   return crit;
 }
 
@@ -629,7 +632,7 @@ function blurAllFields(bool) {
     "#comp-ticker",
   ];
   for (const element of blurList) {
-    document.querySelector(`${element}`).style.filter = bool
+    document.querySelector(element).style.filter = bool
       ? "blur(5px)"
       : "blur(0)";
   }
@@ -653,19 +656,17 @@ function Timer(action) {
     return;
   }
   let countdown;
-  if (localStorage.getItem("countdown") !== null) {
-    // localStorage is set in index.html
+  // localStorage is set in index.html
+  if (localStorage.getItem("countdown") !== null)
     countdown = localStorage.getItem("countdown");
-  }
   const timer = document.getElementById("time");
   if (timer !== null && localStorage.getItem("countdown") !== null) {
     const update = setInterval(function () {
       let minutes = String(Math.trunc(countdown / 60)).padStart(2, 0);
-      let seconds = String(countdown - minutes * 60).padStart(2, 0);
+      let seconds = String(countdown % 60).padStart(2, 0);
       timer.innerHTML = `${minutes}:${seconds}`;
-      countdown--;
       localStorage.setItem("countdown", countdown);
-      if (countdown < 0) {
+      if (countdown === 0) {
         clearInterval(update);
         localStorage.removeItem("countdown");
         fetch("/logout");
@@ -674,6 +675,7 @@ function Timer(action) {
           location.reload();
         }, 1500);
       }
+      countdown--;
     }, 1000);
   }
 }
@@ -686,10 +688,10 @@ const RedGreenText = (param) => (param < 0 ? "red-text" : "green-text");
 function updateBtnFunction() {
   const updateBtn = document.querySelector(".prices-btn");
   updateBtn.addEventListener("mouseover", function () {
-    updateBtn.textContent = "Update";
+    this.textContent = "Update";
   });
   updateBtn.addEventListener("mouseout", function () {
-    updateBtn.textContent = "Price, $";
+    this.textContent = "Price, $";
   });
   updateBtn.addEventListener("mouseup", async function () {
     showBtnLoader(true);
