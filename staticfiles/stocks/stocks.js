@@ -38,7 +38,7 @@ function handleClicks() {
   // sorting main table
   const sorters = document.querySelectorAll(".sorter");
   sorters.forEach((column) =>
-    column.addEventListener("click", (tar) => sortTable(tar))
+    column.addEventListener("click", (e) => sortTable(e.target))
   );
 }
 
