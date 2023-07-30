@@ -52,7 +52,7 @@
             <input class="search-btn" id="main-view-search" type="submit" value="Search">
         </form>
 
-        <div class="ticker-search-container">
+        <div class="ticker-search-container data-storage">
             <ul class="ticker-search-box">
                 <div><strong style="color: whitesmoke">Company: </strong><span id="search-display-name"></span></div>
                 <div><strong>PE: </strong><span id="search-display-PE"></span></div>
@@ -117,7 +117,7 @@
             {% for item in portfolio reversed%}
                 {% for price in prices %}
                     {% if price.stock == item%}
-                        <tr class="table-row" data-ticker={{item.ticker}}>
+                        <tr class="table-row data-storage" data-ticker={{item.ticker}}>
                             <td class="mobile-hide" id="company-market">{{item.market}}</td>
                             <td class="mobile-hide" id="company-ticker">{{item.ticker}}</td>
                             {% if item.day < 0 %}
@@ -282,7 +282,8 @@
         </thead>
         <tbody id="HistTable">
             {% for item in history reversed%}
-            <tr class="hist-row" id="rest" style="background-color: rgba(114, 115, 115, 0.3)" data-ticker={{item.stock.ticker}}>
+            <tr class="hist-row data-storage" id="rest" 
+            style="background-color: rgba(114, 115, 115, 0.3)" data-ticker={{item.stock.ticker}}>
                 <td class="mobile-hide" id="hist-company-name">{{item.stock.ticker}}</td>
                 {% if item.action == 'Div' %}
                 <td class="div-title">{{item.note}}</td>

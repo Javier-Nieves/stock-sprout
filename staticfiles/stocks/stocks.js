@@ -3,15 +3,13 @@ document.addEventListener("DOMContentLoaded", loadingSequence);
 
 async function loadingSequence() {
   checkMessages();
-  const loggedIn = await AuthCheck();
-  localStorage.setItem("loggedIn", loggedIn);
   loadCorrectView();
   capitalizeName();
-  if (loggedIn) {
-    fillTopInfo();
-    activateDivForm();
-  }
   handleClicks();
+  const loggedIn = await AuthCheck();
+  localStorage.setItem("loggedIn", loggedIn);
+  loggedIn && fillTopInfo();
+  loggedIn && activateDivForm();
   // browser back button action
   window.addEventListener("popstate", loadCorrectView);
 }
@@ -29,10 +27,7 @@ function handleClicks() {
   compSearchBtn.addEventListener("click", showComp_CompSearch);
   for (const node of nodes)
     document.querySelector(node).addEventListener("click", (e) => {
-      const compName =
-        e.target.parentElement.dataset.ticker ||
-        e.target.parentElement.parentElement.dataset.ticker ||
-        e.target.parentElement.parentElement.parentElement.dataset.ticker;
+      const compName = e.target.closest(".data-storage").dataset.ticker;
       compName && show_company(compName);
     });
   // sorting main table
@@ -65,7 +60,8 @@ function searchFormFunction() {
   const compName = form.querySelector("#searchForComp");
   form.addEventListener("submit", (e) => {
     e.preventDefault();
-    compName != "" && mutateForm(true);
+    if (compName.value === "") return;
+    mutateForm(true);
     fillFormWithData(compName.value);
     showActionBtns();
     compName.value = "";
@@ -105,7 +101,6 @@ async function fillFormWithData(compName) {
 }
 
 function showActionBtns() {
-  // todo - implement event delegation for click event
   const seBox = document.querySelectorAll(".ticker-search-box");
   seBox.forEach((box) => box.classList.add("ticker-link"));
   document
@@ -157,6 +152,7 @@ function showComp_link() {
 
 function showComp_CompSearch() {
   const compName = document.querySelector("#comp-search").value.toUpperCase();
+  if (compName === "") return;
   document.querySelector("#comp-search").value = "";
   document.querySelector("#hidden-buy-form").style.display = "none";
   if (userLoggedIn())
@@ -799,6 +795,7 @@ async function checkComp(ticker) {
 }
 
 async function checkComp_RU(ticker) {
+  if (ticker === "") return;
   let url = `https://iss.moex.com/iss/engines/stock/markets/shares/securities/${ticker}.json`;
   const response = await fetch(url);
   let data = await response.json();
