@@ -128,9 +128,7 @@ def data_handler(request):
 @csrf_exempt
 def histPost(request):
     portfolio = Portfolio.objects.get(owner=request.user)
-    try:
-        Stocks.objects.get(ticker="DIV")
-    except:
+    if not Stocks.objects.filter(ticker="DIV").exists():
         Stocks.objects.create(ticker='DIV', company='dividends')
     stock = Stocks.objects.get(ticker="DIV")
 

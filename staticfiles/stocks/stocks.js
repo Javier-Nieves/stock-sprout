@@ -28,7 +28,7 @@ function handleClicks() {
   for (const node of nodes)
     document.querySelector(node).addEventListener("click", (e) => {
       const compName = e.target.closest(".data-storage").dataset.ticker;
-      compName && show_company(compName);
+      compName && compName !== "DIV" && show_company(compName);
     });
   // sorting main table
   const sorters = document.querySelectorAll(".sorter");
@@ -89,8 +89,8 @@ async function fillFormWithData(compName) {
   if (typeof data !== "string") {
     name.innerHTML = data.name;
     price.innerHTML = `$ ${data.price.toFixed(2)}`;
-    PE.innerHTML = data.pe || "---";
-    avPr200.innerHTML = ` $ ${data.priceAvg200?.toFixed(2) || "---"}`;
+    PE.innerHTML = data.pe || "-";
+    avPr200.innerHTML = ` $ ${data.priceAvg200?.toFixed(2) || "-"}`;
     container.dataset.ticker = data.symbol;
     mutateForm(false);
     sendStockToServer(data);
@@ -137,9 +137,8 @@ function showingMain() {
   document.querySelector("#company-view").style.display = "none";
   document.querySelector("#portfolio-view").style.display = "block";
   document.querySelector("#summary-row-top").style.display = "flex";
-  if (userLoggedIn()) {
-    document.querySelector("#history-view").style.display = "none";
-  }
+  userLoggedIn() &&
+    (document.querySelector("#history-view").style.display = "none");
 }
 
 function showComp_link() {
@@ -349,8 +348,9 @@ function changeDivName(Row) {
   NormTitle.style.display = "none";
   ChangedTitle.style.display = "block";
   changeBtn.addEventListener("click", () => {
-    const newTitle = Row.querySelector("#change-title").value;
-    const ident = Row.querySelector("#hidden-hist-id").value; //todo - dataset?
+    const titleCell = Row.querySelector("#change-title");
+    const newTitle = titleCell.value;
+    const ident = titleCell.dataset.histid;
     fetch(`/change/${ident}/${newTitle}`);
     // todo - check if fetch was successful
     NormTitle.style.display = "block";
@@ -365,7 +365,8 @@ const activateDivForm = () =>
 async function getDividend(event) {
   event.preventDefault();
   const title = document.querySelector("#Div-title").value;
-  const amount = document.querySelector("#Div-amount").value.toString();
+  const amount = document.querySelector("#Div-amount").value;
+  console.log("geting new dids", title, amount);
   // add dividend to the DB
   const response = await fetch(`/history/dividend`, {
     method: "PUT",
@@ -419,13 +420,13 @@ function makeDivCellChangable(HistRow, newEntryId) {
   techCell.id = "change-title-cell";
   techCell.innerHTML = `
         <div class="flex-container">
-            <input class='ticker-inp long' type="text" id="change-title" value="${HistRow.cells[1].innerHTML}">
+            <input class='ticker-inp long' type="text" id="change-title" 
+            value="${HistRow.cells[1].innerHTML}" data-histid=${newEntryId}>
             <input id="div-title-change-btn" class="div-btn" type="submit" value="Change">
-            <input id="hidden-hist-id" type="hidden" value="${newEntryId}">
         </div>
   `;
   HistRow.cells[1].addEventListener("click", () => {
-    changeDivName(this);
+    changeDivName(HistRow);
   });
 }
 

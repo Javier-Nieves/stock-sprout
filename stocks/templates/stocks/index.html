@@ -289,9 +289,9 @@
                 <td class="div-title">{{item.note}}</td>
                 <td id="change-title-cell">
                     <div class="flex-container">
-                        <input class='ticker-inp long' type="text" id="change-title" value="{{item.note}}">
+                        <input class='ticker-inp long' type="text" id="change-title" 
+                        value={{item.note}} data-histid={{item.id}}>
                         <input id="div-title-change-btn" class="div-btn" type="submit" value="Change">
-                        <input id="hidden-hist-id" type="hidden" value="{{item.id}}">
                     </div>
                 </td>
                 {% else %}
