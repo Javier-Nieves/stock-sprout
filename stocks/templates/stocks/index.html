@@ -62,7 +62,6 @@
             <ul class="ticker-search-box">
                 <div><strong>Price: </strong><span id="search-display-price"></span></div>
                 <div><strong>Av-Price 200: </strong><span id="search-display-avPr200"></span></div>
-                <input id="hidden-ticker" type="hidden" name="hidden-ticker">
             </ul>
         </div>
         
@@ -100,7 +99,7 @@
             <tr>
                 <th class="mobile-hide">Market</th>
                 <th class="mobile-hide">Ticker</th>
-                <th class="sortDay Up">Company</th>
+                <th class="sortDay sorter Up">Company</th>
                 <th>MyPrice, $</th>
                 <th>Quantity</th>
                 <th class="prices-btn">Price, $</th>
@@ -109,8 +108,8 @@
                     <div class="dot"></div>
                     <div class="dot"></div>
                   </div></th>
-                <th class="sortSigma Up">&#931, $</th>
-                <th class="sortChange Up">Change, %</th>
+                <th class="sortSigma sorter Up">&#931, $</th>
+                <th class="sortChange sorter Up">Change, %</th>
             </tr>
         </thead>
         <tbody>
@@ -118,40 +117,37 @@
             {% for item in portfolio reversed%}
                 {% for price in prices %}
                     {% if price.stock == item%}
-            <tr class="table-row">
-                <td class="mobile-hide" id="company-market">{{item.market}}</td>
-                <td class="mobile-hide" id="company-ticker">{{item.ticker}}</td>
-                {% if item.day < 0 %}
-                    <td>{{item.company}} <br> <div id="day-one" class="red-text">{{item.day|stringformat:".2f"}} %</div></td>
-                {% elif item.day == None %}
-                    <td>{{item.company}} <br> <div id="day-one"></div></td>
-                {% else %}
-                    <td>{{item.company}} <br> <div id="day-one" class="green-text">{{item.day|stringformat:".2f"}} %</div></td>
-                {% endif %}
+                        <tr class="table-row" data-ticker={{item.ticker}}>
+                            <td class="mobile-hide" id="company-market">{{item.market}}</td>
+                            <td class="mobile-hide" id="company-ticker">{{item.ticker}}</td>
+                            {% if item.day < 0 %}
+                                <td>{{item.company}} <br> <div id="day-one" class="red-text">{{item.day|stringformat:".2f"}} %</div></td>
+                            {% elif item.day == None %}
+                                <td>{{item.company}} <br> <div id="day-one"></div></td>
+                            {% else %}
+                                <td>{{item.company}} <br> <div id="day-one" class="green-text">{{item.day|stringformat:".2f"}} %</div></td>
+                            {% endif %}
+                            {% if price.myPrice < 0.01 %}
+                                <td class="my-price-row">{{price.myPrice|stringformat:".2e"}}</td>
+                            {% else %}
+                                <td class="my-price-row">{{price.myPrice|stringformat:".2f"}}</td>
+                            {% endif %}
+                            <td class="quantity-row">{{price.quant}}</td>
+                            {% if item.price < 0.01 %}
+                                <td class="market-price">{{item.price|stringformat:".2e"}}</td>
+                            {% else %}
+                                <td class="market-price">{{item.price|stringformat:".2f"}}</td>
+                            {% endif %}
 
-                {% if price.myPrice < 0.01 %}
-                <td class="my-price-row">{{price.myPrice|stringformat:".2e"}}</td>
-                {% else %}
-                <td class="my-price-row">{{price.myPrice|stringformat:".2f"}}</td>
-                {% endif %}
-
-                <td class="quantity-row">{{price.quant}}</td>
-                
-                {% if item.price < 0.01 %}
-                <td class="market-price">{{item.price|stringformat:".2e"}}</td>
-                {% else %}
-                <td class="market-price">{{item.price|stringformat:".2f"}}</td>
-                {% endif %}
-
-                <td class="sigma-row">{{price.quant|mul:item.price|stringformat:".2f"}}</td>
-                {% if item.price|div:price.myPrice|mul:100|sub:100 < 0 %}
-                    <td id="change-field" class="red-text">{{ item.price|div:price.myPrice|mul:100|sub:100|stringformat:".2f"}} %</td>
-                {% else %}
-                    <td id="change-field" class="green-text">{{ item.price|div:price.myPrice|mul:100|sub:100|stringformat:".2f"}} %</td>
-                {% endif %}
-            </tr>
-            {% endif %}
-            {% endfor %}
+                            <td class="sigma-row">{{price.quant|mul:item.price|stringformat:".2f"}}</td>
+                            {% if item.price|div:price.myPrice|mul:100|sub:100 < 0 %}
+                                <td id="change-field" class="red-text">{{ item.price|div:price.myPrice|mul:100|sub:100|stringformat:".2f"}} %</td>
+                            {% else %}
+                                <td id="change-field" class="green-text">{{ item.price|div:price.myPrice|mul:100|sub:100|stringformat:".2f"}} %</td>
+                            {% endif %}
+                        </tr>
+                    {% endif %}
+                {% endfor %}
             {% endfor %}
         </tbody>
     </table>
@@ -286,7 +282,7 @@
         </thead>
         <tbody id="HistTable">
             {% for item in history reversed%}
-            <tr class="hist-row" id="rest" style="background-color: rgba(114, 115, 115, 0.3)">
+            <tr class="hist-row" id="rest" style="background-color: rgba(114, 115, 115, 0.3)" data-ticker={{item.stock.ticker}}>
                 <td class="mobile-hide" id="hist-company-name">{{item.stock.ticker}}</td>
                 {% if item.action == 'Div' %}
                 <td class="div-title">{{item.note}}</td>

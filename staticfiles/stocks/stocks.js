@@ -11,20 +11,35 @@ async function loadingSequence() {
     fillTopInfo();
     activateDivForm();
   }
-  document.addEventListener("click", (event) => handleClicks(event));
+  handleClicks();
   // browser back button action
   window.addEventListener("popstate", loadCorrectView);
 }
 
-function handleClicks(event) {
-  const tar = event.target;
-  // show a view
-  showingCompany(tar);
-  if (tar.classList.contains("portfolio-btn")) showingMain();
-  if (tar.classList.contains("history-btn")) showingHistory();
-  // or sort main table
-  if (tar.classList.contains("Up") || tar.classList.contains("Down"))
-    sortTable(tar);
+function handleClicks() {
+  // showing views
+  const randomCompBtns = document.querySelectorAll(".companies-btn");
+  const compSearchBtn = document.querySelector(".comp-search-btn");
+  const portBtn = document.querySelector(".portfolio-btn");
+  const histBtn = document.querySelector(".history-btn");
+  const nodes = ["#mainTable", "#HistTable", ".ticker-search-container"];
+  portBtn.addEventListener("click", showingMain);
+  histBtn.addEventListener("click", showingHistory);
+  randomCompBtns.forEach((btn) => btn.addEventListener("click", showComp_link));
+  compSearchBtn.addEventListener("click", showComp_CompSearch);
+  for (const node of nodes)
+    document.querySelector(node).addEventListener("click", (e) => {
+      const compName =
+        e.target.parentElement.dataset.ticker ||
+        e.target.parentElement.parentElement.dataset.ticker ||
+        e.target.parentElement.parentElement.parentElement.dataset.ticker;
+      compName && show_company(compName);
+    });
+  // sorting main table
+  const sorters = document.querySelectorAll(".sorter");
+  sorters.forEach((column) =>
+    column.addEventListener("click", (tar) => sortTable(tar))
+  );
 }
 
 function loadCorrectView() {
@@ -40,7 +55,7 @@ function loadCorrectView() {
   }
   if (url.includes("company"))
     show_company(url.slice(url.lastIndexOf("/") + 1));
-  if (url.slice(-7) === "history") showingHistory();
+  if (url.includes("history")) showingHistory();
   if (url.slice(-1) === "/") showingMain();
 }
 
@@ -73,15 +88,14 @@ async function fillFormWithData(compName) {
   const price = document.querySelector("#search-display-price");
   const PE = document.querySelector("#search-display-PE");
   const avPr200 = document.querySelector("#search-display-avPr200");
-  // todo - change all hidden-ticker appearences to data elements
-  const hidTicker = document.querySelector("#hidden-ticker");
+  const container = document.querySelector(".ticker-search-container");
   let data = await checkComp(compName);
   if (typeof data !== "string") {
     name.innerHTML = data.name;
     price.innerHTML = `$ ${data.price.toFixed(2)}`;
     PE.innerHTML = data.pe || "---";
     avPr200.innerHTML = ` $ ${data.priceAvg200?.toFixed(2) || "---"}`;
-    hidTicker.value = data.symbol;
+    container.dataset.ticker = data.symbol;
     mutateForm(false);
     sendStockToServer(data);
   } else {
@@ -133,33 +147,12 @@ function showingMain() {
   }
 }
 
-function showingCompany(tar) {
-  let clList = tar.parentElement?.classList;
-  let compName;
-  if (clList.contains("hist-row")) compName = showComp_history(tar);
-  if (clList.contains("table-row")) compName = showComp_main(tar);
-  if (tar.classList.contains("companies-btn")) compName = showComp_link();
-  if (tar.parentElement.parentElement.classList.contains("ticker-link"))
-    compName = document.querySelector("#hidden-ticker").value;
-  if (tar.classList.contains("comp-search-btn"))
-    compName = showComp_CompSearch();
-  compName && show_company(compName);
-}
-
-function showComp_history(tar) {
-  if (tar.parentElement.querySelector(".hist-action").innerHTML != "Div")
-    return tar.parentElement.querySelector("#hist-company-name").innerHTML;
-}
-
-const showComp_main = (tar) =>
-  tar.parentElement.querySelector("#company-ticker").innerHTML;
-
 function showComp_link() {
   if (userLoggedIn()) {
     document.querySelector("#hidden-buy-form").style.display = "none";
     document.querySelector(".big-green-btn").style.display = "block";
   }
-  return "random";
+  show_company("random");
 }
 
 function showComp_CompSearch() {
@@ -168,10 +161,11 @@ function showComp_CompSearch() {
   document.querySelector("#hidden-buy-form").style.display = "none";
   if (userLoggedIn())
     document.querySelector(".big-green-btn").style.display = "block";
-  return compName;
+  show_company(compName);
 }
 
 async function show_company(compName) {
+  console.log("showing", compName);
   document.querySelector("#portfolio-view").style.display = "none";
   document.querySelector("#summary-row-top").style.display = "none";
   document.querySelector("#company-view").style.display = "block";
@@ -315,6 +309,7 @@ function showingHistory() {
   document.querySelector("#history-view").style.display = "block";
   document.querySelector("#company-view").style.display = "none";
   let HistRows = document.querySelectorAll(".hist-row");
+  //todo! - change this. Should be event delegation
   HistRows.forEach((Row) => {
     changeHistRow(Row);
     // change div title when clicked
@@ -359,7 +354,7 @@ function changeDivName(Row) {
   ChangedTitle.style.display = "block";
   changeBtn.addEventListener("click", () => {
     const newTitle = Row.querySelector("#change-title").value;
-    const ident = Row.querySelector("#hidden-hist-id").value;
+    const ident = Row.querySelector("#hidden-hist-id").value; //todo - dataset?
     fetch(`/change/${ident}/${newTitle}`);
     // todo - check if fetch was successful
     NormTitle.style.display = "block";
@@ -787,12 +782,14 @@ async function checkComp(ticker) {
   // free version allow only 250 API calls daily
   // MOEX stocks will be checked first to not spend this 250 calls
   const ruStock = await checkComp_RU(ticker);
+  // console.log("ruStock", ruStock);
   if (ruStock) return ruStock;
   // now we check for US stocks
   const APIkey = await getKey();
   let url = `https://financialmodelingprep.com/api/v3/quote/${ticker}?apikey=${APIkey}`;
   const response = await fetch(url);
   let data = await response.json();
+  // console.log("US data", data);
   if (data[0]) return data[0];
   else {
     const realTicker = await getTicker(ticker);
