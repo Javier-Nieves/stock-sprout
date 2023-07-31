@@ -27,7 +27,7 @@ function handleClicks() {
   compSearchBtn.addEventListener("click", showComp_CompSearch);
   for (const node of nodes)
     document.querySelector(node).addEventListener("click", (e) => {
-      const compName = e.target.closest(".data-storage").dataset.ticker;
+      const compName = e.target.closest(".data-storage")?.dataset.ticker;
       compName && compName !== "DIV" && show_company(compName);
     });
   // sorting main table
@@ -304,12 +304,14 @@ function showingHistory() {
   document.querySelector("#history-view").style.display = "block";
   document.querySelector("#company-view").style.display = "none";
   let HistRows = document.querySelectorAll(".hist-row");
-  //todo! - change this. Should be event delegation
-  HistRows.forEach((Row) => {
-    changeHistRow(Row);
-    // change div title when clicked
-    const divCell = Row.querySelector(".div-title");
-    divCell?.addEventListener("click", () => changeDivName(Row));
+  HistRows.forEach((Row) => changeHistRow(Row));
+  // change div title when clicked:
+  //? using event delegation
+  document.querySelector("#HistTable").addEventListener("click", (e) => {
+    if (e.target.classList.contains("div-title")) {
+      console.log("calling");
+      changeDivName(e.target.closest("tr"));
+    }
   });
   updateBrowserHistory("/history");
 }
@@ -356,11 +358,12 @@ function changeDivName(Row) {
     NormTitle.style.display = "block";
     NormTitle.innerHTML = newTitle;
     ChangedTitle.style.display = "none";
+    console.log("show");
     ShowMessage("Entry modified");
   });
 }
 const activateDivForm = () =>
-  document.getElementById("Div-form").addEventListener("submit", getDividend);
+  document.getElementById("Div-form").addEventListener("submit", getDividend); //event
 
 async function getDividend(event) {
   event.preventDefault();
@@ -425,9 +428,6 @@ function makeDivCellChangable(HistRow, newEntryId) {
             <input id="div-title-change-btn" class="div-btn" type="submit" value="Change">
         </div>
   `;
-  HistRow.cells[1].addEventListener("click", () => {
-    changeDivName(HistRow);
-  });
 }
 
 // -------------------------------------------------------------------------------------------------
