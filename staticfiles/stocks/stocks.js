@@ -105,9 +105,9 @@ function showActionBtns() {
   document
     .querySelector(".ticker-search-container")
     .classList.add("ticker-link");
-  if (userLoggedIn())
-    document.getElementById("action-buttons").style.animationPlayState =
-      "running";
+  userLoggedIn() &&
+    (document.getElementById("action-buttons").style.animationPlayState =
+      "running");
 }
 
 function sendStockToServer(data) {
