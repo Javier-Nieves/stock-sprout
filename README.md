@@ -6,7 +6,6 @@ Stock Sprout is a Django-JS web application used for stock exchange monitoring. 
 Users can also research any company's metrics (*like PE, PB, Dividends, etc.*) on the **Companies' page** and look at the transactions log on the **History page**.
 Stock Sprout is the *single-page application*.
 
-
 #App structure:
 ## Register and Login pages
 Unauthorized user is able to search for companies’ financial metrics and nothing else. Login and register pages allow users to create their accounts on Stock Sprout or login using social media (GitHub or Google) accounts.
