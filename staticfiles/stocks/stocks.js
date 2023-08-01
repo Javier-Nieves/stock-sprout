@@ -540,11 +540,10 @@ function moneyFormat(number, digits = 0) {
 }
 
 function capitalizeName() {
-  if (userLoggedIn()) {
-    const name = document.querySelector(".username");
-    let myName = name.innerHTML;
-    name.innerHTML = MakeCapitalized(myName);
-  }
+  if (!userLoggedIn()) return;
+  const name = document.querySelector(".username");
+  let myName = name.innerHTML;
+  name.innerHTML = MakeCapitalized(myName);
 }
 function MakeCapitalized(string) {
   const low = string.toLowerCase();
