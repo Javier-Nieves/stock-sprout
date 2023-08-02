@@ -2,12 +2,12 @@
 document.addEventListener("DOMContentLoaded", loadingSequence);
 
 async function loadingSequence() {
+  const loggedIn = await AuthCheck();
+  localStorage.setItem("loggedIn", loggedIn);
   checkMessages();
   loadCorrectView();
   capitalizeName();
   handleClicks();
-  const loggedIn = await AuthCheck();
-  localStorage.setItem("loggedIn", loggedIn);
   loggedIn && fillTopInfo();
   loggedIn && activateDivForm();
   // browser back button action
@@ -22,9 +22,9 @@ function handleClicks() {
   const histBtn = document.querySelector(".history-btn");
   const nodes = ["#mainTable", "#HistTable", ".ticker-search-container"];
   portBtn.addEventListener("click", showingMain);
-  histBtn.addEventListener("click", showingHistory);
   randomCompBtns.forEach((btn) => btn.addEventListener("click", showComp_link));
   compSearchBtn.addEventListener("click", showComp_CompSearch);
+  userLoggedIn() && histBtn.addEventListener("click", showingHistory);
   for (const node of nodes)
     document.querySelector(node).addEventListener("click", (e) => {
       const compName = e.target.closest(".data-storage")?.dataset.ticker;
@@ -40,13 +40,10 @@ function handleClicks() {
 function loadCorrectView() {
   Timer("check");
   let url = window.location.href;
-  if (
-    url.includes("action") ||
-    url.includes("logout") ||
-    url.includes("login")
-  ) {
+  // prettier-ignore
+  if (url.includes("action") || url.includes("logout") || url.includes("login")) {
     updateBrowserHistory("/");
-    localStorage.getItem("loggedIn") && showingMain();
+    userLoggedIn() && showingMain();
   }
   url.includes("company") && show_company(url.slice(url.lastIndexOf("/") + 1));
   url.includes("history") && showingHistory();
@@ -201,9 +198,7 @@ async function getDescription(ticker) {
 
 async function fillFinParams(data) {
   const allFields = document.querySelectorAll(".finParam");
-  allFields.forEach((field) => {
-    field.innerHTML = "";
-  });
+  allFields.forEach((field) => (field.innerHTML = ""));
   if (data.exchange === "MOEX") return;
   const pe = document.querySelector("#company-pe");
   const fpe = document.querySelector("#company-fpe");
@@ -258,9 +253,8 @@ function comp_fillDesc(fullText) {
 }
 
 function comp_fillName(data) {
-  document.querySelector("#company-title").innerHTML = `${MakeCapitalized(
-    data.name
-  )}`;
+  // prettier-ignore
+  document.querySelector("#company-title").innerHTML = MakeCapitalized(data.name);
   document.querySelector("#comp-ticker").innerHTML = data.symbol;
   document.querySelector("#hidden-ticker-comp").value = data.symbol;
 }
@@ -622,9 +616,9 @@ function blurAllFields(bool) {
       : "blur(0)";
   }
   const sumRows = document.querySelectorAll(".summary-row");
-  sumRows.forEach((item) => {
-    item.style.filter = bool ? "blur(5px)" : "blur(0)";
-  });
+  sumRows.forEach(
+    (item) => (item.style.filter = bool ? "blur(5px)" : "blur(0)")
+  );
 }
 
 async function AuthCheck() {

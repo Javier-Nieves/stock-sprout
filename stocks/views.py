@@ -204,6 +204,7 @@ def getTicker(request, company_name):  # * look up a ticker for company name ent
 
 # ? ------------------------------------------- login & co --------------------------------------------
 def auth_check(request):
+    print(request.user)
     return JsonResponse({'LoggedIn': request.user.is_authenticated})
 
 
