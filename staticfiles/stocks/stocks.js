@@ -2,16 +2,20 @@
 document.addEventListener("DOMContentLoaded", loadingSequence);
 
 async function loadingSequence() {
-  const loggedIn = await AuthCheck();
-  localStorage.setItem("loggedIn", loggedIn);
-  checkMessages();
-  loadCorrectView();
-  capitalizeName();
-  handleClicks();
-  loggedIn && fillTopInfo();
-  loggedIn && activateDivForm();
-  // browser back button action
-  window.addEventListener("popstate", loadCorrectView);
+  try {
+    const loggedIn = await AuthCheck();
+    localStorage.setItem("loggedIn", loggedIn);
+    checkMessages();
+    loadCorrectView();
+    capitalizeName();
+    handleClicks();
+    loggedIn && fillTopInfo();
+    loggedIn && activateDivForm();
+    // browser back button action
+    window.addEventListener("popstate", loadCorrectView);
+  } catch (err) {
+    console.error("Loading sequence error", err.message);
+  }
 }
 
 function handleClicks() {
@@ -20,7 +24,8 @@ function handleClicks() {
   const compSearchBtn = document.querySelector(".comp-search-btn");
   const portBtn = document.querySelector(".portfolio-btn");
   const histBtn = document.querySelector(".history-btn");
-  const nodes = ["#mainTable", "#HistTable", ".ticker-search-container"];
+  const nodes = ["#mainTable", ".ticker-search-container"];
+  userLoggedIn() && nodes.push("#HistTable");
   portBtn.addEventListener("click", showingMain);
   randomCompBtns.forEach((btn) => btn.addEventListener("click", showComp_link));
   compSearchBtn.addEventListener("click", showComp_CompSearch);
@@ -82,17 +87,21 @@ async function fillFormWithData(compName) {
   const avPr200 = document.querySelector("#search-display-avPr200");
   const container = document.querySelector(".ticker-search-container");
   let data = await checkComp(compName);
-  if (typeof data !== "string") {
-    name.innerHTML = data.name;
-    price.innerHTML = `$ ${data.price.toFixed(2)}`;
-    PE.innerHTML = data.pe || "-";
-    avPr200.innerHTML = ` $ ${data.priceAvg200?.toFixed(2) || "-"}`;
-    container.dataset.ticker = data.symbol;
-    mutateForm(false);
-    sendStockToServer(data);
-  } else {
-    mutateForm(false);
-    ShowMessage(data);
+  try {
+    if (typeof data !== "string") {
+      name.innerHTML = data.name;
+      price.innerHTML = `$ ${data.price.toFixed(2)}`;
+      PE.innerHTML = data.pe || "-";
+      avPr200.innerHTML = ` $ ${data.priceAvg200?.toFixed(2) || "-"}`;
+      container.dataset.ticker = data.symbol;
+      mutateForm(false);
+      sendStockToServer(data);
+    } else {
+      mutateForm(false);
+      ShowMessage(data);
+    }
+  } catch (err) {
+    console.error("Error in getting company's data for", compName, err.message);
   }
 }
 
@@ -161,26 +170,34 @@ async function show_company(compName) {
   userLoggedIn() &&
     (document.querySelector("#history-view").style.display = "none");
   blurAllFields(true);
-  compName === "random" && (compName = await getRandomTicker());
-  let data = await checkComp(compName);
-  // if no such company:
-  if (typeof data === "string") {
-    ShowMessage(data);
+  try {
+    compName === "random" && (compName = await getRandomTicker());
+    let data = await checkComp(compName);
+    // if no such company:
+    if (typeof data === "string") {
+      ShowMessage(data);
+      blurAllFields(false);
+      return;
+    }
+    comp_fillName(data);
+    comp_fillPrice(data);
+    comp_fillAvPr200(data);
+    await comp_fillRest(data);
     blurAllFields(false);
-    return;
+    updateBrowserHistory(`/company/${compName}`);
+  } catch (err) {
+    console.error("Can't show data for", compName, err.message);
   }
-  comp_fillName(data);
-  comp_fillPrice(data);
-  comp_fillAvPr200(data);
-  await comp_fillRest(data);
-  blurAllFields(false);
-  updateBrowserHistory(`/company/${compName}`);
 }
 
 async function getRandomTicker() {
-  const response = await fetch("/DB/random");
-  const data = await response.json();
-  return data.randomTicker;
+  try {
+    const response = await fetch("/DB/random");
+    const data = await response.json();
+    return data.randomTicker;
+  } catch (err) {
+    console.error("Can't receive random ticker from DB", err.message);
+  }
 }
 
 async function comp_fillRest(data) {
@@ -209,37 +226,44 @@ async function fillFinParams(data) {
   const dividends = document.querySelector("#company-dividends");
   const divPer = document.querySelector("#company-dividends-yield");
   const button = document.querySelector(".big-green-btn");
-
-  const company = await finParamFromAPI(data.symbol);
-  // todo - add checks
-  const divYield = (company.dividends / data.price) * 100;
-  pe.innerHTML = company.pe.toFixed(2) || "-";
-  fpe.innerHTML = company.fpe.toFixed(2) || "-";
-  pb.innerHTML = company.PB.toFixed(2) || "-";
-  roe.innerHTML = `${(company.ROE * 100).toFixed(2)} %` || "-";
-  debt.innerHTML = company.debt.toFixed(2) || "-";
-  profitMargins.innerHTML =
-    `${(company.profitMargins * 100).toFixed(2)} %` || "-";
-  dividends.innerHTML = company.dividends.toFixed(1) || "-";
-  divPer.innerHTML = `${divYield.toFixed(2)} %` || "-";
-  userLoggedIn() &&
-    button.addEventListener("click", () => activateBuyForm(data.symbol));
+  try {
+    const company = await finParamFromAPI(data.symbol);
+    const divYield = (company.dividends / data.price) * 100;
+    pe.innerHTML = company.pe.toFixed(2) || "-";
+    fpe.innerHTML = company.fpe.toFixed(2) || "-";
+    pb.innerHTML = company.PB.toFixed(2) || "-";
+    roe.innerHTML = `${(company.ROE * 100).toFixed(2)} %` || "-";
+    debt.innerHTML = company.debt.toFixed(2) || "-";
+    profitMargins.innerHTML =
+      `${(company.profitMargins * 100).toFixed(2)} %` || "-";
+    dividends.innerHTML = company.dividends.toFixed(1) || "-";
+    divPer.innerHTML = `${divYield.toFixed(2)} %` || "-";
+    userLoggedIn() &&
+      button.addEventListener("click", () => activateBuyForm(data.symbol));
+  } catch (err) {
+    // prettier-ignore
+    console.error("Financial parameters count's be filled for", compName, err.message);
+  }
 }
 
 async function finParamFromAPI(ticker) {
-  const APIkey = await getKey();
-  let url_params = `https://financialmodelingprep.com/api/v3/ratios/${ticker}?apikey=${APIkey}`;
-  const response_params = await fetch(url_params);
-  const finData = await response_params.json();
-  return {
-    pe: +finData[0].priceEarningsRatio?.toFixed(2),
-    fpe: +finData[0].priceEarningsToGrowthRatio?.toFixed(2),
-    PB: +finData[0].priceToBookRatio?.toFixed(2),
-    ROE: +finData[0].returnOnEquity?.toFixed(2),
-    profitMargins: +finData[0].netProfitMargin?.toFixed(2),
-    dividends: +finData[0].dividendPayoutRatio?.toFixed(2),
-    debt: +finData[0].debtEquityRatio?.toFixed(2),
-  };
+  try {
+    const APIkey = await getKey();
+    let url_params = `https://financialmodelingprep.com/api/v3/ratios/${ticker}?apikey=${APIkey}`;
+    const response_params = await fetch(url_params);
+    const [finData] = await response_params.json();
+    return {
+      pe: +finData.priceEarningsRatio?.toFixed(2),
+      fpe: +finData.priceEarningsToGrowthRatio?.toFixed(2),
+      PB: +finData.priceToBookRatio?.toFixed(2),
+      ROE: +finData.returnOnEquity?.toFixed(2),
+      profitMargins: +finData.netProfitMargin?.toFixed(2),
+      dividends: +finData.dividendPayoutRatio?.toFixed(2),
+      debt: +finData.debtEquityRatio?.toFixed(2),
+    };
+  } catch (err) {
+    console.error("Can't receive financial data for", compName, err.message);
+  }
 }
 
 function comp_fillDesc(fullText) {
@@ -259,10 +283,8 @@ function comp_fillName(data) {
   document.querySelector("#hidden-ticker-comp").value = data.symbol;
 }
 function comp_fillPrice(data) {
-  document.querySelector("#res-comp-price").innerHTML = moneyFormat(
-    data.price,
-    2
-  );
+  // prettier-ignore
+  document.querySelector("#res-comp-price").innerHTML = moneyFormat(data.price, 2);
   const resComDay = document.querySelector("#res-comp-day");
   const valuePer = data.changesPercentage?.toFixed(1);
   resComDay.innerHTML = `${valuePer || "-"} % `;
@@ -270,22 +292,24 @@ function comp_fillPrice(data) {
 }
 function comp_fillAvPr200(data) {
   let potential = (data.priceAvg200 / data.price - 1) * 100 || 0;
-  document.querySelector("#comp-target-dol").innerHTML = moneyFormat(
-    data.priceAvg200,
-    2
-  );
+  // prettier-ignore
+  document.querySelector("#comp-target-dol").innerHTML = moneyFormat(data.priceAvg200,2);
   const targPer = document.querySelector("#comp-target-per");
   targPer.innerHTML = `${potential.toFixed(1)} %`;
   targPer.className = `med-text ${RedGreenText(potential)}`;
 }
 
 async function activateBuyForm(ticker) {
-  let data = await checkComp(ticker);
-  sendStockToServer(data);
-  const buyForm = document.querySelector("#hidden-buy-form");
-  document.querySelector(".big-green-btn").style.display = "none";
-  buyForm.style.display = "block";
-  buyForm.style.animationPlayState = "running";
+  try {
+    let data = await checkComp(ticker);
+    sendStockToServer(data);
+    const buyForm = document.querySelector("#hidden-buy-form");
+    document.querySelector(".big-green-btn").style.display = "none";
+    buyForm.style.display = "block";
+    buyForm.style.animationPlayState = "running";
+  } catch (err) {
+    console.error("Buy form can't be activated", err.message);
+  }
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -296,8 +320,7 @@ function showingHistory() {
   document.querySelector("#company-view").style.display = "none";
   let HistRows = document.querySelectorAll(".hist-row");
   HistRows.forEach((Row) => changeHistRow(Row));
-  // change div title when clicked:
-  //? using event delegation
+  // change div title when clicked:  (using event delegation)
   document
     .querySelector("#HistTable")
     .addEventListener("click", (e) =>
@@ -355,24 +378,28 @@ const activateDivForm = () =>
   document.getElementById("Div-form").addEventListener("submit", getDividend); //event
 
 async function getDividend(event) {
-  event.preventDefault();
-  const title = document.querySelector("#Div-title").value;
-  const amount = document.querySelector("#Div-amount").value;
-  // add dividend to the DB
-  const response = await fetch(`/history/dividend`, {
-    method: "PUT",
-    body: JSON.stringify({
-      title: title,
-      amount: amount,
-    }),
-  });
-  const data = await response.json();
-  const newEntryId = data.id;
-  const HistRow = createNewHistRow(title, amount);
-  makeDivCellChangable(HistRow, newEntryId);
-  updateProfits(amount);
-  document.getElementById("Div-form").reset();
-  ShowMessage("Dividends received");
+  try {
+    event.preventDefault();
+    const title = document.querySelector("#Div-title").value;
+    const amount = document.querySelector("#Div-amount").value;
+    // add dividend to the DB
+    const response = await fetch(`/history/dividend`, {
+      method: "PUT",
+      body: JSON.stringify({
+        title: title,
+        amount: amount,
+      }),
+    });
+    const data = await response.json();
+    const newEntryId = data.id;
+    const HistRow = createNewHistRow(title, amount);
+    makeDivCellChangable(HistRow, newEntryId);
+    updateProfits(amount);
+    document.getElementById("Div-form").reset();
+    ShowMessage("Dividends received");
+  } catch (err) {
+    console.error("Can't get dividends!", err.message);
+  }
 }
 
 function createNewHistRow(title, amount) {
@@ -622,9 +649,13 @@ function blurAllFields(bool) {
 }
 
 async function AuthCheck() {
-  const resp = await fetch(`/authCheck`);
-  const data = await resp.json();
-  return data.LoggedIn;
+  try {
+    const resp = await fetch(`/authCheck`);
+    const data = await resp.json();
+    return data.LoggedIn;
+  } catch (err) {
+    console.error("Authentication error!", err.message);
+  }
 }
 
 const userLoggedIn = () => localStorage.getItem("loggedIn") === "true";
@@ -687,64 +718,76 @@ function showBtnLoader(bool) {
 }
 
 async function updateAllPrices() {
-  const table = document.getElementById("mainTable").querySelector("tbody");
-  const rows = [...table.rows];
-  let tickList = [];
-  let tickList_rus = [];
-  let tickStr = "";
-  for (let [_, row] of rows.entries()) {
-    const ticker = row.querySelector("#company-ticker").innerHTML;
-    const market = row.querySelector("#company-market").innerHTML;
-    if (market != "MOEX" && market != "XETRA") tickList.push(ticker);
-    else if (market === "MOEX") tickList_rus.push(ticker);
+  try {
+    const table = document.getElementById("mainTable").querySelector("tbody");
+    const rows = [...table.rows];
+    let tickList = [];
+    let tickList_rus = [];
+    let tickStr = "";
+    for (let [_, row] of rows.entries()) {
+      const ticker = row.querySelector("#company-ticker").innerHTML;
+      const market = row.querySelector("#company-market").innerHTML;
+      if (market != "MOEX" && market != "XETRA") tickList.push(ticker);
+      else if (market === "MOEX") tickList_rus.push(ticker);
+    }
+    tickStr = tickList.join(",");
+    const APIkey = await getKey();
+    let url = `https://financialmodelingprep.com/api/v3/quote/${tickStr}?apikey=${APIkey}`;
+    const response = await fetch(url);
+    const data = await response.json();
+    updateDB(data);
+    await updateMainTable(rows, data);
+    await updateMOEXprices(rows, tickList_rus);
+    userLoggedIn() && fillTopInfo();
+  } catch (err) {
+    console.error("Couldn't update main table", err.message);
   }
-  tickStr = tickList.join(",");
-  const APIkey = await getKey();
-  let url = `https://financialmodelingprep.com/api/v3/quote/${tickStr}?apikey=${APIkey}`;
-  const response = await fetch(url);
-  const data = await response.json();
-  updateDB(data);
-  await updateMainTable(rows, data);
-  await updateMOEXprices(rows, tickList_rus);
-  userLoggedIn() && fillTopInfo();
 }
 
 async function updateMOEXprices(rows, tickList_rus) {
-  let data = [];
-  for (let stock of tickList_rus) data.push(await checkComp_RU(stock));
-  updateMainTable(rows, data);
+  try {
+    let data = [];
+    for (let stock of tickList_rus) data.push(await checkComp_RU(stock));
+    updateMainTable(rows, data);
+  } catch (err) {
+    console.error("MOEX prices list creation problem.", err.message);
+  }
 }
 
 async function updateMainTable(rows, data) {
-  for (let [_, row] of rows.entries()) {
-    const ticker = row.querySelector("#company-ticker").innerHTML;
-    const day = row.querySelector("#day-one");
-    const myPrice = +row.querySelector(".my-price-row").innerHTML;
-    const quan = +row.querySelector(".quantity-row").innerHTML;
-    const price = row.querySelector(".market-price");
-    const sigma = row.querySelector(".sigma-row");
-    const change = row.querySelector("#change-field");
-    for (let item of data) {
-      if (item.symbol !== ticker) continue;
-      const priceToday = quan * item.price;
-      const priceOrig = quan * myPrice;
-      day.innerHTML = item.changesPercentage
-        ? `${item.changesPercentage?.toFixed(2)} %`
-        : "";
-      price.innerHTML = item.price.toFixed(2);
-      sigma.innerHTML = priceToday.toFixed(2);
-      const chNum = ((priceToday / priceOrig - 1) * 100).toFixed(2);
-      change.innerHTML = `${chNum} %`;
-      const animateList = [price, sigma, change, day];
-      animateList.forEach((elem) => elem.classList.add("animate"));
-      setTimeout(function () {
-        price.className = "market-price";
-        sigma.className = "sigma-row";
-        change.className = RedGreenText(chNum);
-        day.className = RedGreenText(item.changesPercentage);
-      }, 1500);
-      break;
+  try {
+    for (let [_, row] of rows.entries()) {
+      const ticker = row.querySelector("#company-ticker").innerHTML;
+      const day = row.querySelector("#day-one");
+      const myPrice = +row.querySelector(".my-price-row").innerHTML;
+      const quan = +row.querySelector(".quantity-row").innerHTML;
+      const price = row.querySelector(".market-price");
+      const sigma = row.querySelector(".sigma-row");
+      const change = row.querySelector("#change-field");
+      for (let item of data) {
+        if (item.symbol !== ticker) continue;
+        const priceToday = quan * item.price;
+        const priceOrig = quan * myPrice;
+        day.innerHTML = item.changesPercentage
+          ? `${item.changesPercentage?.toFixed(2)} %`
+          : "";
+        price.innerHTML = item.price.toFixed(2);
+        sigma.innerHTML = priceToday.toFixed(2);
+        const chNum = ((priceToday / priceOrig - 1) * 100).toFixed(2);
+        change.innerHTML = `${chNum} %`;
+        const animateList = [price, sigma, change, day];
+        animateList.forEach((elem) => elem.classList.add("animate"));
+        setTimeout(function () {
+          price.className = "market-price";
+          sigma.className = "sigma-row";
+          change.className = RedGreenText(chNum);
+          day.className = RedGreenText(item.changesPercentage);
+        }, 1500);
+        break;
+      }
     }
+  } catch (err) {
+    console.error("Error during main table update", err.message);
   }
 }
 
@@ -762,63 +805,86 @@ function updateDB(data) {
 }
 
 async function checkComp(ticker) {
-  // free version allow only 250 API calls daily
-  // MOEX stocks will be checked first to not spend this 250 calls
-  const ruStock = await checkComp_RU(ticker);
-  if (ruStock) return ruStock;
-  // now we check for US stocks
-  const APIkey = await getKey();
-  let url = `https://financialmodelingprep.com/api/v3/quote/${ticker}?apikey=${APIkey}`;
-  const response = await fetch(url);
-  let data = await response.json();
-  if (data[0]) return data[0];
-  else {
-    const realTicker = await getTicker(ticker);
-    if (realTicker) return await checkComp(realTicker);
-    else return "No such company";
+  try {
+    // free version allow only 250 API calls daily
+    // MOEX stocks will be checked first to not spend this 250 calls
+    const ruStock = await checkComp_RU(ticker);
+    if (ruStock) return ruStock;
+    // now we check for US stocks
+    const APIkey = await getKey();
+    let url = `https://financialmodelingprep.com/api/v3/quote/${ticker}?apikey=${APIkey}`;
+    const response = await fetch(url);
+    console.log(response);
+    let [data] = await response.json();
+    console.log(data);
+    if (data) return data;
+    else {
+      const realTicker = await getTicker(ticker);
+      if (realTicker) return await checkComp(realTicker);
+      else return "No such company";
+    }
+  } catch (err) {
+    // prettier-ignore
+    console.error("Company data couldn't not be received for", ticker, err.message);
   }
 }
 
 async function checkComp_RU(ticker) {
-  if (ticker === "") return;
-  let url = `https://iss.moex.com/iss/engines/stock/markets/shares/securities/${ticker}.json`;
-  const response = await fetch(url);
-  let data = await response.json();
-  // console.log("checkComp data:", data);
-  if (data.marketdata.data.length == 0) return false;
-  const prices = data.marketdata.data.find((elem) => elem.includes("TQBR"));
-  const price = prices.find((item) => typeof item === "number" && item !== 0);
-  const exchangeRate = await GiveExchangeFor("rub");
-  const company = {
-    symbol: prices[0],
-    changesPercentage: null,
-    name: data.securities.data[0][20],
-    price: price * exchangeRate,
-    exchange: "MOEX",
-  };
-  return company;
+  try {
+    if (ticker === "") return;
+    let url = `https://iss.moex.com/iss/engines/stock/markets/shares/securities/${ticker}.json`;
+    const response = await fetch(url);
+    let data = await response.json();
+    // console.log("checkComp data:", data);
+    if (data.marketdata.data.length == 0) return false;
+    const prices = data.marketdata.data.find((elem) => elem.includes("TQBR"));
+    const price = prices.find((item) => typeof item === "number" && item !== 0);
+    const exchangeRate = await GiveExchangeFor("rub");
+    const company = {
+      symbol: prices[0],
+      changesPercentage: null,
+      name: data.securities.data[0][20],
+      price: price * exchangeRate,
+      exchange: "MOEX",
+    };
+    return company;
+  } catch (err) {
+    console.error("MOEX company check failed for", ticker, err.message);
+  }
 }
 
 async function getTicker(name) {
-  const response = await fetch(`/getTicker/${name}`);
-  const data = await response.json();
-  return data.ticker;
+  try {
+    const response = await fetch(`/getTicker/${name}`);
+    const data = await response.json();
+    return data.ticker;
+  } catch (err) {
+    console.error("Can't receive ticker for", name, err.message);
+  }
 }
 
 async function getKey() {
-  let key = localStorage.getItem("APIkey");
-  if (key) return key;
-  const response = await fetch("getKey");
-  const data = await response.json();
-  localStorage.setItem("APIkey", data.key);
-  key = data.key;
-  return key;
+  try {
+    let key = localStorage.getItem("APIkey");
+    if (key) return key;
+    const response = await fetch("getKey");
+    const data = await response.json();
+    localStorage.setItem("APIkey", data.key);
+    key = data.key;
+    return key;
+  } catch (err) {
+    console.error("Can't receive API key", err.message);
+  }
 }
 
 async function GiveExchangeFor(currency) {
-  // this API can do much more than this
-  const url = `https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/latest/currencies/${currency}/usd.json`;
-  const response = await fetch(url);
-  const data = await response.json();
-  return data.usd;
+  try {
+    // this API can do much more than this
+    const url = `https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/latest/currencies/${currency}/usd.json`;
+    const response = await fetch(url);
+    const data = await response.json();
+    return data.usd;
+  } catch (err) {
+    console.error("Currency exchange failed", err.message);
+  }
 }
