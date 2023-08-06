@@ -171,7 +171,8 @@ def db_update(request):
 
 @csrf_exempt
 def db_random(request):
-    StockList = list(Stocks.objects.exclude(company='dividends'))
+    StockList = list(Stocks.objects.exclude(
+        company='dividends').exclude(market='XETRA'))
     randomTicker = random.choice(StockList).ticker
     return JsonResponse({"randomTicker": randomTicker}, status=200)
 

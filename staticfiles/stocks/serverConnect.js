@@ -92,19 +92,6 @@ export async function SendDivToDB(title, amount) {
   return await response.json();
 }
 
-export function updateDB(data) {
-  for (let item of data) {
-    fetch(`DB/update`, {
-      method: "PUT",
-      body: JSON.stringify({
-        ticker: item.symbol,
-        day: item.changesPercentage,
-        price: item.price,
-      }),
-    });
-  }
-}
-
 export async function checkComp(ticker) {
   try {
     // free version allow only 250 API calls daily
@@ -152,17 +139,16 @@ export async function checkComp_RU(ticker) {
   }
 }
 
-export async function getTicker(name) {
-  try {
-    const response = await fetch(`/getTicker/${name}`);
-    const data = await response.json();
-    return data.ticker;
-  } catch (err) {
-    console.error("Can't receive ticker for", name, err.message);
-  }
+export async function MainTableData(tickStr) {
+  const APIkey = await getKey();
+  let url = `https://financialmodelingprep.com/api/v3/quote/${tickStr}?apikey=${APIkey}`;
+  const response = await fetch(url);
+  const data = await response.json();
+  updateDB(data);
+  return data;
 }
 
-export async function getKey() {
+async function getKey() {
   try {
     let key = localStorage.getItem("APIkey");
     if (key) return key;
@@ -176,7 +162,7 @@ export async function getKey() {
   }
 }
 
-export async function GiveExchangeFor(currency) {
+async function GiveExchangeFor(currency) {
   try {
     // this API can do much more than this
     const url = `https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/latest/currencies/${currency}/usd.json`;
@@ -188,11 +174,25 @@ export async function GiveExchangeFor(currency) {
   }
 }
 
-export async function MainTableData(tickStr) {
-  const APIkey = await getKey();
-  let url = `https://financialmodelingprep.com/api/v3/quote/${tickStr}?apikey=${APIkey}`;
-  const response = await fetch(url);
-  const data = await response.json();
-  updateDB(data);
-  return data;
+function updateDB(data) {
+  for (let item of data) {
+    fetch(`DB/update`, {
+      method: "PUT",
+      body: JSON.stringify({
+        ticker: item.symbol,
+        day: item.changesPercentage,
+        price: item.price,
+      }),
+    });
+  }
+}
+
+async function getTicker(name) {
+  try {
+    const response = await fetch(`/getTicker/${name}`);
+    const data = await response.json();
+    return data.ticker;
+  } catch (err) {
+    console.error("Can't receive ticker for", name, err.message);
+  }
 }

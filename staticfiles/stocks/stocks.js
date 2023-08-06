@@ -8,24 +8,19 @@ import { showingHistory, activateDivForm } from "./history.js";
 import { fillTopInfo } from "./topInfo.js";
 import { sortTable } from "./sorting.js";
 
-// todo - get rid of that
-document.addEventListener("DOMContentLoaded", loadingSequence);
-
-async function loadingSequence() {
-  try {
-    const loggedIn = await AuthCheck();
-    localStorage.setItem("loggedIn", loggedIn);
-    checkMessages();
-    loadCorrectView();
-    capitalizeName();
-    handleClicks();
-    loggedIn && fillTopInfo();
-    loggedIn && activateDivForm();
-    // browser back button action
-    window.addEventListener("popstate", loadCorrectView);
-  } catch (err) {
-    console.error("Loading sequence error", err.message);
-  }
+try {
+  const loggedIn = await AuthCheck();
+  localStorage.setItem("loggedIn", loggedIn);
+  checkMessages();
+  loadCorrectView();
+  capitalizeName();
+  handleClicks();
+  loggedIn && fillTopInfo();
+  loggedIn && activateDivForm();
+  // browser back button action
+  window.addEventListener("popstate", loadCorrectView);
+} catch (err) {
+  console.error("Loading sequence error", err.message);
 }
 
 function handleClicks() {
