@@ -100,6 +100,7 @@ export async function checkComp(ticker) {
     if (ruStock) return ruStock;
     // now we check for US stocks
     const APIkey = await getKey();
+    //todo - add guard clause for non-us companies
     let url = `https://financialmodelingprep.com/api/v3/quote/${ticker}?apikey=${APIkey}`;
     const response = await fetch(url);
     let [data] = await response.json();

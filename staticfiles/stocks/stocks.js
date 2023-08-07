@@ -30,21 +30,23 @@ function handleClicks() {
   const portBtn = document.querySelector(".portfolio-btn");
   const histBtn = document.querySelector(".history-btn");
   const nodes = ["#mainTable", ".ticker-search-container"];
+  userLoggedIn() && histBtn.addEventListener("click", showingHistory);
   userLoggedIn() && nodes.push("#HistTable");
+  compSearchBtn.addEventListener("click", showComp_CompSearch);
   portBtn.addEventListener("click", showingMain);
   randomCompBtns.forEach((btn) => btn.addEventListener("click", showComp_link));
-  compSearchBtn.addEventListener("click", showComp_CompSearch);
-  userLoggedIn() && histBtn.addEventListener("click", showingHistory);
-  for (const node of nodes)
+  nodes.forEach((node) =>
     document.querySelector(node).addEventListener("click", (e) => {
       const compName = e.target.closest(".data-storage")?.dataset.ticker;
       compName && compName !== "DIV" && show_company(compName);
-    });
-  // sorting main table
-  const sorters = document.querySelectorAll(".sorter");
-  sorters.forEach((column) =>
-    column.addEventListener("click", (e) => sortTable(e.target))
+    })
   );
+  // sorting main table
+  document
+    .querySelectorAll(".sorter")
+    .forEach((column) =>
+      column.addEventListener("click", (e) => sortTable(e.target))
+    );
 }
 
 function loadCorrectView() {

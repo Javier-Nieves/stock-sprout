@@ -1,7 +1,8 @@
 import { moneyFormat, RedGreenText } from "./helpers.js";
+
 export function fillTopInfo() {
-  let { sum1, sum2, dayCh } = calculateMainParameters();
-  let [nowChange, perChange] = calculateSecParameters(sum1, sum2, dayCh);
+  const { sum1, sum2, dayCh } = calculateMainParameters();
+  const { nowChange, perChange } = calculateSecParameters(sum1, sum2, dayCh);
   fillMainBlock(sum1);
   fillChangeBlock("#nowChange", sum2, nowChange);
   fillChangeBlock("#dayChange", dayCh, perChange);
@@ -30,7 +31,7 @@ function calculateMainParameters() {
 function calculateSecParameters(sum1, sum2, dayCh) {
   let nowChange = +((sum2 / sum1 - 1) * 100).toFixed(2) || 0;
   let perChange = +((dayCh / sum2) * 100).toFixed(2) || 0;
-  return [nowChange, perChange];
+  return { nowChange, perChange };
 }
 
 function fillChangeBlock(where, value1, value2) {

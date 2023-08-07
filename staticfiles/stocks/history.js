@@ -1,13 +1,12 @@
 import { changeDivName, SendDivToDB } from "./serverConnect.js";
-import { ShowMessage } from "./helpers.js";
+import { ShowMessage, updateBrowserHistory, moneyFormat } from "./helpers.js";
 
 export function showingHistory() {
   document.querySelector("#portfolio-view").style.display = "none";
   document.querySelector("#summary-row-top").style.display = "flex";
   document.querySelector("#history-view").style.display = "block";
   document.querySelector("#company-view").style.display = "none";
-  let HistRows = document.querySelectorAll(".hist-row");
-  HistRows.forEach((Row) => changeHistRow(Row));
+  document.querySelectorAll(".hist-row").forEach((Row) => changeHistRow(Row));
   // change div title when clicked:  (using event delegation)
   document
     .querySelector("#HistTable")
@@ -19,7 +18,7 @@ export function showingHistory() {
 
 function changeHistRow(Row) {
   let action = Row.querySelector(".hist-action").innerHTML;
-  // switch statement as an if-else alternative
+  // switch statement as an if-else alternative. todo - make es6
   switch (action) {
     case "Buy":
       Row.querySelector(".hist-sell").innerHTML = "-";
@@ -45,15 +44,15 @@ function changeHistRow(Row) {
 }
 
 export const activateDivForm = () =>
-  document.getElementById("Div-form").addEventListener("submit", getDividend); //todo - event is needed?
+  document.getElementById("Div-form").addEventListener("submit", getDividend);
 
-async function getDividend(event) {
+async function getDividend() {
   try {
-    event.preventDefault();
+    preventDefault();
     const title = document.querySelector("#Div-title").value;
     const amount = document.querySelector("#Div-amount").value;
-    const data = await SendDivToDB(title, amount);
-    const newEntryId = data.id;
+    const response = await SendDivToDB(title, amount);
+    const newEntryId = response.id;
     const HistRow = createNewHistRow(title, amount);
     makeDivCellChangable(HistRow, newEntryId);
     updateProfits(amount);
@@ -82,16 +81,15 @@ function createNewHistRow(title, amount) {
 }
 
 function updateProfits(amount) {
-  const valuesToChange = document
+  document
     .querySelector("#profit-main")
-    .querySelectorAll(".sum-value");
-  valuesToChange.forEach((value) => {
-    let profitValue = Number.parseInt(
-      value.innerHTML.replace("$", "").replaceAll(" ", "")
-    );
-    let newValue = profitValue + Math.round(+amount);
-    value.innerHTML = moneyFormat(newValue);
-  });
+    .querySelectorAll(".sum-value")
+    .forEach((value) => {
+      const profitValue = Number.parseInt(
+        value.innerHTML.replace("$", "").replaceAll(" ", "")
+      );
+      value.innerHTML = moneyFormat(profitValue + Math.round(+amount));
+    });
 }
 
 function makeDivCellChangable(HistRow, newEntryId) {

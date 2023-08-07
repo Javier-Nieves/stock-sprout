@@ -2,19 +2,19 @@ export function sortTable(tar) {
   const whichSort = tar.classList;
   const table = document.getElementById("mainTable").querySelector("tbody");
   const rows = table.rows;
-  const crit = determineSortParameter(whichSort);
+  const sortBy = determineSortParameter(whichSort);
   const rowMap = new Map();
-  for (let [_, row] of Array.from(table.rows).entries()) {
+  for (const row of Array.from(table.rows)) {
     const param = +row
-      .querySelector(crit)
+      .querySelector(sortBy)
       ?.innerHTML.replaceAll(" ", "")
       .replace("%", "");
+    // create Map in which sorting parameters will be keys and their rows - values
     rowMap.set(param, row);
   }
   const sortedArray = [...rowMap];
-  sortedArray.sort((a, b) =>
-    whichSort.contains("Up") ? b[0] - a[0] : a[0] - b[0]
-  );
+  // prettier-ignore
+  sortedArray.sort((a, b) => whichSort.contains("Up") ? b[0] - a[0] : a[0] - b[0]);
   const sortedMap = new Map(sortedArray);
   let index = 0;
   for (let [_, row] of sortedMap) {
@@ -31,9 +31,9 @@ export function sortTable(tar) {
 }
 
 function determineSortParameter(whichSort) {
-  let crit;
-  whichSort.contains("sortSigma") && (crit = ".sigma-row");
-  whichSort.contains("sortChange") && (crit = "#change-field");
-  whichSort.contains("sortDay") && (crit = "#day-one");
-  return crit;
+  let sortBy;
+  whichSort.contains("sortSigma") && (sortBy = ".sigma-row");
+  whichSort.contains("sortChange") && (sortBy = "#change-field");
+  whichSort.contains("sortDay") && (sortBy = "#day-one");
+  return sortBy;
 }

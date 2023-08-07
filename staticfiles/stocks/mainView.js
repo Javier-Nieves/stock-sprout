@@ -2,6 +2,7 @@ import { searchFormFunction } from "./search.js";
 import { fillTopInfo } from "./topInfo.js";
 import { checkComp_RU, MainTableData } from "./serverConnect.js";
 import { userLoggedIn, updateBrowserHistory, RedGreenText } from "./helpers.js";
+
 export function showingMain() {
   updateBrowserHistory("/");
   searchFormFunction();
@@ -16,27 +17,15 @@ export function showingMain() {
 
 function updateBtnFunction() {
   const updateBtn = document.querySelector(".prices-btn");
-  updateBtn.addEventListener("mouseover", function () {
-    this.textContent = "Update";
-  });
-  updateBtn.addEventListener("mouseout", function () {
-    this.textContent = "Price, $";
-  });
-  updateBtn.addEventListener("mouseup", async function () {
-    showBtnLoader(true);
-    await updateAllPrices();
-    showBtnLoader(false);
-  });
-}
-
-function showBtnLoader(bool) {
-  const updateBtn = document.querySelector(".prices-btn");
-  const threeDots = document.querySelector(".three-dots");
-  updateBtn.style.display = bool ? "none" : "block";
-  threeDots.style.display = bool ? "flex" : "none";
+  // prettier-ignore
+  updateBtn.addEventListener("mouseover", function () {this.textContent = "Update"});
+  // prettier-ignore
+  updateBtn.addEventListener("mouseout", function () {this.textContent = "Price, $"});
+  updateBtn.addEventListener("mouseup", updateAllPrices);
 }
 
 async function updateAllPrices() {
+  showBtnLoader(true);
   try {
     const table = document.getElementById("mainTable").querySelector("tbody");
     const rows = [...table.rows];
@@ -56,7 +45,16 @@ async function updateAllPrices() {
     userLoggedIn() && fillTopInfo();
   } catch (err) {
     console.error("Couldn't update main table", err.message);
+  } finally {
+    showBtnLoader(false);
   }
+}
+
+function showBtnLoader(bool) {
+  const updateBtn = document.querySelector(".prices-btn");
+  const threeDots = document.querySelector(".three-dots");
+  updateBtn.style.display = bool ? "none" : "block";
+  threeDots.style.display = bool ? "flex" : "none";
 }
 
 async function updateMOEXprices(rows, tickList_rus) {
@@ -79,7 +77,7 @@ async function updateMainTable(rows, data) {
       const price = row.querySelector(".market-price");
       const sigma = row.querySelector(".sigma-row");
       const change = row.querySelector("#change-field");
-      for (let item of data) {
+      for (const item of data) {
         if (item.symbol !== ticker) continue;
         const priceToday = quan * item.price;
         const priceOrig = quan * myPrice;
