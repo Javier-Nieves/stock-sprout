@@ -48,7 +48,7 @@ export const activateDivForm = () =>
 
 async function getDividend() {
   try {
-    preventDefault();
+    event.preventDefault();
     const title = document.querySelector("#Div-title").value;
     const amount = document.querySelector("#Div-amount").value;
     const response = await SendDivToDB(title, amount);

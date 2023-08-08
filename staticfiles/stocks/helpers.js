@@ -81,22 +81,11 @@ function ShowMessageSearchBox(text) {
 export function blurAllFields(bool) {
   if (bool) document.querySelector(".big-loader").classList.remove("hidden");
   else document.querySelector(".big-loader").classList.add("hidden");
-  const blurList = [
-    "#company-title",
-    "#company-desc",
-    ".company-price-row",
-    "#hidden-buy-form",
-    "#comp-ticker",
-  ];
-  for (const element of blurList) {
-    document.querySelector(element).style.filter = bool
-      ? "blur(5px)"
-      : "blur(0)";
-  }
-  const sumRows = document.querySelectorAll(".summary-row");
-  sumRows.forEach(
-    (item) => (item.style.filter = bool ? "blur(5px)" : "blur(0)")
-  );
+  // prettier-ignore
+  ["#company-title","#company-desc",".company-price-row",
+    "#hidden-buy-form","#comp-ticker", "#mainCompParam", "#secondCompParam"]
+  .map((element) => document.querySelector(element))
+  .map((element) => (element.style.filter = bool ? "blur(5px)" : "blur(0)"));
 }
 
 export const userLoggedIn = () => localStorage.getItem("loggedIn") === "true";
