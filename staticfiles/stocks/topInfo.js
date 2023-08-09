@@ -38,10 +38,16 @@ function fillChangeBlock(where, value1, value2) {
   const moneyBlock = document.querySelector(`${where}Dol`);
   const percentBlock = document.querySelector(`${where}Per`);
   const colorClass = RedGreenText(value2);
-  moneyBlock.className = `sum-value ${colorClass}`;
-  percentBlock.className = `sum-value ${colorClass}`;
   moneyBlock.innerHTML = moneyFormat(value1);
   percentBlock.innerHTML = `${value2} %`;
+  [moneyBlock, percentBlock].forEach((elem) => elem.classList.add("animate"));
+  setTimeout(
+    () =>
+      [moneyBlock, percentBlock].forEach(
+        (elem) => (elem.className = `sum-value ${colorClass}`)
+      ),
+    1500
+  );
 }
 
 function fillEarnProfit(sum1, sum2) {
@@ -51,7 +57,11 @@ function fillEarnProfit(sum1, sum2) {
   let prof = sum2 - sum1 + earnings;
   earnElem.innerHTML = moneyFormat(earnings);
   profitBox.innerHTML = moneyFormat(prof);
-  profitBox.className = `sum-value ${RedGreenText(prof)}`;
+  profitBox.classList.add("animate");
+  setTimeout(
+    () => (profitBox.className = `sum-value ${RedGreenText(prof)}`),
+    1500
+  );
 }
 
 const fillMainBlock = (sum1) =>
