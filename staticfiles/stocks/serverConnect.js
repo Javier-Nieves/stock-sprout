@@ -1,9 +1,23 @@
 import { ShowMessage } from "./helpers.js";
 
+const TIMEOUT_SEC = 5;
+
+async function AJAX(url) {
+  try {
+    const fetchPro = fetch(url);
+    const response = await Promise.race([fetchPro, timeout(TIMEOUT_SEC)]);
+    const data = await response.json();
+    console.log(data);
+    // if (!res.ok) throw new Error(`${data.message} (${res.status})`);
+    return data;
+  } catch (err) {
+    throw err;
+  }
+}
+
 export async function AuthCheck() {
   try {
-    const resp = await fetch(`/authCheck`);
-    const data = await resp.json();
+    const data = await AJAX(`/authCheck`);
     return data.LoggedIn;
   } catch (err) {
     console.error("Authentication error!", err.message);
@@ -111,8 +125,9 @@ export async function checkComp(ticker) {
       else return "No such company";
     }
   } catch (err) {
+    throw err;
     // prettier-ignore
-    console.error("Company data couldn't not be received for", ticker, err.message);
+    // console.error("Company data couldn't not be received for", ticker, err.message);
   }
 }
 
@@ -120,8 +135,7 @@ export async function checkComp_RU(ticker) {
   try {
     if (ticker === "") return;
     let url = `https://iss.moex.com/iss/engines/stock/markets/shares/securities/${ticker}.json`;
-    const response = await fetch(url);
-    let data = await response.json();
+    let data = await AJAX(url);
     // console.log("checkComp data:", data);
     if (data.marketdata.data.length == 0) return false;
     const prices = data.marketdata.data.find((elem) => elem.includes("TQBR"));
@@ -136,7 +150,8 @@ export async function checkComp_RU(ticker) {
     };
     return company;
   } catch (err) {
-    console.error("MOEX company check failed for", ticker, err.message);
+    throw err;
+    // console.error("MOEX company check failed for", ticker, err.message);
   }
 }
 
@@ -196,4 +211,12 @@ async function getTicker(name) {
   } catch (err) {
     console.error("Can't receive ticker for", name, err.message);
   }
+}
+
+function timeout(s) {
+  return new Promise(function (_, reject) {
+    setTimeout(function () {
+      reject(new Error(`Request took too long! Timeout after ${s} second`));
+    }, s * 1000);
+  });
 }

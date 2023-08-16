@@ -63,7 +63,7 @@ async function updateMOEXprices(rows, tickList_rus) {
     for (let stock of tickList_rus) data.push(await checkComp_RU(stock));
     updateMainTable(rows, data);
   } catch (err) {
-    console.error("MOEX prices list creation problem.", err.message);
+    throw err;
   }
 }
 
@@ -88,8 +88,8 @@ async function updateMainTable(rows, data) {
         sigma.innerHTML = priceToday.toFixed(2);
         const chNum = ((priceToday / priceOrig - 1) * 100).toFixed(2);
         change.innerHTML = `${chNum} %`;
-        const animateList = [price, sigma, change, day];
-        animateList.forEach((elem) => elem.classList.add("animate"));
+        // prettier-ignore
+        [price, sigma, change, day].forEach((elem) => elem.classList.add("animate"));
         setTimeout(function () {
           price.className = "market-price";
           sigma.className = "sigma-row";

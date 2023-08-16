@@ -1,7 +1,7 @@
 // prettier-ignore
 import {capitalizeName, checkMessages, userLoggedIn, Timer, updateBrowserHistory} from './helpers.js';
 // prettier-ignore
-import {show_company, showComp_link, showComp_CompSearch, } from './companies.js';
+import { show_company, showComp_link, showComp_CompSearch } from './companies.js';
 import { AuthCheck } from "./serverConnect.js";
 import { showingMain } from "./mainView.js";
 import { showingHistory, activateDivForm } from "./history.js";
