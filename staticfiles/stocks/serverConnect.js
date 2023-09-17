@@ -7,8 +7,6 @@ async function AJAX(url) {
     const fetchPro = fetch(url);
     const response = await Promise.race([fetchPro, timeout(TIMEOUT_SEC)]);
     const data = await response.json();
-    console.log(data);
-    // if (!res.ok) throw new Error(`${data.message} (${res.status})`);
     return data;
   } catch (err) {
     throw err;
