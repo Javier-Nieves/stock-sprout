@@ -108,14 +108,16 @@ export async function checkComp(ticker) {
   try {
     // free version allow only 250 API calls daily
     // MOEX stocks will be checked first to not spend this 250 calls
-    const ruStock = await checkComp_RU(ticker);
-    if (ruStock) return ruStock;
+    //! temporary cancelled. MOEX doesn't work
+    // const ruStock = await checkComp_RU(ticker);
+    // if (ruStock) return ruStock;
     // now we check for US stocks
     const APIkey = await getKey();
     //todo - add guard clause for non-us companies
     let url = `https://financialmodelingprep.com/api/v3/quote/${ticker}?apikey=${APIkey}`;
     const response = await fetch(url);
     let [data] = await response.json();
+    console.log(data);
     if (data) return data;
     else {
       const realTicker = await getTicker(ticker);

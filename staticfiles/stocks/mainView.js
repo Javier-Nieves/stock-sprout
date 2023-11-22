@@ -41,7 +41,8 @@ async function updateAllPrices() {
     tickStr = tickList.join(",");
     const data = await MainTableData(tickStr);
     await updateMainTable(rows, data);
-    await updateMOEXprices(rows, tickList_rus);
+    //! temporary cancel
+    // await updateMOEXprices(rows, tickList_rus);
     userLoggedIn() && fillTopInfo();
   } catch (err) {
     console.error("Couldn't update main table", err.message);
