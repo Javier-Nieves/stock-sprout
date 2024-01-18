@@ -45,7 +45,10 @@ async function updateAllPrices() {
     // await updateMOEXprices(rows, tickList_rus);
     userLoggedIn() && fillTopInfo();
   } catch (err) {
-    console.error("Couldn't update main table", err.message);
+    console.log(
+      "Couldn't update main table. It may be empty. Error: ",
+      err.message
+    );
   } finally {
     showBtnLoader(false);
   }

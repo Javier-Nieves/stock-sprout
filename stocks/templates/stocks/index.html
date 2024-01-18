@@ -325,8 +325,14 @@
 {% if message == 'You have 20 minutes!' %}
 <script> localStorage.setItem("countdown", 1200); </script>
 {% endif %}
+{% if message == 'You are logged in' %}
+<script> window.history.pushState("_", "_", "/"); </script>
+{% endif %}
 {% if message == 'Logged out' %}
-<script> Timer('stop'); </script>
+<script> 
+// Timer('stop'); 
+localStorage.removeItem("countdown");
+</script>
 {% endif %}
 {% if message %}
 <div id='message' class="hidden">{{message}}</div>

@@ -117,7 +117,7 @@ export async function checkComp(ticker) {
     let url = `https://financialmodelingprep.com/api/v3/quote/${ticker}?apikey=${APIkey}`;
     const response = await fetch(url);
     let [data] = await response.json();
-    console.log(data);
+    console.log("checkComp data:", data);
     if (data) return data;
     else {
       const realTicker = await getTicker(ticker);

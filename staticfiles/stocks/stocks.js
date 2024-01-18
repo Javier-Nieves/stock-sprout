@@ -8,19 +8,22 @@ import { showingHistory, activateDivForm } from "./history.js";
 import { fillTopInfo } from "./topInfo.js";
 import { sortTable } from "./sorting.js";
 
-try {
-  const loggedIn = await AuthCheck();
-  localStorage.setItem("loggedIn", loggedIn);
-  checkMessages();
-  loadCorrectView();
-  capitalizeName();
-  handleClicks();
-  loggedIn && fillTopInfo();
-  loggedIn && activateDivForm();
-  // browser back button action
-  window.addEventListener("popstate", loadCorrectView);
-} catch (err) {
-  console.error("Loading sequence error", err.message);
+//! Loading sequence
+if (!window.location.href.includes("login")) {
+  try {
+    const loggedIn = await AuthCheck();
+    localStorage.setItem("loggedIn", loggedIn);
+    checkMessages();
+    loadCorrectView();
+    capitalizeName();
+    handleClicks();
+    loggedIn && fillTopInfo();
+    loggedIn && activateDivForm();
+    // browser back button action
+    window.addEventListener("popstate", loadCorrectView);
+  } catch (err) {
+    console.error("Loading sequence error", err.message);
+  }
 }
 
 function handleClicks() {
@@ -53,7 +56,7 @@ function loadCorrectView() {
   Timer("check");
   let url = window.location.href;
   // prettier-ignore
-  if (url.includes("action") || url.includes("logout") || url.includes("login")) {
+  if (url.includes("action") || url.includes("logout")) { //|| url.includes("login")) {
     updateBrowserHistory("/");
     userLoggedIn() && showingMain();
   }
